@@ -26,4 +26,6 @@ JASMINE is an AI-powered system for early autism screening using multimodal data
 ## 👥 Team
 
 * Leen El Zoubii
+* Siba Al Jarrah
+* Shahd Abu Baker
 
