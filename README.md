@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Autism Screening via Pose Estimation
 
 A privacy-preserving demo for autism spectrum disorder (ASD) screening in children using 2D pose estimation keypoints from the MMASD dataset.
@@ -133,3 +134,36 @@ This system processes **only 2D/3D skeletal keypoints** (x, y, z coordinates). N
 - 3D pose estimation integration
 - Non-MMASD dataset generalization
 - Deployment to production environment
+=======
+# JASMINE: Jordanian Autism Screening with Multimodal Intelligent Neurodevelopmental Evaluation
+
+## 📌 Overview
+
+JASMINE is an AI-powered system for early autism screening using multimodal data, including video-based behavioral analysis.
+
+## 🚀 Features
+
+* Pose-based behavioral analysis using MediaPipe
+* Deep learning model (CNN + BiLSTM + Attention)
+* Automated assessment reports
+* Role-based system (Specialist / Admin)
+
+## 🛠️ Tech Stack
+
+* Python, TensorFlow
+* OpenCV, MediaPipe
+* FastAPI (Backend)
+* Streamlit (Frontend)
+* PostgreSQL (Database)
+
+## 📂 Project Structure
+
+(To be added)
+
+## 👥 Team
+
+* Leen El Zoubii
+* Siba Al Jarrah
+* Shahd Abu Baker
+
+>>>>>>> 9a39743a4d33c43db6372ba674c6f85140ab656c
