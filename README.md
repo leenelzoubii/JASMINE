@@ -137,9 +137,7 @@ This system processes **only 2D/3D skeletal keypoints** (x, y, z coordinates). N
 =======
 # JASMINE: Jordanian Autism Screening with Multimodal Intelligent Neurodevelopmental Evaluation
 
-## 📌 Overview
-
-JASMINE is an AI-powered system for early autism screening using multimodal data, including video-based behavioral analysis.
+## 📌 Drive Link: https://drive.google.com/drive/folders/1xk-wovtIv0COjoROa7w7g1B47cueubmV?usp=sharing
 
 ## 🚀 Features
 
@@ -148,17 +146,13 @@ JASMINE is an AI-powered system for early autism screening using multimodal data
 * Automated assessment reports
 * Role-based system (Specialist / Admin)
 
-## 🛠️ Tech Stack
+## 🛠️ Tech Stack (might change)
 
 * Python, TensorFlow
 * OpenCV, MediaPipe
 * FastAPI (Backend)
 * Streamlit (Frontend)
 * PostgreSQL (Database)
-
-## 📂 Project Structure
-
-(To be added)
 
 ## 👥 Team
 
