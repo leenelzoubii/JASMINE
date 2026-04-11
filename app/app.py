@@ -12,6 +12,8 @@ import json
 import base64
 from pathlib import Path
 
+import matplotlib.pyplot as plt
+
 import numpy as np
 import streamlit as st
 
