@@ -128,24 +128,6 @@ This system processes **only 2D/3D skeletal keypoints** (x, y, z coordinates). N
 
 **This is a research demo and NOT a diagnostic tool.** Results should not be used for clinical decision-making. Consult a qualified healthcare professional for diagnosis.
 
-## Future Work
-
-- Real-time video processing pipeline
-- 3D pose estimation integration
-- Non-MMASD dataset generalization
-- Deployment to production environment
-=======
-# JASMINE: Jordanian Autism Screening with Multimodal Intelligent Neurodevelopmental Evaluation
-
-## 📌 Drive Link: https://drive.google.com/drive/folders/1xk-wovtIv0COjoROa7w7g1B47cueubmV?usp=sharing
-
-## 🚀 Features
-
-* Pose-based behavioral analysis using MediaPipe
-* Deep learning model (CNN + BiLSTM + Attention)
-* Automated assessment reports
-* Role-based system (Specialist / Admin)
-
 ## 🛠️ Tech Stack (might change)
 
 * Python, TensorFlow
@@ -154,10 +136,22 @@ This system processes **only 2D/3D skeletal keypoints** (x, y, z coordinates). N
 * Streamlit (Frontend)
 * PostgreSQL (Database)
 
+## Future Work
+
+- Real-time video processing pipeline
+- 3D pose estimation integration
+- Non-MMASD dataset generalization
+- Deployment to production environment
+- Pose-based behavioral analysis using MediaPipe
+- Deep learning model (CNN + BiLSTM + Attention)
+- Automated assessment reports
+- Role-based system (Specialist / Admin)
+
 ## 👥 Team
 
 * Leen El Zoubii
 * Siba Al Jarrah
 * Shahd Abu Baker
 
->>>>>>> 9a39743a4d33c43db6372ba674c6f85140ab656c
+# 📌 Drive Link: https://drive.google.com/drive/folders/1xk-wovtIv0COjoROa7w7g1B47cueubmV?usp=sharing
+=======
