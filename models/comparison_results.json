@@ -18,19 +18,19 @@
     },
     {
       "Model": "LSTM",
-      "Accuracy": "0.5100",
-      "Precision": "0.5116",
-      "Recall": "0.4400",
-      "F1": "0.4731",
-      "ROC-AUC": "0.4948"
+      "Accuracy": "0.5300",
+      "Precision": "0.5517",
+      "Recall": "0.3200",
+      "F1": "0.4051",
+      "ROC-AUC": "0.5496"
     },
     {
       "Model": "TRANSFORMER",
-      "Accuracy": "0.4900",
-      "Precision": "0.4921",
-      "Recall": "0.6200",
-      "F1": "0.5487",
-      "ROC-AUC": "0.5188"
+      "Accuracy": "0.5500",
+      "Precision": "0.5806",
+      "Recall": "0.3600",
+      "F1": "0.4444",
+      "ROC-AUC": "0.5580"
     }
   ],
   "models": {
@@ -93,57 +93,57 @@
         "velocity_Neck_min": 0.01051902444731433,
         "velocity_LElbow_min": 0.010499712686551773,
         "velocity_RElbow_min": 0.009719683747196452,
-        "velocity_LAnkle_min": 0.009501629773589686,
+        "velocity_LAnkle_min": 0.009501629773589685,
         "autocorr_LHeel_y": 0.008727020953260212,
         "velocity_RBigToe_min": 0.008726783649203103,
-        "autocorr_RElbow_x": 0.00816746844184929,
+        "autocorr_RElbow_x": 0.008167468441849289,
         "velocity_LWrist_min": 0.008016435012826102,
-        "fft_REar_x_dominant_freq": 0.00801406604498127,
-        "velocity_Nose_min": 0.007973690349474705,
-        "velocity_Neck_range": 0.007972838292870182,
-        "angle_LShoulder_Neck_MidHip_range": 0.007954256047321173,
-        "diff_RShoulder_x_max": 0.007938771701842045,
-        "autocorr_LElbow_x": 0.00792366023307352,
-        "velocity_RElbow_range": 0.007761559546817151,
-        "velocity_LEye_min": 0.007521360300973228,
+        "fft_REar_x_dominant_freq": 0.008014066044981272,
+        "velocity_Nose_min": 0.007973690349474706,
+        "velocity_Neck_range": 0.007972838292870184,
+        "angle_LShoulder_Neck_MidHip_range": 0.007954256047321175,
+        "diff_RShoulder_x_max": 0.007938771701842044,
+        "autocorr_LElbow_x": 0.007923660233073518,
+        "velocity_RElbow_range": 0.00776155954681715,
+        "velocity_LEye_min": 0.007521360300973226,
         "velocity_LAnkle_range": 0.007510576533124425,
-        "angle_LShoulder_Neck_MidHip_max": 0.0074915540224215205,
-        "velocity_LSmallToe_min": 0.00744596313175966,
+        "angle_LShoulder_Neck_MidHip_max": 0.007491554022421522,
+        "velocity_LSmallToe_min": 0.007445963131759658,
         "velocity_LElbow_range": 0.007251539884805576
       }
     },
     "lstm": {
-      "accuracy": 0.51,
-      "precision": 0.5116279069767442,
-      "recall": 0.44,
-      "f1": 0.4731182795698925,
-      "roc_auc": 0.49479999999999996,
+      "accuracy": 0.53,
+      "precision": 0.5517241379310345,
+      "recall": 0.32,
+      "f1": 0.4050632911392405,
+      "roc_auc": 0.5496000000000001,
       "confusion_matrix": [
         [
-          29,
-          21
+          37,
+          13
         ],
         [
-          28,
-          22
+          34,
+          16
         ]
       ],
       "top_features": {}
     },
     "transformer": {
-      "accuracy": 0.49,
-      "precision": 0.49206349206349204,
-      "recall": 0.62,
-      "f1": 0.5486725663716814,
-      "roc_auc": 0.5187999999999999,
+      "accuracy": 0.55,
+      "precision": 0.5806451612903226,
+      "recall": 0.36,
+      "f1": 0.4444444444444444,
+      "roc_auc": 0.558,
       "confusion_matrix": [
         [
-          18,
-          32
+          37,
+          13
         ],
         [
-          19,
-          31
+          32,
+          18
         ]
       ],
       "top_features": {}

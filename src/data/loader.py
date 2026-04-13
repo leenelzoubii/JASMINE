@@ -35,17 +35,6 @@ ACTION_TO_LABEL = {
 
 
 def load_csv_sequence(csv_path: str) -> Tuple[np.ndarray, Optional[int], Optional[int]]:
-    """
-    Load a single MMASD+ CSV file.
-
-    Args:
-        csv_path: Path to the CSV file
-
-    Returns:
-        keypoints: numpy array of shape (frames, num_joints, 3)
-        action_label: Action class (0-10) or None
-        asd_label: ASD status (0 or 1) or None
-    """
     df = pd.read_csv(csv_path)
 
     # Extract labels if present
@@ -58,22 +47,38 @@ def load_csv_sequence(csv_path: str) -> Tuple[np.ndarray, Optional[int], Optiona
         asd_label = int(df['ASD_Label'].iloc[0])
         df = df.drop(columns=['ASD_Label'])
 
-    # Extract coordinate columns (exclude any non-coordinate columns)
+    # 🧼 نظف البيانات
+    df = df.fillna(0)
+
+    # Extract coordinate columns
     coord_cols = [c for c in df.columns if c.endswith('_x') or c.endswith('_y') or c.endswith('_z')]
 
-    if len(coord_cols) == 0:
-        raise ValueError(f"No coordinate columns found in {csv_path}")
+    try:
+        # 🟢 الحالة 1: MMASD format
+        if len(coord_cols) > 0:
+            coords = df[coord_cols].values.astype(np.float32)
+            num_frames = coords.shape[0]
+            num_joints = len(coord_cols) // 3
 
-    coords = df[coord_cols].values.astype(np.float32)
-    num_frames = coords.shape[0]
-    num_joints = len(coord_cols) // 3
+            keypoints = coords.reshape(num_frames, num_joints, 3)
 
-    # Reshape to (frames, joints, 3)
-    keypoints = coords.reshape(num_frames, num_joints, 3)
+        # 🟡 الحالة 2: CSV عادي
+        else:
+            coords = df.values.astype(np.float32)
+            num_frames = coords.shape[0]
+            num_joints = coords.shape[1] // 3
 
-    # Add confidence column (all 1.0 for CSV format since no confidence is provided)
-    # Shape becomes (frames, joints, 4) -> we'll use only x,y for 2D mode
-    return keypoints, action_label, asd_label
+            keypoints = coords.reshape(num_frames, num_joints, 3)
+
+        # 🔥 أهم خطوة: خذ فقط x,y
+        keypoints = keypoints[:, :, :2]
+
+        return keypoints, action_label if action_label is not None else "unknown", \
+               asd_label if asd_label is not None else -1
+
+    except Exception as e:
+        print(f"Error inside loader: {e}")
+        return None, None, None  
 
 
 def load_openpose_json(json_path: str) -> np.ndarray:
