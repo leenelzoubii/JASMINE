@@ -14,6 +14,7 @@ from pathlib import Path
 
 import numpy as np
 import streamlit as st
+import matplotlib.pyplot as plt
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).parent.parent
