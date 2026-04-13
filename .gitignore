@@ -1,20 +1,15 @@
-# Virtual environment
-.venv/
+# models
+models/
+*.pth
+*.pkl
 
-# Python cache
+# python cache
 __pycache__/
 *.pyc
 
-# Data / large files
+# env
+.venv/
+
+# data
 data/
 datasets/
-*.csv
-*.zip
-
-# Models
-*.pt
-*.pth
-
-# OS files
-.DS_Store
-Thumbs.db
