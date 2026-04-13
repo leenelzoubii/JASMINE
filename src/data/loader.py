@@ -3,6 +3,11 @@ MMASD dataset loader.
 
 Supports both the Enhanced-MMASD CSV format (MediaPipe 3D skeleton)
 and the original OpenPose JSON format (BODY_25 2D keypoints).
+
+Enhanced with multi-person tracking support:
+- load_all_people_from_openpose_json: Loads multiple people from a single frame
+- classify_person_by_size: Classifies person as adult/child based on skeletal size
+- extract_child_keypoints: Extracts child skeleton for prediction
 """
 
 import json
@@ -13,6 +18,311 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 import pandas as pd
 
+
+# ============================================================
+# MULTI-PERSON TRACKING CONFIGURATION
+# ============================================================
+
+# Height threshold (normalized coordinates) - person below this is likely a child
+# Default: 0.35 works well for normalized [0,1] coordinates
+# Adjust based on your specific video setup!
+CHILD_HEIGHT_THRESHOLD = 0.35
+
+# Bounding box padding (as fraction of body size)
+BB_PADDING = 0.15
+
+# Person classification colors (for visualization)
+PERSON_COLORS = {
+    'instructor': '#2ca02c',  # Green
+    'child': '#d62728',        # Red
+    'unknown': '#ff7f0e'      # Orange
+}
+
+PERSON_LABELS = {
+    'instructor': 'Instructor',
+    'child': 'Child/Subject',
+    'unknown': 'Person'
+}
+
+# Size-based heuristics for person classification
+SIZE_FEATURES = {
+    'height': 0,      # nose to midhip distance
+    'arm_span': 1,      # wrist to wrist distance  
+    'shoulder_width': 2, # shoulder width
+    'hip_width': 3       # hip width
+}
+
+
+# ============================================================
+# MULTI-PERSON TRACKING FUNCTIONS
+# ============================================================
+
+def calculate_person_size(keypoints: np.ndarray) -> Dict[str, float]:
+    """
+    Calculate size metrics for a person from keypoints.
+    
+    Args:
+        keypoints: numpy array of shape (joints, 3) or (frames, joints, 3)
+        
+    Returns:
+        dict with size metrics: height, arm_span, shoulder_width, hip_width
+    """
+    # Use first frame if multiple frames
+    if keypoints.ndim == 3:
+        kp = keypoints[0]
+    else:
+        kp = keypoints
+    
+    coords = kp[:, :2]  # x, y only
+    
+    metrics = {}
+    
+    # Height: nose (0) to midhip (8)
+    if coords[0, 1] > 0 and coords[8, 1] > 0:
+        metrics['height'] = abs(coords[0, 1] - coords[8, 1])
+    else:
+        metrics['height'] = 0
+    
+    # Arm span: left wrist (7) to right wrist (4)
+    if coords[7, 0] > 0 and coords[4, 0] > 0:
+        metrics['arm_span'] = abs(coords[7, 0] - coords[4, 0])
+    else:
+        metrics['arm_span'] = 0
+    
+    # Shoulder width: left shoulder (5) to right shoulder (2)
+    if coords[5, 0] > 0 and coords[2, 0] > 0:
+        metrics['shoulder_width'] = abs(coords[5, 0] - coords[2, 0])
+    else:
+        metrics['shoulder_width'] = 0
+    
+    # Hip width: left hip (12) to right hip (9)
+    if coords[12, 0] > 0 and coords[9, 0] > 0:
+        metrics['hip_width'] = abs(coords[12, 0] - coords[9, 0])
+    else:
+        metrics['hip_width'] = 0
+    
+    return metrics
+
+
+def classify_person_by_size(keypoints: np.ndarray, 
+                          height_threshold: float = CHILD_HEIGHT_THRESHOLD) -> str:
+    """
+    Classify a person as 'instructor' or 'child' based on skeletal size.
+    
+    Args:
+        keypoints: numpy array of shape (joints, 3) or (frames, joints, 3)
+        height_threshold: Height threshold for classification
+        
+    Returns:
+        'instructor' if adult (taller), 'child' if shorter
+    """
+    size_metrics = calculate_person_size(keypoints)
+    height = size_metrics['height']
+    
+    if height > height_threshold:
+        return 'instructor'
+    else:
+        return 'child'
+
+
+def calculate_bounding_box(keypoints: np.ndarray, 
+                        padding: float = BB_PADDING) -> Tuple[float, float, float, float]:
+    """
+    Calculate bounding box for a person's keypoints.
+    
+    Args:
+        keypoints: numpy array of shape (joints, 3) or (frames, joints, 3)
+        padding: Padding fraction around the bounding box
+        
+    Returns:
+        (x_min, y_min, x_max, y_max) tuple
+    """
+    # Use first frame if multiple frames
+    if keypoints.ndim == 3:
+        kp = keypoints[0]
+    else:
+        kp = keypoints
+    
+    coords = kp[:, :2]
+    
+    # Find valid (non-zero) points
+    valid_mask = (coords[:, 0] > 0) | (coords[:, 1] > 0)
+    
+    if not np.any(valid_mask):
+        return 0.0, 0.0, 1.0, 1.0
+    
+    valid_coords = coords[valid_mask]
+    
+    x_min = valid_coords[:, 0].min()
+    x_max = valid_coords[:, 0].max()
+    y_min = valid_coords[:, 1].min()
+    y_max = valid_coords[:, 1].max()
+    
+    # Add padding
+    width = x_max - x_min
+    height = y_max - y_min
+    
+    x_min -= width * padding
+    x_max += width * padding
+    y_min -= height * padding
+    y_max += height * padding
+    
+    return x_min, y_min, x_max, y_max
+
+
+def load_all_people_from_openpose_json(json_path: str) -> Tuple[List[np.ndarray], List[Dict]]:
+    """
+    Load ALL people detected in a single OpenPose JSON frame.
+    
+    Args:
+        json_path: Path to the OpenPose JSON file
+        
+    Returns:
+        Tuple of:
+        - keypoints_list: List of numpy arrays, each (25, 3) for BODY_25
+        - person_info_list: List of dicts with person metadata
+    """
+    with open(json_path, 'r') as f:
+        data = json.load(f)
+    
+    people = data.get('people', [])
+    
+    if not people:
+        # Return empty single person structure for backward compatibility
+        return [np.zeros((25, 3), dtype=np.float32)], [{
+            'person_id': 0,
+            'classification': 'unknown',
+            'size_metrics': {},
+            'bounding_box': (0, 0, 1, 1)
+        }]
+    
+    keypoints_list = []
+    person_info_list = []
+    
+    for idx, person in enumerate(people):
+        keypoints_2d = person.get('pose_keypoints_2d', [])
+        
+        if len(keypoints_2d) == 0:
+            continue
+        
+        keypoints = np.array(keypoints_2d, dtype=np.float32).reshape(-1, 3)
+        
+        # Skip if not BODY_25 (at least 25 joints)
+        if keypoints.shape[0] < 25:
+            continue
+        
+        # Trim to 25 joints
+        keypoints = keypoints[:25]
+        
+        # Calculate person info
+        size_metrics = calculate_person_size(keypoints)
+        classification = classify_person_by_size(keypoints)
+        bounding_box = calculate_bounding_box(keypoints)
+        
+        person_info = {
+            'person_id': idx,
+            'classification': classification,
+            'size_metrics': size_metrics,
+            'bounding_box': bounding_box
+        }
+        
+        keypoints_list.append(keypoints)
+        person_info_list.append(person_info)
+    
+    # If no valid people found, return empty structure
+    if not keypoints_list:
+        return [np.zeros((25, 3), dtype=np.float32)], [{
+            'person_id': 0,
+            'classification': 'unknown',
+            'size_metrics': {},
+            'bounding_box': (0, 0, 1, 1)
+        }]
+    
+    return keypoints_list, person_info_list
+
+
+def extract_child_keypoints(keypoints_list: List[np.ndarray], 
+                       person_info_list: List[Dict]) -> Tuple[Optional[np.ndarray], Optional[Dict]]:
+    """
+    Extract the child/subject keypoints from a list of detected people.
+    
+    If no person is classified as 'child', returns the smallest person.
+    
+    Args:
+        keypoints_list: List of keypoint arrays
+        person_info_list: List of person info dicts
+        
+    Returns:
+        Tuple of (child_keypoints, child_info) or (None, None) if not found
+    """
+    # First, try to find a person classified as 'child'
+    for kp, info in zip(keypoints_list, person_info_list):
+        if info['classification'] == 'child':
+            return kp, info
+    
+    # Fallback: return the smallest person (likely the child in the scene)
+    smallest_height = float('inf')
+    child_idx = -1
+    
+    for idx, info in enumerate(person_info_list):
+        height = info['size_metrics'].get('height', 0)
+        if 0 < height < smallest_height:
+            smallest_height = height
+            child_idx = idx
+    
+    if child_idx >= 0:
+        return keypoints_list[child_idx], person_info_list[child_idx]
+    
+    return None, None
+
+
+def load_openpose_sequence_with_multi_person(directory: str) -> Tuple[np.ndarray, List[Dict]]:
+    """
+    Load OpenPose JSON sequence with MULTIPLE people tracked per frame.
+    
+    Args:
+        directory: Path to directory containing OpenPose JSON files
+        
+    Returns:
+        Tuple of:
+        - keypoints_sequence: numpy array of shape (frames, num_people, 25, 3)
+        - all_person_info: List of person info per frame
+    """
+    json_files = sorted(Path(directory).glob('*.json'))
+    
+    if not json_files:
+        raise ValueError(f"No JSON files found in {directory}")
+    
+    all_frames_people = []
+    all_person_info = []
+    
+    for jf in json_files:
+        try:
+            kp_list, info_list = load_all_people_from_openpose_json(str(jf))
+            all_frames_people.append(kp_list)
+            all_person_info.append(info_list)
+        except Exception as e:
+            print(f"Warning: Failed to load {jf}: {e}")
+            continue
+    
+    # Pad to same number of people per frame
+    max_people = max(len(frame_people) for frame_people in all_frames_people) if all_frames_people else 1
+    
+    # Create sequence array: (frames, people, joints, coords)
+    num_frames = len(all_frames_people)
+    
+    # Use first person only for backward compatibility
+    sequence = np.zeros((num_frames, 25, 3), dtype=np.float32)
+    for frame_idx, frame_people in enumerate(all_frames_people):
+        if frame_people:
+            sequence[frame_idx] = frame_people[0]
+    
+    return sequence, all_person_info
+
+
+# ============================================================
+# LEGACY FUNCTIONS (Backward Compatibility)
+# ============================================================
 
 # MMASD+ CSV column mapping (26 joints × 3 coords = 78 columns)
 # Joint names from the Enhanced-MMASD format

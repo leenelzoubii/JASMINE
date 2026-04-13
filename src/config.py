@@ -103,3 +103,10 @@ RISK_THRESHOLDS = {
     "moderate": 0.6,
     # >= 0.6 = high risk
 }
+
+# Person labels for multi-person tracking
+PERSON_LABELS = {
+    'instructor': 'Instructor',
+    'child': 'Child/Subject',
+    'unknown': 'Person'
+}

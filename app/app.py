@@ -16,7 +16,6 @@ import matplotlib.pyplot as plt
 
 import numpy as np
 import streamlit as st
-import matplotlib.pyplot as plt
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -527,11 +526,11 @@ elif page == "Run Inference":
 
 
 # ============================================================
-# POSE VIEWER PAGE
+# POSE VIEWER PAGE (Enhanced with Multi-Person)
 # ============================================================
 elif page == "Pose Viewer":
     st.title("Interactive Pose Viewer")
-    st.markdown("Upload pose data to visualize the skeleton and kinematic features.")
+    st.markdown("Upload pose data to visualize the skeleton and kinematic features. **Multi-person tracking with bounding boxes included!**")
 
     uploaded_file = st.file_uploader(
         "Upload OpenPose JSON or MMASD CSV file",
@@ -544,10 +543,54 @@ elif page == "Pose Viewer":
             tmp_path = tmp.name
 
         try:
+            keypoints_sequence = None
+            person_info = []
+            
             if uploaded_file.name.endswith('.json'):
-                from src.data.loader import load_openpose_json
-                kp = load_openpose_json(tmp_path)
-                keypoints_sequence = kp[np.newaxis, ...]
+                # Try multi-person loading first
+                try:
+                    from src.data.loader import (
+                        load_all_people_from_openpose_json,
+                        calculate_person_size,
+                        classify_person_by_size,
+                        calculate_bounding_box,
+                        PERSON_LABELS
+                    )
+                    
+                    # Load multi-person data
+                    keypoints_list, person_info_list = load_all_people_from_openpose_json(tmp_path)
+                    
+                    if len(keypoints_list) > 1:
+                        st.success(f"Detected {len(keypoints_list)} people in frame!")
+                        
+                        # Show detected people info
+                        st.subheader("Detected People")
+                        for info in person_info_list:
+                            label = PERSON_LABELS.get(info['classification'], 'Unknown')
+                            size = info.get('size_metrics', {})
+                            st.write(f"**Person {info['person_id'] + 1}** ({label}): "
+                                   f"Height={size.get('height', 0):.3f}, "
+                                   f"Arm Span={size.get('arm_span', 0):.3f}")
+                        
+                        # Create sequence for visualization
+                        keypoints_sequence = np.array(keypoints_list)[np.newaxis, ...]
+                    else:
+                        # Single person fallback
+                        kp = keypoints_list[0] if keypoints_list else np.zeros((25, 3))
+                        keypoints_sequence = kp[np.newaxis, ...]
+                        person_info = [{
+                            'person_id': 0,
+                            'classification': 'unknown',
+                            'size_metrics': calculate_person_size(kp),
+                            'bounding_box': calculate_bounding_box(kp)
+                        }]
+                        
+                except ImportError:
+                    # Fallback to single person
+                    from src.data.loader import load_openpose_json
+                    kp = load_openpose_json(tmp_path)
+                    keypoints_sequence = kp[np.newaxis, ...]
+
                 st.info(f"Single frame: {kp.shape}")
 
             elif uploaded_file.name.endswith('.csv'):
@@ -555,30 +598,99 @@ elif page == "Pose Viewer":
                 kp, action_label, asd_label = load_csv_sequence(tmp_path)
                 keypoints_sequence = kp
                 st.info(f"Sequence: {kp.shape[0]} frames, {kp.shape[1]} joints")
+                
+                # Create basic person info for CSV
+                from src.data.loader import calculate_person_size, calculate_bounding_box, PERSON_LABELS
+                person_info = [{
+                    'person_id': 0,
+                    'classification': 'unknown',
+                    'size_metrics': calculate_person_size(kp),
+                    'bounding_box': calculate_bounding_box(kp)
+                }]
 
             # Visualization tabs
             viz_tab1, viz_tab2, viz_tab3, viz_tab4 = st.tabs([
-                "Skeleton", "Interactive Viewer", "Joint Angles", "Velocity Heatmap"
+                "Skeleton + BBox", "Multi-Person Interactive", "Joint Angles", "Velocity Heatmap"
             ])
 
             with viz_tab1:
-                st.subheader("2D Pose Skeleton")
+                st.subheader("2D Pose Skeleton with Bounding Box")
                 frame_slider = st.slider(
                     "Frame", 0, keypoints_sequence.shape[0] - 1, 0,
                     key="skeleton_frame"
                 )
-                fig = plot_pose_skeleton(keypoints_sequence, frame_idx=frame_slider)
+                
+                # Show person selector
+                if len(person_info) > 1:
+                    selected_person = st.selectbox(
+                        "Select Person to View",
+                        options=range(len(person_info)),
+                        format_func=lambda x: f"Person {x+1} ({person_info[x].get('classification', 'unknown')})"
+                    )
+                else:
+                    selected_person = 0
+                
+                # Get appropriate color for this person
+                person_class = person_info[selected_person].get('classification', 'unknown') if person_info else 'unknown'
+                from src.data.loader import PERSON_COLORS
+                bbox_color = PERSON_COLORS.get(person_class, '#ff7f0e')
+                
+                # Get title
+                person_label = PERSON_LABELS.get(person_class, 'Person')
+                
+                # Use enhanced plotting with bounding box
+                try:
+                    from src.visualization.plots import plot_pose_skeleton_with_bounding_box
+                    kp = keypoints_sequence[frame_slider] if keypoints_sequence.ndim == 3 else keypoints_sequence
+                    fig = plot_pose_skeleton_with_bounding_box(
+                        keypoints_sequence, 
+                        frame_idx=frame_slider,
+                        person_label=person_label,
+                        show_bbox=True,
+                        bbox_color=bbox_color
+                    )
+                except ImportError:
+                    fig = plot_pose_skeleton(keypoints_sequence, frame_idx=frame_slider)
+                
                 st.pyplot(fig)
                 plt.close(fig)
 
             with viz_tab2:
-                st.subheader("Interactive Skeleton Viewer")
+                st.subheader("Multi-Person Interactive Skeleton Viewer")
                 st.markdown(
                     "*Use mouse hover to see joint coordinates. "
                     "Arrow keys to navigate frames. Space to play/pause.*"
                 )
-                html = create_interactive_skeleton_html(keypoints_sequence)
+                
+                # Use multi-person HTML viewer if available
+                try:
+                    from src.visualization.plots import create_interactive_multi_person_html
+                    
+                    if len(person_info) > 1:
+                        html = create_interactive_multi_person_html(keypoints_sequence, person_info)
+                    else:
+                        html = create_interactive_skeleton_html(keypoints_sequence)
+                except ImportError:
+                    html = create_interactive_skeleton_html(keypoints_sequence)
+                
                 st.components.v1.html(html, height=750, scrolling=True)
+                
+                # Show legend
+                if person_info:
+                    st.markdown("### Legend")
+                    cols = st.columns(min(len(person_info), 3))
+                    for idx, info in enumerate(person_info):
+                        with cols[idx % 3]:
+                            classification = info.get('classification', 'unknown')
+                            label = PERSON_LABELS.get(classification, 'Unknown')
+                            color = PERSON_COLORS.get(classification, '#666')
+                            st.markdown(
+                                f'<div style="display:flex;align-items:center;gap:8px;">'
+                                f'<div style="width:16px;height:16px;background:{color};border-radius:4px;"></div>'
+                                f'<span><b>{label}</b> (Person {idx+1})</span>'
+                                f'</div>',
+                                unsafe_allow_html=True
+                            )
 
             with viz_tab3:
                 st.subheader("Joint Angles Over Time")

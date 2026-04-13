@@ -71,13 +71,22 @@ def batch_process_all_folders(input_root, output_root):
         
         df = pd.DataFrame(all_frames, columns=columns)
 
-        # AUTOMATIC ACTION LABELING
-        # Extract prefix (e.g., 'bs' from 'bs_40794...')
+# AUTOMATIC ACTION LABELING
+        # Extract prefix (e.g., 'as' from 'as_20583...')
         prefix = folder_name.split('_')[0].lower()
         df['Action_Label'] = ACTION_MAPPING.get(prefix, 0)
         
-        # We leave ASD_Label as 0 or remove it if your loader allows
-        df['ASD_Label'] = 0 
+        # ASD LABEL from folder name ending:
+        # _y = yes (ASD = 1)
+        # _n = no (TD = 0)
+        # _i = inconclusive (exclude or mark as 0)
+        folder_lower = folder_name.lower()
+        if folder_lower.endswith('_y'):
+            df['ASD_Label'] = 1  # ASD
+        elif folder_lower.endswith('_n'):
+            df['ASD_Label'] = 0  # Typically Developing
+        else:
+            df['ASD_Label'] = 0  # Default for inconclusive (_i) or unknown
 
         # SAVE THE FILE
         output_path = os.path.join(output_root, f"{folder_name}.csv")
@@ -85,9 +94,44 @@ def batch_process_all_folders(input_root, output_root):
         print(f"   Done! Saved to {output_path}")
 
 
-input_path = r'C:\Users\hp\Downloads\2D_openpose\output'
+# ============================================================
+# RELATIVE PATHS - Uses data/raw by default
+# ============================================================
 
-# Where you want the final CSVs to be stored
-output_path = r'C:\Users\hp\OneDrive\Desktop\csv_JASMINE'
+# Get project root (parent of extraction folder)
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-batch_process_all_folders(input_path, output_path)
+# Input: Already exists at data/raw
+INPUT_PATH = os.path.join(PROJECT_ROOT, 'data', 'raw')
+
+# Output: CSV files will be saved here
+OUTPUT_PATH = os.path.join(PROJECT_ROOT, 'data', 'csv')
+
+# ============================================================
+# MAIN EXECUTION
+# ============================================================
+
+if __name__ == '__main__':
+    print(f"Input folder:  {INPUT_PATH}")
+    print(f"Output folder: {OUTPUT_PATH}")
+    print("-" * 40)
+    
+    # Check if input exists
+    if not os.path.exists(INPUT_PATH):
+        print(f"ERROR: Input folder not found!")
+        print(f"Create this folder and add your JSON files:")
+        print(f"  {INPUT_PATH}")
+        print("")
+        print("Folder structure should be:")
+        print("  data/raw_json/")
+        print("    ├── action_001/")
+        print("    │   └── frame_0001.json")
+        print("    ├── action_002/")
+        print("    │   └── frame_0001.json")
+        print("    └── ...")
+    else:
+        batch_process_all_folders(INPUT_PATH, OUTPUT_PATH)
+        print("")
+        print("=" * 40)
+        print("CONVERSION COMPLETE!")
+        print(f"CSV files saved to: {OUTPUT_PATH}")
