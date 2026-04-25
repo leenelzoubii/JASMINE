@@ -16,7 +16,6 @@ import matplotlib.pyplot as plt
 
 import numpy as np
 import streamlit as st
-
 # Add project root to path
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
@@ -48,6 +47,11 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+
+if "username" not in st.session_state:
+    st.session_state.username = ""
 
 
 # Custom CSS
@@ -121,22 +125,85 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# Sidebar navigation
+import json
+
+USERS_FILE = "users.json"
+
+
+def load_users():
+    if os.path.exists(USERS_FILE):
+        with open(USERS_FILE, "r") as f:
+            return json.load(f)
+    return {}
+
+
+def save_users(users):
+    with open(USERS_FILE, "w") as f:
+        json.dump(users, f)
+
+
+# إذا المستخدم غير مسجل دخول
+if not st.session_state.logged_in:
+
+    st.title("Login / Register")
+
+    menu = st.radio(
+        "Choose Option",
+        ["Login", "Register"]
+    )
+
+    users = load_users()
+
+    if menu == "Register":
+        st.subheader("Create New Account")
+
+        new_email = st.text_input("Email")
+        new_username = st.text_input("Username")
+        new_password = st.text_input("Password", type="password")
+
+        if st.button("Register"):
+            if new_username in users:
+                st.error("Username already exists")
+            else:
+                users[new_username] = {
+                    "email": new_email,
+                    "password": new_password
+                }
+                save_users(users)
+                st.success("Account created successfully!")
+
+    elif menu == "Login":
+        st.subheader("Login to Your Account")
+
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
+
+        if st.button("Login"):
+            if username in users and users[username]["password"] == password:
+                st.session_state.logged_in = True
+                st.session_state.username = username
+                st.success("Login successful!")
+                st.rerun()
+            else:
+                st.error("Invalid username or password")
+
+    st.stop()
+
+
+# إذا المستخدم مسجل دخول
 st.sidebar.title("Navigation")
+st.sidebar.success(f"Welcome {st.session_state.username}")
+
 page = st.sidebar.radio(
     "Go to:",
-    ["Home", "Model Comparison", "Run Inference", "Pose Viewer"],
-    index=0,
+    ["Home", "Model Comparison", "Run Inference", "Pose Viewer"]
 )
 
-st.sidebar.markdown("---")
-st.sidebar.markdown("### About")
-st.sidebar.info(
-    "This demo uses 2D pose estimation keypoints "
-    "from the MMASD dataset to screen for autism spectrum disorder. "
-    "**No raw video or images are stored** - only skeletal keypoints, "
-    "preserving complete privacy."
-)
+if st.sidebar.button("Logout"):
+    st.session_state.logged_in = False
+    st.session_state.username = ""
+    st.rerun()
+
 
 
 # ============================================================
