@@ -1,0 +1,15 @@
+# models
+models/
+*.pth
+*.pkl
+
+# python cache
+__pycache__/
+*.pyc
+
+# env
+.venv/
+
+# data
+data/
+datasets/
