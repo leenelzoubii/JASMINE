@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+:root {
+  /* Light mode - HIGH CONTRAST */
+  --background: #ffffff;
+  --background-alt: #f5f8fa;
+  --foreground: #1a1a1a;
+  
+  /* Brand colors */
+  --primary: #3589a8;
+  --primary-hover: #2a7693;
+  --primary-light: #e3f0f4;
+  --primary-dark: #003844;
+  --primary-muted: #6a9ab3;
+  
+  /* Dark mode */
+  --dark-bg: #0f1d25;
+  --dark-surface: #1a2e3d;
+  --dark-deep: #081520;
+  
+  /* Borders */
+  --border: #ced8de;
+  --border-light: #e8eef2;
+  
+  /* Semantics */
+  --risk-low: #16a34a;
+  --risk-moderate: #d97706;
+  --risk-high: #dc2626;
+  
+  /* Text */
+  --text-primary: #ffffff;
+  --text-secondary: #3f3f46;
+  --text-muted: #71717a;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-light: var(--primary-light);
+  --color-primary-dark: var(--primary-dark);
+  --color-dark-bg: var(--dark-bg);
+  --color-dark-surface: var(--dark-surface);
+  --color-dark-deep: var(--dark-deep);
+  --color-border: var(--border);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+}
+
+/* Dark mode */
+.dark {
+  --background: #0f1d25;
+  --background-alt: #1a2e3d;
+  --foreground: #f0f4f8;
+  --border: #2a3f52;
+  --border-light: #1a2e3d;
+  --text-secondary: #c4ccd6;
+  --text-muted: #8899a8;
+}
+
+/* Base */
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+}
+
+/* Form inputs - HIGH CONTRAST */
+input, textarea, select {
+  background-color: var(--background) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--foreground) !important;
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--text-muted) !important;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--primary) !important;
+  outline: none;
+}
+
+/* Buttons */
+button {
+  color: var(--text-primary);
+}
+
+/* Links */
+a {
+  color: var(--primary);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--background-alt); }
+::-webkit-scrollbar-thumb { background: var(--primary-muted); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+/* Cards */
+.bg-white { background-color: #ffffff; }
+.dark .bg-white { background-color: var(--dark-surface); }
