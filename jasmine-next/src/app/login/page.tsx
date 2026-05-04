@@ -2,8 +2,10 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Brain, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { authenticateUser, User } from '@/lib/auth';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -11,22 +13,36 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     
-    setTimeout(() => {
-      setLoading(false);
-      if (!email || !password) {
-        setError('Please fill in all fields');
-        return;
-      }
-      const savedRole = typeof window !== 'undefined' ? localStorage.getItem('jasmine_role') : null;
-      const redirectTo = (savedRole === 'parent') ? '/parent' : '/professional';
-      window.location.href = redirectTo;
-    }, 1000);
+    // Authenticate against database
+    const result = authenticateUser(email, password);
+    
+    setLoading(false);
+    
+    if (!result.success) {
+      setError(result.error || 'Invalid email or password');
+      return;
+    }
+    
+    const user = result.user as User;
+    
+    // Save user info
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('jasmine_user', JSON.stringify(user));
+    }
+    
+    // Redirect based on role
+    if (user.role === 'parent') {
+      router.push('/parent');
+    } else {
+      router.push('/professional');
+    }
   };
 
   return (
@@ -70,7 +86,7 @@ export default function LoginPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
+                  placeholder="parent@demo.com"
                   className="w-full pl-12 pr-4 py-3 rounded-xl focus:outline-none focus:ring-2"
                   style={{ 
                     backgroundColor: 'var(--background)', 
@@ -91,7 +107,7 @@ export default function LoginPage() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder="demo123"
                   className="w-full pl-12 pr-12 py-3 rounded-xl focus:outline-none focus:ring-2"
                   style={{ 
                     backgroundColor: 'var(--background)', 
@@ -108,16 +124,6 @@ export default function LoginPage() {
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" className="w-4 h-4" style={{ accentColor: 'var(--primary)' }} />
-                <span className="text-sm" style={{ color: 'var(--text-muted)' }}>Remember me</span>
-              </label>
-              <Link href="/forgot-password" className="text-sm hover:underline" style={{ color: 'var(--primary)' }}>
-                Forgot password?
-              </Link>
             </div>
 
             <button
