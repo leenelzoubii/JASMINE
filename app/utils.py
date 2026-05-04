@@ -3,9 +3,21 @@ Shared utilities for the Streamlit app.
 """
 
 import os
+import sqlite3
+from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
+
+
+PROJECT_ROOT = Path(__file__).parent.parent
+
+
+def get_db_connection():
+    DB_PATH = PROJECT_ROOT / "users.db"
+    conn = sqlite3.connect(str(DB_PATH))
+    conn.row_factory = sqlite3.Row
+    return conn
 
 
 def load_all_models(models_dir: str) -> Dict:

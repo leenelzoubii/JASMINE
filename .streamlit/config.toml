@@ -1,0 +1,11 @@
+[theme]
+primaryColor = "#4b9b79"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f0f5f0"
+textColor = "#000000"
+
+[client]
+showSidebarNavigation = false
+
+[runner]
+magicEnabled = true
