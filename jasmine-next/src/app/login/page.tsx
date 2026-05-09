@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Brain, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { authenticateUser, User } from '@/lib/auth';
+import { authenticateUser } from '@/lib/auth';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -19,29 +19,25 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
     setLoading(true);
-    
-    // Authenticate against database
-    const result = authenticateUser(email, password);
-    
-    setLoading(false);
-    
-    if (!result.success) {
-      setError(result.error || 'Invalid email or password');
-      return;
-    }
-    
-    const user = result.user as User;
-    
-    // Save user info
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('jasmine_user', JSON.stringify(user));
-    }
-    
-    // Redirect based on role
-    if (user.role === 'parent') {
-      router.push('/parent');
-    } else {
-      router.push('/professional');
+
+    try {
+      const user = await authenticateUser(email, password);
+
+      if (!user) {
+        setError('Invalid email or password');
+        return;
+      }
+
+      if (user.role === 'parent') {
+        router.push('/parent');
+      } else {
+        router.push('/professional');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setError('Invalid email or password');
+    } finally {
+      setLoading(false);
     }
   };
 

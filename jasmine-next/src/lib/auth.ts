@@ -1,68 +1,124 @@
 /**
  * Authentication utilities for JASMINE
- * Uses simple JSON file for demo - replace with real database in production
+ * using Firebase database to store users registration information
  */
 
-import usersData from '@/data/users.json';
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+} from "firebase/auth";
+
+import {
+  doc,
+  setDoc,
+  getDoc,
+  serverTimestamp,
+} from "firebase/firestore";
+
+import { auth, db } from "@/lib/firebase";
 
 export interface User {
   id: string;
-  email: string;
-  password: string;
   name: string;
-  role: 'parent' | 'professional';
+  email: string;
+  role: "parent" | "professional";
   child?: {
     name: string;
     age: number;
-    specialist: string;
+    specialist?: string;
   };
   specialty?: string;
 }
 
-export interface LoginResult {
-  success: boolean;
-  user?: User;
-  error?: string;
-}
+export async function registerUser(
+  name: string,
+  email: string,
+  password: string,
+  role: "parent" | "professional"
+): Promise<User> {
+  const cleanName = name.trim();
+  const cleanEmail = email.trim();
+  const cleanPassword = password.trim();
 
-/**
- * Authenticate user by email and password
- */
-export function authenticateUser(email: string, password: string): LoginResult {
-  const user = usersData.users.find(
-    (u: User) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
+  const userCredential = await createUserWithEmailAndPassword(
+    auth,
+    cleanEmail,
+    cleanPassword
   );
 
-  if (!user) {
-    return {
-      success: false,
-      error: 'Invalid email or password. Only demo accounts can login.'
-    };
+  const firebaseUser = userCredential.user;
+
+  const userData: User = {
+    id: firebaseUser.uid,
+    name: cleanName,
+    email: cleanEmail,
+    role,
+    ...(role === "parent"
+      ? {
+          child: {
+            name: "Emma",
+            age: 6,
+            specialist: "Dr. Jasmine",
+          },
+        }
+      : {
+          specialty: "Autism Specialist",
+        }),
+  };
+
+  await setDoc(doc(db, "users", firebaseUser.uid), {
+    ...userData,
+    createdAt: serverTimestamp(),
+  });
+
+  localStorage.setItem("currentUser", JSON.stringify(userData));
+
+  return userData;
+}
+
+export async function authenticateUser(
+  email: string,
+  password: string
+): Promise<User | null> {
+  const cleanEmail = email.trim();
+  const cleanPassword = password.trim();
+
+  const userCredential = await signInWithEmailAndPassword(
+    auth,
+    cleanEmail,
+    cleanPassword
+  );
+
+  const firebaseUser = userCredential.user;
+
+  const userRef = doc(db, "users", firebaseUser.uid);
+  const userSnap = await getDoc(userRef);
+
+  if (!userSnap.exists()) {
+    throw new Error(
+      "User exists in Authentication but not in Firestore users collection"
+    );
   }
 
-  // Return user without password
-  const { password: _, ...userWithoutPassword } = user;
-  return {
-    success: true,
-    user: userWithoutPassword as User
-  };
+  const userData = userSnap.data() as User;
+
+  localStorage.setItem("currentUser", JSON.stringify(userData));
+
+  return userData;
 }
 
-/**
- * Check if user exists by email
- */
-export function userExists(email: string): boolean {
-  return usersData.users.some(
-    (u: User) => u.email.toLowerCase() === email.toLowerCase()
-  );
+export function getCurrentUser(): User | null {
+  if (typeof window === "undefined") return null;
+
+  const storedUser = localStorage.getItem("currentUser");
+
+  if (!storedUser) return null;
+
+  return JSON.parse(storedUser);
 }
 
-/**
- * Get user role by email
- */
-export function getUserRole(email: string): string | null {
-  const user = usersData.users.find(
-    (u: User) => u.email.toLowerCase() === email.toLowerCase()
-  );
-  return user?.role || null;
+export async function logoutUser(): Promise<void> {
+  await signOut(auth);
+  localStorage.removeItem("currentUser");
 }

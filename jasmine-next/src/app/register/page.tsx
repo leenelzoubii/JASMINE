@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Brain, Mail, Lock, User, Building2, AlertCircle, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { registerUser } from "@/lib/auth";
 
 const roles = [
   { id: 'professional', title: 'Healthcare Professional', icon: '🏥', description: 'Doctors, therapists, and specialists' },
@@ -24,28 +25,47 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setLoading(true);
-    
-    setTimeout(() => {
-      setLoading(false);
-      if (step === 1) {
-        if (!selectedRole) {
-          setError('Please select an account type');
-          return;
-        }
-        setStep(2);
-      } else {
-        if (!name || !email || !password) {
-          setError('Please fill in all required fields');
-          return;
-        }
-        // In a real app, we would save to database here
-        // For now, show success and redirect to login
-        router.push('/login?registered=true');
-      }
-    }, 1000);
-  };
+    setError("");
+
+  // Step 1: choose role
+   if (step === 1) {
+    if (!selectedRole) {
+      setError("Please select an account type");
+      return;
+    }
+
+    setStep(2);
+    return;
+  }
+
+  // Step 2: fill user info
+  if (!name || !email || !password) {
+    setError("Please fill in all required fields");
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const user = await registerUser(
+      name,
+      email,
+      password,
+      selectedRole as "parent" | "professional"
+    );
+
+    if (user.role === "parent") {
+      router.push("/parent");
+    } else {
+      router.push("/professional");
+    }
+  } catch (error) {
+    console.error(error);
+    setError("Registration failed. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12" style={{ backgroundColor: 'var(--background-alt)' }}>
