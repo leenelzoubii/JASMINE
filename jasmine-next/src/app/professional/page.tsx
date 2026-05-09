@@ -17,10 +17,11 @@ const recentPatients = [
   { name: 'Sophie Williams', age: 7, lastVisit: '2 weeks ago', risk: 'Low' },
 ];
 
-const riskColors = {
+const riskColors: Record<string, string> = {
   High: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
   Moderate: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
   Low: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  Unknown: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400',
 };
 
 const container = {
@@ -86,7 +87,7 @@ export default function ProfessionalDashboard() {
                   <p className="font-medium text-gray-900 dark:text-white">{patient.name}</p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Age: {patient.age} • Last: {patient.lastVisit}</p>
                 </div>
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${riskColors[patient.risk as keyof typeof riskColors]}`}>
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${riskColors[patient.risk] || ''}`}>
                   {patient.risk}
                 </span>
               </div>

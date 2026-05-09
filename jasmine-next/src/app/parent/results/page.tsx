@@ -9,10 +9,11 @@ const results = [
   { id: 3, child: 'Liam', date: '2026-04-01', score: 0.23, risk: 'Low', models: { rf: 0.21, svm: 0.25, lstm: 0.22, transformer: 0.24 } },
 ];
 
-const riskColors = {
+const riskColors: Record<string, string> = {
   High: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
   Moderate: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
   Low: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  Unknown: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400',
 };
 
 export default function ParentResultsPage() {
@@ -64,7 +65,7 @@ export default function ParentResultsPage() {
                   <p className="text-3xl font-bold text-gray-900 dark:text-white">{(result.score * 100).toFixed(0)}%</p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">ASD Probability</p>
                 </div>
-                <span className={`px-4 py-2 rounded-full text-lg font-semibold ${riskColors[result.risk as keyof typeof riskColors]}`}>
+                <span className={`px-4 py-2 rounded-full text-lg font-semibold ${riskColors[result.risk] || ''}`}>
                   {result.risk} Risk
                 </span>
               </div>

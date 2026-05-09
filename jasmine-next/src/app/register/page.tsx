@@ -27,45 +27,42 @@ export default function RegisterPage() {
     e.preventDefault();
     setError("");
 
-  // Step 1: choose role
-   if (step === 1) {
-    if (!selectedRole) {
-      setError("Please select an account type");
+    if (step === 1) {
+      if (!selectedRole) {
+        setError("Please select an account type");
+        return;
+      }
+      setStep(2);
       return;
     }
 
-    setStep(2);
-    return;
-  }
-
-  // Step 2: fill user info
-  if (!name || !email || !password) {
-    setError("Please fill in all required fields");
-    return;
-  }
-
-  setLoading(true);
-
-  try {
-    const user = await registerUser(
-      name,
-      email,
-      password,
-      selectedRole as "parent" | "professional"
-    );
-
-    if (user.role === "parent") {
-      router.push("/parent");
-    } else {
-      router.push("/professional");
+    if (!name || !email || !password) {
+      setError("Please fill in all required fields");
+      return;
     }
-  } catch (error) {
-    console.error(error);
-    setError("Registration failed. Please try again.");
-  } finally {
-    setLoading(false);
-  }
-};
+
+    setLoading(true);
+
+    try {
+      const user = await registerUser(
+        name,
+        email,
+        password,
+        selectedRole as "parent" | "professional"
+      );
+
+      if (user.role === "parent") {
+        router.push("/parent");
+      } else {
+        router.push("/professional");
+      }
+    } catch (error) {
+      console.error(error);
+      setError("Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12" style={{ backgroundColor: 'var(--background-alt)' }}>
@@ -108,7 +105,7 @@ export default function RegisterPage() {
                   key={role.id}
                   onClick={() => setSelectedRole(role.id)}
                   className={`w-full p-5 rounded-xl border-2 transition-all text-left ${selectedRole === role.id ? 'border-[var(--primary)]' : 'border-[var(--border)]'}`}
-                  style={{ 
+                  style={{
                     backgroundColor: selectedRole === role.id ? 'var(--primary-light)' : 'var(--background)'
                   }}
                 >
@@ -139,9 +136,9 @@ export default function RegisterPage() {
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Your name"
                     className="w-full pl-12 pr-4 py-3 rounded-xl focus:outline-none focus:ring-2"
-                    style={{ 
-                      backgroundColor: 'var(--background)', 
-                      border: '1px solid var(--border)', 
+                    style={{
+                      backgroundColor: 'var(--background)',
+                      border: '1px solid var(--border)',
                       color: 'var(--foreground)'
                     }}
                   />
@@ -160,9 +157,9 @@ export default function RegisterPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
                     className="w-full pl-12 pr-4 py-3 rounded-xl focus:outline-none focus:ring-2"
-                    style={{ 
-                      backgroundColor: 'var(--background)', 
-                      border: '1px solid var(--border)', 
+                    style={{
+                      backgroundColor: 'var(--background)',
+                      border: '1px solid var(--border)',
                       color: 'var(--foreground)'
                     }}
                   />
@@ -182,9 +179,9 @@ export default function RegisterPage() {
                       onChange={(e) => setSpecialty(e.target.value)}
                       placeholder="e.g., Pediatric Neurology"
                       className="w-full pl-12 pr-4 py-3 rounded-xl focus:outline-none focus:ring-2"
-                      style={{ 
-                        backgroundColor: 'var(--background)', 
-                        border: '1px solid var(--border)', 
+                      style={{
+                        backgroundColor: 'var(--background)',
+                        border: '1px solid var(--border)',
                         color: 'var(--foreground)'
                       }}
                     />
@@ -204,9 +201,9 @@ export default function RegisterPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
                     className="w-full pl-12 pr-4 py-3 rounded-xl focus:outline-none focus:ring-2"
-                    style={{ 
-                      backgroundColor: 'var(--background)', 
-                      border: '1px solid var(--border)', 
+                    style={{
+                      backgroundColor: 'var(--background)',
+                      border: '1px solid var(--border)',
                       color: 'var(--foreground)'
                     }}
                   />
@@ -219,7 +216,7 @@ export default function RegisterPage() {
                 className="text-sm"
                 style={{ color: 'var(--text-muted)' }}
               >
-                ← Back
+                Back
               </button>
             </form>
           )}
