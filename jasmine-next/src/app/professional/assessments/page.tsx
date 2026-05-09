@@ -1,17 +1,13 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { Upload, FileText, Clock, CheckCircle, AlertCircle, RefreshCw, Download, X, Folder, File } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Upload, FileText, Clock, CheckCircle, RefreshCw, Download, X, Folder } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { getPatients } from '@/lib/patients';
+import { getCurrentUser } from '@/lib/auth';
+import { Patient } from '@/lib/patients';
 
-const assessments = [
-  { id: 1, patient: 'Emma Thompson', date: '2026-05-01', status: 'Completed', score: 0.82, risk: 'High' },
-  { id: 2, patient: 'Liam Johnson', date: '2026-04-28', status: 'Pending', score: null, risk: null },
-  { id: 3, patient: 'Sophie Williams', date: '2026-04-25', status: 'Completed', score: 0.23, risk: 'Low' },
-  { id: 4, patient: 'James Brown', date: '2026-04-20', status: 'Completed', score: 0.45, risk: 'Moderate' },
-];
-
-const statusColors = {
+const statusColors: Record<string, string> = {
   Completed: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
   Pending: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
 };
@@ -25,11 +21,25 @@ const riskColors: Record<string, string> = {
 
 export default function ProfessionalAssessmentsPage() {
   const [selectedPatient, setSelectedPatient] = useState('');
+  const [patients, setPatients] = useState<Patient[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [loadingPatients, setLoadingPatients] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const user = getCurrentUser();
+    if (user) {
+      getPatients(user.id)
+        .then(setPatients)
+        .catch(console.error)
+        .finally(() => setLoadingPatients(false));
+    } else {
+      setLoadingPatients(false);
+    }
+  }, []);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -47,9 +57,9 @@ export default function ProfessionalAssessmentsPage() {
     setDragActive(false);
 
     const files = Array.from(e.dataTransfer.files);
-    const validFiles = files.filter(file => 
-      file.type === 'application/json' || 
-      file.type === 'text/csv' || 
+    const validFiles = files.filter(file =>
+      file.type === 'application/json' ||
+      file.type === 'text/csv' ||
       file.type === 'video/mp4'
     );
     setUploadedFiles(prev => [...prev, ...validFiles]);
@@ -71,8 +81,7 @@ export default function ProfessionalAssessmentsPage() {
     }
 
     setUploading(true);
-    
-    // Simulate processing
+
     setTimeout(() => {
       setUploading(false);
       setUploadedFiles([]);
@@ -100,23 +109,35 @@ export default function ProfessionalAssessmentsPage() {
         <div className="space-y-6">
           <div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Run New Assessment</h3>
-            
+
             {/* Patient Selection */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Select Patient
               </label>
-              <select 
-                value={selectedPatient}
-                onChange={(e) => setSelectedPatient(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-deep rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <option value="">Choose a patient...</option>
-                <option value="1">Emma Thompson</option>
-                <option value="2">Liam Johnson</option>
-                <option value="3">Sophie Williams</option>
-                <option value="4">James Brown</option>
-              </select>
+              {loadingPatients ? (
+                <div className="w-full px-4 py-3 bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-deep rounded-xl flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                  <span className="text-gray-500">Loading patients...</span>
+                </div>
+              ) : patients.length === 0 ? (
+                <div className="w-full px-4 py-3 bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-deep rounded-xl text-gray-500">
+                  No patients found. Add a patient first.
+                </div>
+              ) : (
+                <select
+                  value={selectedPatient}
+                  onChange={(e) => setSelectedPatient(e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-deep rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <option value="">Choose a patient...</option>
+                  {patients.map((patient) => (
+                    <option key={patient.id} value={patient.name}>
+                      {patient.name}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
 
             {/* File Upload Area */}
@@ -170,7 +191,7 @@ export default function ProfessionalAssessmentsPage() {
                     multiple
                     onChange={handleFileSelect}
                     className="hidden"
-                    {...{ webkitdirectory: 'true' as any, directory: 'true' as any }}
+                    {...{ webkitdirectory: 'true' as unknown as string, directory: 'true' as unknown as string }}
                   />
 
                   {/* Click area */}
@@ -281,50 +302,8 @@ export default function ProfessionalAssessmentsPage() {
         <div className="px-6 py-4 border-b border-gray-100 dark:border-dark-deep">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Assessments</h2>
         </div>
-        <div className="divide-y divide-gray-100 dark:divide-dark-deep">
-          {assessments.map((assessment, index) => (
-            <motion.div
-              key={assessment.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-dark-deep transition-colors"
-            >
-              <div className="flex items-center gap-4">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  assessment.status === 'Completed' ? 'bg-green-100 dark:bg-green-900/30' : 'bg-yellow-100 dark:bg-yellow-900/30'
-                }`}>
-                  {assessment.status === 'Completed' ? (
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                  ) : (
-                    <Clock className="w-5 h-5 text-yellow-600" />
-                  )}
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white">{assessment.patient}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{assessment.date}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                {assessment.score !== null && (
-                  <div className="text-right">
-                    <p className="text-lg font-semibold text-gray-900 dark:text-white">{(assessment.score * 100).toFixed(0)}%</p>
-                    <p className={`text-sm font-medium ${riskColors[assessment.risk || ''] || ''}`}>
-                      {assessment.risk || 'Unknown'} Risk
-                    </p>
-                  </div>
-                )}
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[assessment.status as keyof typeof statusColors]}`}>
-                  {assessment.status}
-                </span>
-                {assessment.status === 'Completed' && (
-                  <button className="p-2 text-gray-400 hover:text-primary rounded-lg hover:bg-gray-100 dark:hover:bg-dark-deep">
-                    <Download className="w-5 h-5" />
-                  </button>
-                )}
-              </div>
-            </motion.div>
-          ))}
+        <div className="px-6 py-12 text-center">
+          <p className="text-gray-500 dark:text-gray-400">No recent assessments. Run an assessment to see results here.</p>
         </div>
       </div>
     </div>

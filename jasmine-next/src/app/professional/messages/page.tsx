@@ -1,16 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Send, Search, MoreVertical } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const conversations = [
+const initialConversations = [
   { id: 1, name: 'John Thompson', lastMessage: 'Thank you for the update...', time: '2h ago', unread: 2, avatar: 'JT' },
   { id: 2, name: 'Sarah Johnson', lastMessage: 'When is the next appointment?', time: '1d ago', unread: 0, avatar: 'SJ' },
   { id: 3, name: 'Mike Williams', lastMessage: 'Got it, thank you!', time: '3d ago', unread: 0, avatar: 'MW' },
 ];
 
-const messages = [
+const initialMessages = [
   { id: 1, sender: 'parent', text: 'Hello Dr. Jasmine, I wanted to ask about Emma\'s assessment results.', time: '10:30 AM' },
   { id: 2, sender: 'professional', text: 'Hi John! The results show some areas we should monitor. I\'ll send the full report shortly.', time: '10:32 AM' },
   { id: 3, sender: 'parent', text: 'Thank you for the update. Should we schedule a follow-up?', time: '10:35 AM' },
@@ -22,11 +22,35 @@ const messages = [
 export default function ProfessionalMessagesPage() {
   const [selectedChat, setSelectedChat] = useState(1);
   const [newMessage, setNewMessage] = useState('');
+  const [mounted, setMounted] = useState(false);
+  const [conversations, setConversations] = useState(initialConversations);
+  const [messages, setMessages] = useState(initialMessages);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="h-[calc(100vh-8rem)]">
+        <div className="flex h-full bg-white dark:bg-dark-surface rounded-2xl border border-gray-200 dark:border-dark-deep animate-pulse" />
+      </div>
+    );
+  }
 
   const activeConversation = conversations.find(c => c.id === selectedChat);
 
   const handleSend = () => {
     if (newMessage.trim()) {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+      const newMsg = { id: Date.now(), sender: 'professional', text: newMessage.trim(), time: timeString };
+      setMessages(prev => [...prev, newMsg]);
+      setConversations(prev => prev.map(conv => 
+        conv.id === selectedChat 
+          ? { ...conv, lastMessage: newMessage.trim(), time: 'Just now' }
+          : conv
+      ));
       setNewMessage('');
     }
   };
@@ -126,7 +150,7 @@ export default function ProfessionalMessagesPage() {
                 onChange={(e) => setNewMessage(e.target.value)}
                 placeholder="Type a message..."
                 className="flex-1 px-4 py-3 bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-deep rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
-                onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
               />
               <button
                 onClick={handleSend}

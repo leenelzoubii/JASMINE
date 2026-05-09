@@ -48,7 +48,8 @@ export default function RegisterPage() {
         name,
         email,
         password,
-        selectedRole as "parent" | "professional"
+        selectedRole as "parent" | "professional",
+        selectedRole === 'professional' ? specialty : undefined
       );
 
       if (user.role === "parent") {

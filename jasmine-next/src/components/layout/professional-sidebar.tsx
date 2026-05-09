@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { Brain, LayoutDashboard, Users, FileText, MessageSquare, User, LogOut, Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { logoutUser, getCurrentUser } from '@/lib/auth';
 
 const professionalLinks = [
   { href: '/professional', label: 'Dashboard', icon: LayoutDashboard },
@@ -17,12 +18,16 @@ const professionalLinks = [
 export function ProfessionalSidebar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  const handleLogout = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('jasmine_user');
-      localStorage.removeItem('jasmine_role');
-    }
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const user = mounted ? getCurrentUser() : null;
+
+  const handleLogout = async () => {
+    await logoutUser();
     window.location.href = '/login?loggedout=true';
   };
 
@@ -58,7 +63,7 @@ export function ProfessionalSidebar() {
                 href={link.href}
                 onClick={() => setIsOpen(false)}
                 className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all"
-                style={{ 
+                style={{
                   backgroundColor: isActive ? 'var(--primary-light)' : 'transparent',
                   color: isActive ? 'var(--primary)' : 'var(--foreground)'
                 }}
@@ -74,7 +79,7 @@ export function ProfessionalSidebar() {
         <div className="p-4" style={{ borderTop: '1px solid var(--border)' }}>
           <div className="flex items-center justify-between mb-4">
             <ThemeToggle />
-            <button 
+            <button
               onClick={handleLogout}
               className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg"
               style={{ color: '#dc2626' }}
@@ -84,13 +89,19 @@ export function ProfessionalSidebar() {
             </button>
           </div>
           <div className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: 'var(--background-alt)' }}>
-            <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold" style={{ backgroundColor: 'var(--primary)' }}>
-              DJ
-            </div>
-            <div>
-              <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>Dr. Jasmine</p>
-              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Professional</p>
-            </div>
+            {user ? (
+              <>
+                <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold" style={{ backgroundColor: 'var(--primary)' }}>
+                  {user.name.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>{user.name}</p>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{user.specialty || 'Professional'}</p>
+                </div>
+              </>
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-dark-deep animate-pulse" />
+            )}
           </div>
         </div>
       </aside>

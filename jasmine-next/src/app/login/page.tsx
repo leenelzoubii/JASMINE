@@ -1,19 +1,21 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Brain, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { authenticateUser } from '@/lib/auth';
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnUrl = searchParams.get('returnUrl') || null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,14 +30,21 @@ export default function LoginPage() {
         return;
       }
 
-      if (user.role === 'parent') {
+      if (returnUrl && (returnUrl.startsWith('/professional') || returnUrl.startsWith('/parent'))) {
+        router.push(returnUrl);
+      } else if (user.role === 'parent') {
         router.push('/parent');
       } else {
         router.push('/professional');
       }
-    } catch (error) {
-      console.error('Login error:', error);
-      setError('Invalid email or password');
+    } catch (error: unknown) {
+      const code = (error as { code?: string })?.code;
+      if (code === 'auth/invalid-credential' || code === 'auth/user-not-found' || code === 'auth/wrong-password') {
+        setError('No account found with this email. Please create an account first.');
+      } else {
+        setError('Something went wrong. Please try again.');
+        console.error('Login error:', error);
+      }
     } finally {
       setLoading(false);
     }
@@ -84,9 +93,9 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="parent@demo.com"
                   className="w-full pl-12 pr-4 py-3 rounded-xl focus:outline-none focus:ring-2"
-                  style={{ 
-                    backgroundColor: 'var(--background)', 
-                    border: '1px solid var(--border)', 
+                  style={{
+                    backgroundColor: 'var(--background)',
+                    border: '1px solid var(--border)',
                     color: 'var(--foreground)'
                   }}
                 />
@@ -105,9 +114,9 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="demo123"
                   className="w-full pl-12 pr-12 py-3 rounded-xl focus:outline-none focus:ring-2"
-                  style={{ 
-                    backgroundColor: 'var(--background)', 
-                    border: '1px solid var(--border)', 
+                  style={{
+                    backgroundColor: 'var(--background)',
+                    border: '1px solid var(--border)',
                     color: 'var(--foreground)'
                   }}
                 />
@@ -141,5 +150,17 @@ export default function LoginPage() {
         </div>
       </motion.div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }

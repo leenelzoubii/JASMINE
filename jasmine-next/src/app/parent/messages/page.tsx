@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Send, MoreVertical, Phone, Mail } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -8,7 +8,11 @@ const conversations = [
   { id: 1, name: 'Dr. Jasmine', lastMessage: 'The assessment results are ready...', time: '2h ago', unread: 1, avatar: 'DJ' },
 ];
 
-const messages = [
+const initialConversations = [
+  { id: 1, name: 'Dr. Jasmine', lastMessage: 'The assessment results are ready...', time: '2h ago', unread: 1, avatar: 'DJ' },
+];
+
+const initialMessages = [
   { id: 1, sender: 'professional', text: 'Hello! I wanted to let you know that Emma\'s latest screening results are ready.', time: '10:30 AM' },
   { id: 2, sender: 'parent', text: 'That\'s great news! What do the results show?', time: '10:32 AM' },
   { id: 3, sender: 'professional', text: 'There are some areas we should monitor. I\'ve attached the full report. Based on the assessment, I recommend scheduling a follow-up appointment to discuss in detail.', time: '10:35 AM' },
@@ -17,9 +21,28 @@ const messages = [
 
 export default function ParentMessagesPage() {
   const [newMessage, setNewMessage] = useState('');
+  const [mounted, setMounted] = useState(false);
+  const [messages, setMessages] = useState(initialMessages);
+  const [conversations] = useState(initialConversations);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="h-[calc(100vh-8rem)]">
+        <div className="flex h-full bg-white dark:bg-dark-surface rounded-2xl border border-gray-200 dark:border-dark-deep animate-pulse" />
+      </div>
+    );
+  }
 
   const handleSend = () => {
     if (newMessage.trim()) {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+      const newMsg = { id: Date.now(), sender: 'parent', text: newMessage.trim(), time: timeString };
+      setMessages(prev => [...prev, newMsg]);
       setNewMessage('');
     }
   };
@@ -117,7 +140,7 @@ export default function ParentMessagesPage() {
                 onChange={(e) => setNewMessage(e.target.value)}
                 placeholder="Type a message..."
                 className="flex-1 px-4 py-3 bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-deep rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
-                onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
               />
               <button
                 onClick={handleSend}

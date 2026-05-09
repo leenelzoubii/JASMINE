@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { Brain, LayoutDashboard, Baby, FileText, MessageSquare, User, LogOut, Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { logoutUser, getCurrentUser } from '@/lib/auth';
 
 const parentLinks = [
   { href: '/parent', label: 'Dashboard', icon: LayoutDashboard },
@@ -16,6 +17,18 @@ const parentLinks = [
 export function ParentSidebar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const user = mounted ? getCurrentUser() : null;
+
+  const handleLogout = async () => {
+    await logoutUser();
+    window.location.href = '/login?loggedout=true';
+  };
 
   return (
     <>
@@ -39,7 +52,7 @@ export function ParentSidebar() {
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Parent Portal</p>
           </div>
 
-          {/* Nav Links - Simplified */}
+          {/* Nav Links */}
           <nav className="flex-1 p-4 space-y-1">
             {parentLinks.map((link) => {
               const isActive = pathname === link.href;
@@ -65,19 +78,28 @@ export function ParentSidebar() {
           <div className="p-4 border-t border-gray-200 dark:border-dark-deep">
             <div className="flex items-center justify-between mb-4">
               <ThemeToggle />
-              <Link href="/" className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20">
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
+              >
                 <LogOut className="w-4 h-4" />
                 Logout
-              </Link>
+              </button>
             </div>
             <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-dark-bg rounded-xl">
-              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
-                JP
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-900 dark:text-white">John Parent</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Parent</p>
-              </div>
+              {user ? (
+                <>
+                  <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
+                    {user.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">{user.name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Parent</p>
+                  </div>
+                </>
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-dark-deep animate-pulse" />
+              )}
             </div>
           </div>
         </div>

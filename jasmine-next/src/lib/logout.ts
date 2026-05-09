@@ -1,13 +1,10 @@
 /**
  * Logout user and redirect to login
  */
-import { useRouter } from 'next/navigation';
+import { logoutUser } from '@/lib/auth';
 
-export function logout() {
-  if (typeof window !== 'undefined') {
-    localStorage.removeItem('jasmine_user');
-    localStorage.removeItem('jasmine_role');
-  }
+export async function logout() {
+  await logoutUser();
   window.location.href = '/login?loggedout=true';
 }
 
@@ -16,12 +13,10 @@ export function logout() {
  */
 export function getCurrentUser() {
   if (typeof window === 'undefined') return null;
-  
-  const userStr = localStorage.getItem('jasmine_user');
-  if (!userStr) return null;
-  
+  const storedUser = localStorage.getItem('currentUser');
+  if (!storedUser) return null;
   try {
-    return JSON.parse(userStr);
+    return JSON.parse(storedUser);
   } catch {
     return null;
   }

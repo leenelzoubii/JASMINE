@@ -13,6 +13,7 @@ import {
   doc,
   setDoc,
   getDoc,
+  updateDoc,
   serverTimestamp,
 } from "firebase/firestore";
 
@@ -23,19 +24,22 @@ export interface User {
   name: string;
   email: string;
   role: "parent" | "professional";
+  phone?: string;
   child?: {
     name: string;
     age: number;
     specialist?: string;
   };
   specialty?: string;
+  updatedAt?: unknown;
 }
 
 export async function registerUser(
   name: string,
   email: string,
   password: string,
-  role: "parent" | "professional"
+  role: "parent" | "professional",
+  specialty?: string
 ): Promise<User> {
   const cleanName = name.trim();
   const cleanEmail = email.trim();
@@ -63,7 +67,7 @@ export async function registerUser(
           },
         }
       : {
-          specialty: "Autism Specialist",
+          specialty: specialty?.trim() || "Autism Specialist",
         }),
   };
 
@@ -121,4 +125,19 @@ export function getCurrentUser(): User | null {
 export async function logoutUser(): Promise<void> {
   await signOut(auth);
   localStorage.removeItem("currentUser");
+}
+
+export async function updateUser(
+  userId: string,
+  data: { name?: string; phone?: string; specialty?: string }
+): Promise<User> {
+  const userRef = doc(db, "users", userId);
+  await updateDoc(userRef, {
+    ...data,
+    updatedAt: serverTimestamp(),
+  });
+  const snap = await getDoc(userRef);
+  const updated = snap.data() as User;
+  localStorage.setItem("currentUser", JSON.stringify(updated));
+  return updated;
 }

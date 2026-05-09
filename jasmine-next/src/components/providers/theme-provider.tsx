@@ -16,7 +16,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       defaultTheme="light"
       enableSystem
       disableTransitionOnChange={false}
-      suppressHydrationWarning
     >
       {mounted ? children : <span style={{ visibility: 'hidden' }}>{children}</span>}
     </NextThemesProvider>

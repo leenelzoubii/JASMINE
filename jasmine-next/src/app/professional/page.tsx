@@ -3,26 +3,10 @@
 import { Users, FileText, MessageSquare, Clock, TrendingUp, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-
-const stats = [
-  { label: 'Total Patients', value: '24', icon: Users, change: '+3', color: 'bg-blue-500' },
-  { label: 'Pending Assessments', value: '8', icon: FileText, change: '-2', color: 'bg-orange-500' },
-  { label: 'Unread Messages', value: '5', icon: MessageSquare, change: '+2', color: 'bg-purple-500' },
-  { label: 'This Month', value: '12', icon: TrendingUp, change: '+5', color: 'bg-green-500' },
-];
-
-const recentPatients = [
-  { name: 'Emma Thompson', age: 6, lastVisit: '2 days ago', risk: 'High' },
-  { name: 'Liam Johnson', age: 5, lastVisit: '1 week ago', risk: 'Moderate' },
-  { name: 'Sophie Williams', age: 7, lastVisit: '2 weeks ago', risk: 'Low' },
-];
-
-const riskColors: Record<string, string> = {
-  High: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-  Moderate: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-  Low: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  Unknown: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400',
-};
+import { useState, useEffect } from 'react';
+import { getCurrentUser } from '@/lib/auth';
+import { getPatients } from '@/lib/patients';
+import { Patient } from '@/lib/patients';
 
 const container = {
   hidden: { opacity: 0 },
@@ -34,20 +18,64 @@ const item = {
   show: { opacity: 1, y: 0 },
 };
 
+const riskColors: Record<string, string> = {
+  High: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  Moderate: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+  Low: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  Unknown: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400',
+};
+
+function calculateAge(dob: string): number {
+  const birth = new Date(dob);
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age;
+}
+
 export default function ProfessionalDashboard() {
+  const [mounted, setMounted] = useState(false);
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [userName, setUserName] = useState('');
+
+  useEffect(() => {
+    setMounted(true);
+    const user = getCurrentUser();
+    if (user) {
+      setUserName(user.name);
+      getPatients(user.id)
+        .then(setPatients)
+        .catch(console.error);
+    }
+  }, []);
+
+  const stats = [
+    { label: 'Total Patients', value: patients.length, icon: Users, change: null, color: 'bg-blue-500' },
+    { label: 'Pending Assessments', value: 0, icon: FileText, change: null, color: 'bg-orange-500' },
+    { label: 'Unread Messages', value: 0, icon: MessageSquare, change: null, color: 'bg-purple-500' },
+    { label: 'This Month', value: 0, icon: TrendingUp, change: null, color: 'bg-green-500' },
+  ];
+
+  const recentPatients = patients.slice(0, 3);
+
   return (
     <div className="space-y-8">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-        <p className="text-gray-500 dark:text-gray-400">Welcome back, Dr. Jasmine</p>
+        <p className="text-gray-500 dark:text-gray-400">
+          {userName ? `Welcome back, ${userName}` : 'Welcome back'}
+        </p>
       </div>
 
       {/* Stats Grid */}
       <motion.div
         variants={container}
         initial="hidden"
-        animate="show"
+        animate={mounted ? 'show' : 'hidden'}
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
       >
         {stats.map((stat, index) => (
@@ -60,9 +88,6 @@ export default function ProfessionalDashboard() {
               <div className={`w-12 h-12 rounded-xl ${stat.color} flex items-center justify-center`}>
                 <stat.icon className="w-6 h-6 text-white" />
               </div>
-              <span className={`text-sm font-medium ${stat.change.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
-                {stat.change}
-              </span>
             </div>
             <p className="text-3xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
             <p className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</p>
@@ -80,19 +105,25 @@ export default function ProfessionalDashboard() {
               View all <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
-          <div className="space-y-4">
-            {recentPatients.map((patient, index) => (
-              <div key={index} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-dark-bg rounded-xl">
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white">{patient.name}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Age: {patient.age} • Last: {patient.lastVisit}</p>
+          {recentPatients.length === 0 ? (
+            <p className="text-gray-500 dark:text-gray-400 text-sm">No patients yet. Add your first patient to get started.</p>
+          ) : (
+            <div className="space-y-4">
+              {recentPatients.map((patient) => (
+                <div key={patient.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-dark-bg rounded-xl">
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-white">{patient.name}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Age: {patient.dob ? calculateAge(patient.dob) : 'N/A'} &bull; Last: {patient.lastVisit}
+                    </p>
+                  </div>
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${riskColors[patient.risk] || ''}`}>
+                    {patient.risk}
+                  </span>
                 </div>
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${riskColors[patient.risk] || ''}`}>
-                  {patient.risk}
-                </span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Quick Actions */}
