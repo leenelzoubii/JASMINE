@@ -96,13 +96,13 @@ export default function ParentMessagesPage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button className="p-2 text-gray-400 hover:text-primary rounded-lg hover:bg-gray-100 dark:hover:bg-dark-deep">
+              <button className="p-2 bg-green-700 text-white hover:bg-green-800 rounded-lg transition-colors">
                 <Phone className="w-5 h-5" />
               </button>
-              <button className="p-2 text-gray-400 hover:text-primary rounded-lg hover:bg-gray-100 dark:hover:bg-dark-deep">
+              <button className="p-2 bg-blue-800 text-white hover:bg-blue-900 rounded-lg transition-colors">
                 <Mail className="w-5 h-5" />
               </button>
-              <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-deep">
+              <button className="p-2 bg-primary/10 text-primary hover:bg-primary/20 rounded-lg transition-colors">
                 <MoreVertical className="w-5 h-5" />
               </button>
             </div>

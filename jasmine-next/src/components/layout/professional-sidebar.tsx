@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { Brain, LayoutDashboard, Users, FileText, MessageSquare, User, LogOut, Menu, X } from 'lucide-react';
+import { Brain, LayoutDashboard, Users, FileText, MessageSquare, User, LogOut, Menu, X, Link2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { logoutUser, getCurrentUser } from '@/lib/auth';
 
@@ -12,6 +12,7 @@ const professionalLinks = [
   { href: '/professional/patients', label: 'Patients', icon: Users },
   { href: '/professional/assessments', label: 'Assessments', icon: FileText },
   { href: '/professional/messages', label: 'Messages', icon: MessageSquare },
+  { href: '/professional/patients/access', label: 'Patient Access', icon: Link2 },
   { href: '/professional/profile', label: 'Profile', icon: User },
 ];
 

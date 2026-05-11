@@ -1,10 +1,11 @@
 'use client';
 
-import { UserPlus, Search, MoreVertical, Phone, Mail, X } from 'lucide-react';
+import { UserPlus, Search, MoreVertical, Phone, Mail, X, Send, CheckCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion, useAnimation } from 'framer-motion';
 import { getPatients, addPatient, Patient } from '@/lib/patients';
 import { getCurrentUser } from '@/lib/auth';
+import { createPatientAccess } from '@/lib/patient-access';
 
 function calculateAge(dob: string): number {
   const birth = new Date(dob);
@@ -24,9 +25,11 @@ export default function ProfessionalPatientsPage() {
   const [search, setSearch] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [formData, setFormData] = useState({ name: '', dob: '', parentName: '', email: '', phone: '' });
+  const [sendCredentials, setSendCredentials] = useState(true);
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [savedMessage, setSavedMessage] = useState('');
   const [shake, setShake] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [sortField, setSortField] = useState('lastVisit');
@@ -79,13 +82,35 @@ export default function ProfessionalPatientsPage() {
         risk: 'Unknown',
       });
       setPatients(prev => [newPatient, ...prev]);
+
+      if (sendCredentials) {
+        const accessResult = await createPatientAccess({
+          patientId: newPatient.id,
+          patientName: newPatient.name,
+          professionalId: user.id,
+          parentName: formData.parentName,
+          parentEmail: formData.email,
+        });
+
+        if (accessResult.success && accessResult.parentTempPassword) {
+          setSavedMessage('Patient added! Account credentials sent to parent.');
+        } else if (accessResult.success) {
+          setSavedMessage('Patient added! Parent already has access.');
+        } else {
+          setSavedMessage('Patient added, but failed to send credentials.');
+        }
+      } else {
+        setSavedMessage('Patient added successfully.');
+      }
+
       setSaved(true);
       setFormData({ name: '', dob: '', parentName: '', email: '', phone: '' });
       setFormError('');
       setTimeout(() => {
         setShowAddModal(false);
         setSaved(false);
-      }, 1500);
+        setSavedMessage('');
+      }, 2000);
     } catch (err) {
       setFormError('Failed to add patient. Please try again.');
       console.error(err);
@@ -102,6 +127,7 @@ export default function ProfessionalPatientsPage() {
     setFormData({ name: '', dob: '', parentName: '', email: '', phone: '' });
     setShowCancelConfirm(false);
     setSaved(false);
+    setSavedMessage('');
   };
 
   const handleCancelClick = () => {
@@ -350,7 +376,7 @@ export default function ProfessionalPatientsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-deep">
+                      <button className="p-2 bg-primary/10 text-primary hover:bg-primary/20 rounded-lg transition-colors">
                         <MoreVertical className="w-4 h-4" />
                       </button>
                     </td>
@@ -402,14 +428,17 @@ export default function ProfessionalPatientsPage() {
               </div>
             )}
 
-            {/* Saved Overlay */}
+              {/* Saved Overlay */}
             {saved && (
               <div className="absolute inset-0 z-50 bg-green-500 rounded-2xl flex items-center justify-center">
-                <div className="text-center">
+                <div className="text-center p-6">
                   <div className="w-24 h-24 mx-auto mb-4 bg-white rounded-full flex items-center justify-center shadow-lg">
-                    <span className="text-5xl text-green-500">✓</span>
+                    <CheckCircle className="w-12 h-12 text-green-500" />
                   </div>
-                  <p className="text-3xl font-bold text-white drop-shadow-md">Saved!</p>
+                  <p className="text-2xl font-bold text-white drop-shadow-md mb-2">Saved!</p>
+                  {savedMessage && (
+                    <p className="text-white/90 text-sm max-w-xs mx-auto">{savedMessage}</p>
+                  )}
                 </div>
               </div>
             )}
@@ -418,7 +447,7 @@ export default function ProfessionalPatientsPage() {
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Add Patient</h2>
               <button
                 onClick={handleCancelClick}
-                className="p-2 bg-gray-500 dark:bg-gray-400 text-white dark:text-gray-800 hover:bg-gray-600 dark:hover:bg-gray-300 rounded-lg"
+                className="p-2 bg-primary text-white hover:bg-primary-dark rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -486,6 +515,26 @@ export default function ProfessionalPatientsPage() {
                   className="w-full px-4 py-2.5 bg-gray-50 dark:bg-dark-deep border border-gray-200 dark:border-dark-deep rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
+
+              <div className="pt-2 border-t border-gray-100 dark:border-dark-deep">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={sendCredentials}
+                    onChange={(e) => setSendCredentials(e.target.checked)}
+                    className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary"
+                  />
+                  <div className="flex items-center gap-2">
+                    <Send className="w-4 h-4 text-primary" />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                      Send account details to parent
+                    </span>
+                  </div>
+                </label>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 ml-8">
+                  An email with login credentials will be sent to the parent.
+                </p>
+              </div>
             </div>
 
             <div className="flex gap-3 p-6 border-t border-gray-100 dark:border-dark-deep shrink-0">
@@ -506,9 +555,15 @@ export default function ProfessionalPatientsPage() {
                     Saving...
                   </>
                 ) : saved ? (
-                  'Saved!'
+                  <>
+                    <CheckCircle className="w-4 h-4" />
+                    Saved!
+                  </>
                 ) : (
-                  'Save Patient'
+                  <>
+                    {sendCredentials ? <Send className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
+                    {sendCredentials ? 'Save & Send Credentials' : 'Save Patient'}
+                  </>
                 )}
               </button>
             </div>

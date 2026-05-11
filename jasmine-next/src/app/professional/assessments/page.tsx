@@ -253,9 +253,9 @@ export default function ProfessionalAssessmentsPage() {
                           </div>
                           <button
                             onClick={() => removeFile(index)}
-                            className="p-1 text-gray-400 hover:text-red-500 transition-colors ml-2"
+                            className="p-1.5 bg-red-100 text-red-600 hover:bg-red-200 rounded-md transition-colors ml-2"
                           >
-                            <X className="w-5 h-5" />
+                            <X className="w-4 h-4" />
                           </button>
                         </div>
                       ))}

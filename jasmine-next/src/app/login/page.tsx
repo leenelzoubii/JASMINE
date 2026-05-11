@@ -13,9 +13,16 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loggedOut, setLoggedOut] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get('returnUrl') || null;
+
+  useState(() => {
+    if (searchParams.get('loggedout') === 'true') {
+      setLoggedOut(true);
+    }
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,6 +87,17 @@ function LoginForm() {
             </motion.div>
           )}
 
+          {loggedOut && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6 p-4 rounded-xl flex items-center gap-2"
+              style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)', border: '1px solid #22c55e', color: '#16a34a' }}
+            >
+              You have been logged out successfully.
+            </motion.div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>
@@ -123,10 +141,10 @@ function LoginForm() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 rounded-md bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                   style={{ color: 'var(--text-muted)' }}
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
@@ -145,6 +163,12 @@ function LoginForm() {
             Don&apos;t have an account?{' '}
             <Link href="/register" className="font-medium hover:underline" style={{ color: 'var(--primary)' }}>
               Create one
+            </Link>
+          </p>
+
+          <p className="mt-4 text-center">
+            <Link href="/forgot-password" className="text-sm hover:underline" style={{ color: 'var(--text-muted)' }}>
+              Forgot your password?
             </Link>
           </p>
         </div>

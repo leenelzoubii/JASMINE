@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { User, Mail, Building2, Phone, Save, Camera, Clock } from 'lucide-react';
+import { User, Mail, Building2, Phone, Save, Camera, Clock, Lock, Eye, EyeOff, CheckCircle, XCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getCurrentUser, updateUser } from '@/lib/auth';
 
@@ -14,6 +14,15 @@ export default function ProfessionalProfilePage() {
   const [mounted, setMounted] = useState(false);
   const [saved, setSaved] = useState(false);
   const [phoneError, setPhoneError] = useState('');
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -46,6 +55,62 @@ export default function ProfessionalProfilePage() {
       console.error(err);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    const user = getCurrentUser();
+    if (!user) return;
+
+    setPasswordError('');
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setPasswordError('All password fields are required.');
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setPasswordError('New password must be at least 8 characters.');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError('New passwords do not match.');
+      return;
+    }
+
+    setChangingPassword(true);
+    try {
+      const res = await fetch('/api/password/change', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          oldPassword: currentPassword,
+          newPassword: newPassword,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setPasswordError(data.error || 'Failed to change password.');
+        return;
+      }
+
+      setPasswordSuccess(true);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setTimeout(() => {
+        setPasswordSuccess(false);
+        setShowChangePassword(false);
+      }, 2000);
+    } catch (err) {
+      setPasswordError('Failed to change password. Please try again.');
+      console.error(err);
+    } finally {
+      setChangingPassword(false);
     }
   };
 
@@ -195,6 +260,127 @@ export default function ProfessionalProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Change Password Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="p-6 bg-white dark:bg-dark-surface rounded-2xl border border-gray-200 dark:border-dark-deep space-y-5"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Lock className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Change Password</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Update your account password</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowChangePassword(!showChangePassword)}
+            className="px-4 py-2 text-sm text-primary hover:bg-primary/10 rounded-lg transition-colors"
+          >
+            {showChangePassword ? 'Cancel' : 'Change'}
+          </button>
+        </div>
+
+        {showChangePassword && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="space-y-4 pt-4 border-t border-gray-100 dark:border-dark-deep"
+          >
+            {passwordError && (
+              <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm flex items-center gap-2">
+                <XCircle className="w-4 h-4 shrink-0" />
+                {passwordError}
+              </div>
+            )}
+
+            {passwordSuccess && (
+              <div className="p-3 rounded-xl bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 text-sm flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 shrink-0" />
+                Password changed successfully!
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Current Password</label>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type={showCurrentPassword ? 'text' : 'password'}
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className="w-full pl-12 pr-12 py-3 bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-deep rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 bg-gray-100 dark:bg-gray-700 rounded-md text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                >
+                  {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Password</label>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type={showNewPassword ? 'text' : 'password'}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full pl-12 pr-12 py-3 bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-deep rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 bg-gray-100 dark:bg-gray-700 rounded-md text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                >
+                  {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Must be at least 8 characters</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm New Password</label>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type={showNewPassword ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-deep rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button
+                onClick={handleChangePassword}
+                disabled={changingPassword}
+                className="px-6 py-3 bg-primary hover:bg-primary-dark text-white font-medium rounded-xl transition-all flex items-center gap-2 disabled:opacity-50"
+              >
+                {changingPassword ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Changing...
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-5 h-5" />
+                    Change Password
+                  </>
+                )}
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </motion.div>
     </div>
   );
 }

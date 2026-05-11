@@ -113,7 +113,7 @@ export default function ProfessionalMessagesPage() {
                 <p className="text-sm text-gray-500 dark:text-gray-400">Parent of patient</p>
               </div>
             </div>
-            <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-deep">
+            <button className="p-2 bg-primary/10 text-primary hover:bg-primary/20 rounded-lg transition-colors">
               <MoreVertical className="w-5 h-5" />
             </button>
           </div>
