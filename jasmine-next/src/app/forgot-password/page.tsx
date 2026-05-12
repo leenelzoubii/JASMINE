@@ -13,11 +13,13 @@ export default function ForgotPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     setError('');
+    setSent(false);
     setLoading(true);
 
     try {
-      const res = await fetch('/api/password/reset-request', {
+      const res = await fetch('/api/password/send-confirmation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
@@ -25,8 +27,8 @@ export default function ForgotPasswordPage() {
 
       const data = await res.json();
 
-      if (!res.ok) {
-        setError(data.error || 'Failed to send reset email.');
+      if (!res.ok || !data.success) {
+        setError(data.error || 'Failed to send confirmation email.');
         return;
       }
 
@@ -64,7 +66,7 @@ export default function ForgotPasswordPage() {
               </div>
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Check your email</h2>
               <p className="text-gray-500 dark:text-gray-400 mb-6">
-                We sent a password reset link to <strong>{email}</strong>. The link will expire in 24 hours.
+                We sent a confirmation email to <strong>{email}</strong>. Click “Yes, this is me” to receive the password reset link.
               </p>
               <Link
                 href="/login"
@@ -81,7 +83,7 @@ export default function ForgotPasswordPage() {
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Reset Password</h2>
                 <p className="text-gray-500 dark:text-gray-400">
-                  Enter your email address and we&apos;ll send you a link to reset your password.
+                  Enter your email address and we&apos;ll send you a confirmation email first.
                 </p>
               </div>
 
@@ -120,7 +122,7 @@ export default function ForgotPasswordPage() {
                       Sending...
                     </>
                   ) : (
-                    'Send Reset Link'
+                    'Send Confirmation Email'
                   )}
                 </button>
               </form>

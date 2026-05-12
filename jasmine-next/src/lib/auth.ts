@@ -10,6 +10,7 @@ import {
   EmailAuthProvider,
   reauthenticateWithCredential,
   updatePassword,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 
 import {
@@ -161,4 +162,13 @@ export async function changeCurrentUserPassword(
 
   await reauthenticateWithCredential(user, credential);
   await updatePassword(user, newPassword);
+}
+export async function sendFirebaseResetPasswordEmail(email: string): Promise<void> {
+  const cleanEmail = email.trim();
+
+  if (!cleanEmail) {
+    throw new Error("Email is required");
+  }
+
+  await sendPasswordResetEmail(auth, cleanEmail);
 }
