@@ -7,6 +7,9 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  updatePassword,
 } from "firebase/auth";
 
 import {
@@ -140,4 +143,22 @@ export async function updateUser(
   const updated = snap.data() as User;
   localStorage.setItem("currentUser", JSON.stringify(updated));
   return updated;
+}
+export async function changeCurrentUserPassword(
+  currentPassword: string,
+  newPassword: string
+): Promise<void> {
+  const user = auth.currentUser;
+
+  if (!user || !user.email) {
+    throw new Error("No authenticated user found");
+  }
+
+  const credential = EmailAuthProvider.credential(
+    user.email,
+    currentPassword
+  );
+
+  await reauthenticateWithCredential(user, credential);
+  await updatePassword(user, newPassword);
 }

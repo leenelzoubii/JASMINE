@@ -1,9 +1,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { User, Mail, Building2, Phone, Save, Camera, Clock, Lock, Eye, EyeOff, CheckCircle, XCircle } from 'lucide-react';
+import {
+  User,
+  Mail,
+  Building2,
+  Phone,
+  Save,
+  Clock,
+  Lock,
+  Eye,
+  EyeOff,
+  CheckCircle,
+  XCircle,
+} from 'lucide-react';
 import { motion } from 'framer-motion';
-import { getCurrentUser, updateUser } from '@/lib/auth';
+import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
 
 export default function ProfessionalProfilePage() {
   const [name, setName] = useState('');
@@ -26,7 +38,9 @@ export default function ProfessionalProfilePage() {
 
   useEffect(() => {
     setMounted(true);
+
     const user = getCurrentUser();
+
     if (user) {
       setName(user.name);
       setEmail(user.email);
@@ -43,10 +57,11 @@ export default function ProfessionalProfilePage() {
       setPhoneError('Please enter a valid phone number');
       return;
     }
-    setPhoneError('');
 
+    setPhoneError('');
     setSaving(true);
     setSaved(false);
+
     try {
       await updateUser(user.id, { name, specialty, phone });
       setSaved(true);
@@ -80,34 +95,21 @@ export default function ProfessionalProfilePage() {
     }
 
     setChangingPassword(true);
+
     try {
-      const res = await fetch('/api/password/change', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user.id,
-          oldPassword: currentPassword,
-          newPassword: newPassword,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setPasswordError(data.error || 'Failed to change password.');
-        return;
-      }
+      await changeCurrentUserPassword(currentPassword, newPassword);
 
       setPasswordSuccess(true);
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
+
       setTimeout(() => {
         setPasswordSuccess(false);
         setShowChangePassword(false);
       }, 2000);
     } catch (err) {
-      setPasswordError('Failed to change password. Please try again.');
+      setPasswordError('Failed to change password. Please check your current password.');
       console.error(err);
     } finally {
       setChangingPassword(false);
@@ -138,9 +140,14 @@ export default function ProfessionalProfilePage() {
               {name ? name.charAt(0).toUpperCase() : '?'}
             </div>
           </div>
+
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{name || 'Loading...'}</h2>
-            <p className="text-gray-500 dark:text-gray-400">{specialty || 'Professional'}</p>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              {name || 'Loading...'}
+            </h2>
+            <p className="text-gray-500 dark:text-gray-400">
+              {specialty || 'Professional'}
+            </p>
           </div>
         </div>
       </div>
@@ -156,6 +163,7 @@ export default function ProfessionalProfilePage() {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Full Name
             </label>
+
             <div className="relative">
               <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
@@ -171,6 +179,7 @@ export default function ProfessionalProfilePage() {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Email
             </label>
+
             <div className="relative">
               <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
@@ -186,6 +195,7 @@ export default function ProfessionalProfilePage() {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Specialty
             </label>
+
             <div className="relative">
               <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
@@ -202,24 +212,34 @@ export default function ProfessionalProfilePage() {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Phone <span className="text-gray-400 font-normal">(optional)</span>
             </label>
+
             <div className="relative">
               <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="tel"
                 value={phone}
-                onChange={(e) => { setPhone(e.target.value); setPhoneError(''); }}
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                  setPhoneError('');
+                }}
                 placeholder="e.g., +1 555-0123"
-                className={`w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-dark-bg border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary ${phoneError ? 'border-red-500' : 'border-gray-200 dark:border-dark-deep'}`}
+                className={`w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-dark-bg border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary ${
+                  phoneError ? 'border-red-500' : 'border-gray-200 dark:border-dark-deep'
+                }`}
               />
             </div>
+
             {phoneError && <p className="mt-1 text-sm text-red-500">{phoneError}</p>}
           </div>
         </div>
 
         <div className="pt-4 flex justify-end gap-3">
           {saved && (
-            <span className="text-green-600 dark:text-green-400 text-sm flex items-center">Saved!</span>
+            <span className="text-green-600 dark:text-green-400 text-sm flex items-center">
+              Saved!
+            </span>
           )}
+
           <button
             onClick={handleSave}
             disabled={saving}
@@ -242,21 +262,29 @@ export default function ProfessionalProfilePage() {
 
       {/* Account Info */}
       <div className="p-6 bg-white dark:bg-dark-surface rounded-2xl border border-gray-200 dark:border-dark-deep">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Account Information</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Account Information
+        </h3>
+
         <div className="space-y-4">
           <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-dark-deep">
             <div className="flex items-center gap-3">
               <Clock className="w-5 h-5 text-gray-400" />
               <span className="text-gray-700 dark:text-gray-300">Account type</span>
             </div>
+
             <span className="text-primary font-medium">Professional</span>
           </div>
+
           <div className="flex items-center justify-between py-3">
             <div className="flex items-center gap-3">
               <Building2 className="w-5 h-5 text-gray-400" />
               <span className="text-gray-700 dark:text-gray-300">Specialty</span>
             </div>
-            <span className="text-gray-900 dark:text-white font-medium">{specialty || 'Not set'}</span>
+
+            <span className="text-gray-900 dark:text-white font-medium">
+              {specialty || 'Not set'}
+            </span>
           </div>
         </div>
       </div>
@@ -272,11 +300,17 @@ export default function ProfessionalProfilePage() {
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
               <Lock className="w-5 h-5 text-primary" />
             </div>
+
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Change Password</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Update your account password</p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Change Password
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Update your account password
+              </p>
             </div>
           </div>
+
           <button
             onClick={() => setShowChangePassword(!showChangePassword)}
             className="px-4 py-2 text-sm text-primary hover:bg-primary/10 rounded-lg transition-colors"
@@ -306,7 +340,10 @@ export default function ProfessionalProfilePage() {
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Current Password</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Current Password
+              </label>
+
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -315,18 +352,26 @@ export default function ProfessionalProfilePage() {
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   className="w-full pl-12 pr-12 py-3 bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-deep rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
                 />
+
                 <button
                   type="button"
                   onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 bg-gray-100 dark:bg-gray-700 rounded-md text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
                 >
-                  {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showCurrentPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
                 </button>
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Password</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                New Password
+              </label>
+
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -335,19 +380,30 @@ export default function ProfessionalProfilePage() {
                   onChange={(e) => setNewPassword(e.target.value)}
                   className="w-full pl-12 pr-12 py-3 bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-deep rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
                 />
+
                 <button
                   type="button"
                   onClick={() => setShowNewPassword(!showNewPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 bg-gray-100 dark:bg-gray-700 rounded-md text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
                 >
-                  {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showNewPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
                 </button>
               </div>
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Must be at least 8 characters</p>
+
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Must be at least 8 characters
+              </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm New Password</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Confirm New Password
+              </label>
+
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input

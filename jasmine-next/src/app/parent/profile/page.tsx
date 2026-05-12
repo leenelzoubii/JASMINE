@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { User, Mail, Phone, Save, Lock, Eye, EyeOff, CheckCircle, XCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getCurrentUser, updateUser } from '@/lib/auth';
+import { changeCurrentUserPassword } from '@/lib/auth';
 
 export default function ParentProfilePage() {
   const [name, setName] = useState('');
@@ -26,6 +27,7 @@ export default function ParentProfilePage() {
   useEffect(() => {
     setMounted(true);
     const user = getCurrentUser();
+
     if (user) {
       setName(user.name);
       setEmail(user.email);
@@ -41,10 +43,11 @@ export default function ParentProfilePage() {
       setPhoneError('Please enter a valid phone number');
       return;
     }
-    setPhoneError('');
 
+    setPhoneError('');
     setSaving(true);
     setSaved(false);
+
     try {
       await updateUser(user.id, { name, phone });
       setSaved(true);
@@ -78,34 +81,21 @@ export default function ParentProfilePage() {
     }
 
     setChangingPassword(true);
+
     try {
-      const res = await fetch('/api/password/change', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user.id,
-          oldPassword: currentPassword,
-          newPassword: newPassword,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setPasswordError(data.error || 'Failed to change password.');
-        return;
-      }
+      await changeCurrentUserPassword(currentPassword, newPassword);
 
       setPasswordSuccess(true);
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
+
       setTimeout(() => {
         setPasswordSuccess(false);
         setShowChangePassword(false);
       }, 2000);
     } catch (err) {
-      setPasswordError('Failed to change password. Please try again.');
+      setPasswordError('Failed to change password. Please check your current password.');
       console.error(err);
     } finally {
       setChangingPassword(false);
@@ -135,7 +125,9 @@ export default function ParentProfilePage() {
             {name ? name.charAt(0).toUpperCase() : '?'}
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{name || 'Loading...'}</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              {name || 'Loading...'}
+            </h2>
             <p className="text-gray-500 dark:text-gray-400">Parent/Guardian</p>
           </div>
         </div>
@@ -186,9 +178,14 @@ export default function ParentProfilePage() {
             <input
               type="tel"
               value={phone}
-              onChange={(e) => { setPhone(e.target.value); setPhoneError(''); }}
+              onChange={(e) => {
+                setPhone(e.target.value);
+                setPhoneError('');
+              }}
               placeholder="e.g., +1 555-0123"
-              className={`w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-dark-bg border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary ${phoneError ? 'border-red-500' : 'border-gray-200 dark:border-dark-deep'}`}
+              className={`w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-dark-bg border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary ${
+                phoneError ? 'border-red-500' : 'border-gray-200 dark:border-dark-deep'
+              }`}
             />
           </div>
           {phoneError && <p className="mt-1 text-sm text-red-500">{phoneError}</p>}
@@ -196,8 +193,11 @@ export default function ParentProfilePage() {
 
         <div className="pt-4 flex justify-end gap-3">
           {saved && (
-            <span className="text-green-600 dark:text-green-400 text-sm flex items-center">Saved!</span>
+            <span className="text-green-600 dark:text-green-400 text-sm flex items-center">
+              Saved!
+            </span>
           )}
+
           <button
             onClick={handleSave}
             disabled={saving}
@@ -220,7 +220,10 @@ export default function ParentProfilePage() {
 
       {/* Account Info */}
       <div className="p-6 bg-white dark:bg-dark-surface rounded-2xl border border-gray-200 dark:border-dark-deep">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Account Information</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Account Information
+        </h3>
+
         <div className="space-y-4">
           <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-dark-deep">
             <div className="flex items-center gap-3">
@@ -229,12 +232,15 @@ export default function ParentProfilePage() {
             </div>
             <span className="text-primary font-medium">Parent/Guardian</span>
           </div>
+
           <div className="flex items-center justify-between py-3">
             <div className="flex items-center gap-3">
               <Phone className="w-5 h-5 text-gray-400" />
               <span className="text-gray-700 dark:text-gray-300">Phone</span>
             </div>
-            <span className="text-gray-900 dark:text-white font-medium">{phone || 'Not set'}</span>
+            <span className="text-gray-900 dark:text-white font-medium">
+              {phone || 'Not set'}
+            </span>
           </div>
         </div>
       </div>
@@ -251,10 +257,15 @@ export default function ParentProfilePage() {
               <Lock className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Change Password</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Update your account password</p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Change Password
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Update your account password
+              </p>
             </div>
           </div>
+
           <button
             onClick={() => setShowChangePassword(!showChangePassword)}
             className="px-4 py-2 text-sm text-primary hover:bg-primary/10 rounded-lg transition-colors"
@@ -284,7 +295,9 @@ export default function ParentProfilePage() {
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Current Password</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Current Password
+              </label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -298,13 +311,19 @@ export default function ParentProfilePage() {
                   onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 bg-gray-100 dark:bg-gray-700 rounded-md text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
                 >
-                  {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showCurrentPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
                 </button>
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Password</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                New Password
+              </label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -318,14 +337,22 @@ export default function ParentProfilePage() {
                   onClick={() => setShowNewPassword(!showNewPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 bg-gray-100 dark:bg-gray-700 rounded-md text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
                 >
-                  {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showNewPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
                 </button>
               </div>
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Must be at least 8 characters</p>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Must be at least 8 characters
+              </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm New Password</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Confirm New Password
+              </label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
