@@ -17,3 +17,7 @@ datasets/
 # user data (credentials)
 users.json
 users.db
+
+# Next.js
+jasmine-next/node_modules/
+jasmine-next/.next/

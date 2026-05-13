@@ -1,134 +1,78 @@
-import { NextResponse } from 'next/server';
-import nodemailer from 'nodemailer';
+import { NextRequest, NextResponse } from "next/server";
 
-export const runtime = 'nodejs';
+const FIREBASE_PROJECT_ID = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "jasmine-4671c";
+const FIREBASE_API_KEY = process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "";
 
-const FIREBASE_PROJECT_ID = 'jasmine-4671c';
-const FIREBASE_API_KEY = 'AIzaSyDQ1trSa5rCJXZMr6xnvmNhyLBRvIfQL_k';
-
-async function userExistsInFirestore(email: string): Promise<boolean> {
-  const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents:runQuery?key=${FIREBASE_API_KEY}`;
-
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      structuredQuery: {
-        from: [
-          {
-            collectionId: 'users',
-          },
-        ],
-        where: {
-          fieldFilter: {
-            field: {
-              fieldPath: 'email',
-            },
-            op: 'EQUAL',
-            value: {
-              stringValue: email,
-            },
-          },
-        },
-        limit: 1,
-      },
-    }),
-  });
-
-  if (!response.ok) {
-    console.error('Firestore REST check failed:', await response.text());
-    return false;
-  }
-
-  const data = await response.json();
-
-  return data.some((item: { document?: unknown }) => item.document);
-}
-
-export async function POST(request: Request) {
+// POST /api/password/send-confirmation
+export async function POST(request: NextRequest) {
   try {
     const { email } = await request.json();
-
-    if (!email) {
+    if (!email || typeof email !== "string") {
       return NextResponse.json(
-        { success: false, error: 'Email is required' },
+        { success: false, error: "Email is required." },
         { status: 400 }
       );
     }
 
     const cleanEmail = email.trim().toLowerCase();
 
-    const exists = await userExistsInFirestore(cleanEmail);
+    // Check if user exists in Firestore via REST API
+    const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents:runQuery`;
 
-    if (!exists) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'No account found with this email address.',
+    const query = {
+      structuredQuery: {
+        from: [{ collectionId: "users" }],
+        where: {
+          fieldFilter: {
+            field: { fieldPath: "email" },
+            op: "EQUAL",
+            value: { stringValue: cleanEmail },
+          },
         },
+        limit: 1,
+      },
+    };
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(query),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("Firestore query error:", data);
+      // If Firestore query fails, still try to send reset
+      // Firebase will reject if user doesn't exist
+      return NextResponse.json({
+        success: true,
+        proceedToReset: true,
+        message: "Attempting to send reset email.",
+      });
+    }
+
+    // Check if any documents were returned
+    const userExists = Array.isArray(data) && data.length > 0 && data[0].document;
+
+    if (!userExists) {
+      return NextResponse.json(
+        { success: false, error: "No account found with this email address." },
         { status: 404 }
       );
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    const confirmUrl = `${appUrl}/confirm-reset?email=${encodeURIComponent(cleanEmail)}`;
-
-    const port = Number(process.env.MAILTRAP_PORT || 587);
-
-    const transporter = nodemailer.createTransport({
-      host: process.env.MAILTRAP_HOST,
-      port,
-      secure: port === 465,
-      auth: {
-        user: process.env.MAILTRAP_USER,
-        pass: process.env.MAILTRAP_PASS,
-      },
-      connectionTimeout: 60000,
-      greetingTimeout: 60000,
-      socketTimeout: 60000,
-      tls: {
-        rejectUnauthorized: false,
-      },
+    return NextResponse.json({
+      success: true,
+      proceedToReset: true,
+      message: "Account verified. Sending reset email.",
     });
-
-    await transporter.verify();
-
-    await transporter.sendMail({
-      from: process.env.MAIL_FROM || 'JASMINE <no-reply@jasmine-demo.com>',
-      to: cleanEmail,
-      subject: 'Confirm your JASMINE password reset request',
-      html: `
-        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-          <h2>JASMINE Password Reset Request</h2>
-
-          <p>We received a request to reset the password for this account:</p>
-
-          <p><strong>${cleanEmail}</strong></p>
-
-          <p>If this was you, click the button below:</p>
-
-          <p>
-            <a
-              href="${confirmUrl}"
-              style="display:inline-block;padding:12px 18px;background:#3894b5;color:white;text-decoration:none;border-radius:8px;"
-            >
-              Yes, this is me
-            </a>
-          </p>
-
-          <p>If you did not request this, you can ignore this email.</p>
-        </div>
-      `,
-    });
-
-    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Send confirmation email error:', error);
-
+    console.error("Password reset error:", error);
     return NextResponse.json(
-      { success: false, error: 'Failed to send confirmation email' },
+      { success: false, error: "Something went wrong. Please try again." },
       { status: 500 }
     );
   }

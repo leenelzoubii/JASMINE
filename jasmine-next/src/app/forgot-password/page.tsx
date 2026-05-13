@@ -4,6 +4,40 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Mail, ArrowLeft, CheckCircle, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
+
+const FIREBASE_PROJECT_ID = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "jasmine-4671c";
+
+async function checkUserExistsInFirestore(email: string): Promise<boolean> {
+  try {
+    const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents:runQuery`;
+    const queryBody = {
+      structuredQuery: {
+        from: [{ collectionId: "users" }],
+        where: {
+          fieldFilter: {
+            field: { fieldPath: "email" },
+            op: "EQUAL",
+            value: { stringValue: email.toLowerCase().trim() },
+          },
+        },
+        limit: 1,
+      },
+    };
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(queryBody),
+    });
+
+    const data = await res.json();
+    return Array.isArray(data) && data.length > 0 && data[0].document;
+  } catch {
+    // If check fails, proceed anyway - Firebase Auth will validate
+    return true;
+  }
+}
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -13,28 +47,35 @@ export default function ForgotPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     setError('');
-    setSent(false);
     setLoading(true);
 
     try {
-      const res = await fetch('/api/password/send-confirmation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
+      // Step 1: Check if user exists in Firestore
+      const exists = await checkUserExistsInFirestore(email);
 
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        setError(data.error || 'Failed to send confirmation email.');
+      if (!exists) {
+        setError('No account found with this email address.');
+        setLoading(false);
         return;
       }
 
+      // Step 2: Send Firebase password reset email (works out of box)
+      const auth = getAuth();
+      await sendPasswordResetEmail(auth, email.trim());
+
       setSent(true);
-    } catch {
-      setError('Something went wrong. Please try again.');
+    } catch (err: unknown) {
+      const firebaseErr = err as { code?: string };
+      if (firebaseErr.code === 'auth/user-not-found') {
+        setError('No account found with this email address.');
+      } else if (firebaseErr.code === 'auth/invalid-email') {
+        setError('Please enter a valid email address.');
+      } else if (firebaseErr.code === 'auth/too-many-requests') {
+        setError('Too many requests. Please try again later.');
+      } else {
+        setError('Something went wrong. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -48,73 +89,65 @@ export default function ForgotPasswordPage() {
         className="w-full max-w-md"
       >
         <div className="text-center mb-8">
-          <Link href="/login" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 mb-6">
+          <Link href="/login" className="inline-flex items-center gap-2 text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
             <ArrowLeft className="w-4 h-4" />
             Back to login
           </Link>
         </div>
 
-        <div className="p-8 bg-white dark:bg-dark-surface rounded-2xl border border-gray-200 dark:border-dark-deep shadow-xl">
+        <div className="p-8 rounded-2xl border shadow-xl" style={{ backgroundColor: 'var(--background)', borderColor: 'var(--border)' }}>
           {sent ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="text-center"
-            >
-              <div className="w-16 h-16 mx-auto mb-4 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
-                <CheckCircle className="w-8 h-8 text-green-500" />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(22, 163, 74, 0.1)' }}>
+                <CheckCircle className="w-8 h-8" style={{ color: '#16a34a' }} />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Check your email</h2>
-              <p className="text-gray-500 dark:text-gray-400 mb-6">
-                We sent a confirmation email to <strong>{email}</strong>. Click “Yes, this is me” to receive the password reset link.
+              <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>Check your email</h2>
+              <p className="mb-6" style={{ color: 'var(--text-muted)' }}>
+                We sent a password reset email to <strong>{email}</strong>. Check your spam folder if you don't see it.
               </p>
-              <Link
-                href="/login"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary-dark text-white font-medium rounded-xl transition-all"
-              >
+              <Link href="/login" className="inline-flex items-center gap-2 px-6 py-3 text-white font-medium rounded-xl transition-all" style={{ backgroundColor: 'var(--primary)' }}>
                 Back to Login
               </Link>
             </motion.div>
           ) : (
             <>
               <div className="text-center mb-6">
-                <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
-                  <Mail className="w-8 h-8 text-primary" />
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--primary-light)' }}>
+                  <Mail className="w-8 h-8" style={{ color: 'var(--primary)' }} />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Reset Password</h2>
-                <p className="text-gray-500 dark:text-gray-400">
-                  Enter your email address and we&apos;ll send you a confirmation email first.
+                <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>Reset Password</h2>
+                <p style={{ color: 'var(--text-muted)' }}>
+                  Enter your email and we&apos;ll send you a reset link.
                 </p>
               </div>
 
               {error && (
-                <div className="mb-4 p-3 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm">
+                <div className="mb-4 p-3 rounded-xl text-sm" style={{ backgroundColor: 'rgba(220, 38, 38, 0.1)', color: '#dc2626' }}>
                   {error}
                 </div>
               )}
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>
                     Email address
                   </label>
-                  <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="you@example.com"
-                      required
-                      className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-deep rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                  </div>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    required
+                    className="w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2"
+                    style={{ backgroundColor: 'var(--background)', border: '1px solid var(--border)', color: 'var(--foreground)' }}
+                  />
                 </div>
 
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full px-4 py-3 bg-primary hover:bg-primary-dark text-white font-medium rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full px-4 py-3 text-white font-medium rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  style={{ backgroundColor: 'var(--primary)' }}
                 >
                   {loading ? (
                     <>
@@ -122,7 +155,7 @@ export default function ForgotPasswordPage() {
                       Sending...
                     </>
                   ) : (
-                    'Send Confirmation Email'
+                    'Send Reset Email'
                   )}
                 </button>
               </form>

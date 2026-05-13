@@ -1,0 +1,97 @@
+Send confirmation email error: Error: connect ECONNREFUSED 127.0.0.1:587
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:587) {
+  errno: -4078,
+  code: 'ESOCKET',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 587,
+  command: 'CONN'
+}
+Send confirmation email error: Error: connect ECONNREFUSED ::1:587
+    at <unknown> (Error: connect ECONNREFUSED ::1:587) {
+  errno: -4078,
+  code: 'ESOCKET',
+  syscall: 'connect',
+  address: '::1',
+  port: 587,
+  command: 'CONN'
+}
+Send confirmation email error: Error: connect ECONNREFUSED ::1:587
+    at <unknown> (Error: connect ECONNREFUSED ::1:587) {
+  errno: -4078,
+  code: 'ESOCKET',
+  syscall: 'connect',
+  address: '::1',
+  port: 587,
+  command: 'CONN'
+}
+[browser] FirebaseError: Firebase: Error (auth/email-already-in-use).
+    at async registerUser (src/lib/auth.ts:52:26)
+    at async handleSubmit (src/app/register/page.tsx:47:20)
+  50 |   const cleanPassword = password.trim();
+  51 |
+> 52 |   const userCredential = await createUserWithEmailAndPassword(
+     |                          ^
+  53 |     auth,
+  54 |     cleanEmail,
+  55 |     cleanPassword (src/app/register/page.tsx:61:15)
+[browser] FirebaseError: Firebase: Error (auth/email-already-in-use).
+    at async registerUser (src/lib/auth.ts:52:26)
+    at async handleSubmit (src/app/register/page.tsx:47:20)
+  50 |   const cleanPassword = password.trim();
+  51 |
+> 52 |   const userCredential = await createUserWithEmailAndPassword(
+     |                          ^
+  53 |     auth,
+  54 |     cleanEmail,
+  55 |     cleanPassword (src/app/register/page.tsx:61:15)
+[browser] FirebaseError: Firebase: Error (auth/email-already-in-use).
+    at async registerUser (src/lib/auth.ts:52:26)
+    at async handleSubmit (src/app/register/page.tsx:47:20)
+  50 |   const cleanPassword = password.trim();
+  51 |
+> 52 |   const userCredential = await createUserWithEmailAndPassword(
+     |                          ^
+  53 |     auth,
+  54 |     cleanEmail,
+  55 |     cleanPassword (src/app/register/page.tsx:61:15)
+[browser] FirebaseError: Firebase: Error (auth/invalid-credential).
+    at async changeCurrentUserPassword (src/lib/auth.ts:163:3)
+    at async handleChangePassword (src/app/professional/profile/page.tsx:100:7)
+  161 |   );
+  162 |
+> 163 |   await reauthenticateWithCredential(user, credential);
+      |   ^
+  164 |   await updatePassword(user, newPassword);
+  165 | }
+  166 | export async function sendFirebaseResetPasswordEmail(email: string): Promise<void> { (src/app/professional/profile/page.tsx:113:15)
+[browser] Login error: Error: No account found with this email. Please create an account first.
+    at authenticateUser (src/lib/auth.ts:142:13)
+    at async handleSubmit (src/app/login/page.tsx:33:20)
+  140 |       error.code === "auth/wrong-password"
+  141 |     ) {
+> 142 |       throw new Error("No account found with this email. Please create an account first.");
+      |             ^
+  143 |     }
+  144 |     if (error.code === "auth/invalid-email") {
+  145 |       throw new Error("Please enter a valid email address."); (src/app/login/page.tsx:50:15)
+[browser] Error: This email is already registered. Please log in instead.
+    at registerUser (src/lib/auth.ts:64:13)
+    at async handleSubmit (src/app/register/page.tsx:47:20)
+  62 |     const error = err as { code?: string; message?: string };
+  63 |     if (error.code === "auth/email-already-in-use") {
+> 64 |       throw new Error(
+     |             ^
+  65 |         "This email is already registered. Please log in instead."
+  66 |       );
+  67 |     } (src/app/register/page.tsx:61:15)
+[browser] Login error: Error: No account found with this email. Please create an account first.
+    at authenticateUser (src/lib/auth.ts:142:13)
+    at async handleSubmit (src/app/login/page.tsx:33:20)
+  140 |       error.code === "auth/wrong-password"
+  141 |     ) {
+> 142 |       throw new Error("No account found with this email. Please create an account first.");
+      |             ^
+  143 |     }
+  144 |     if (error.code === "auth/invalid-email") {
+  145 |       throw new Error("Please enter a valid email address."); (src/app/login/page.tsx:50:15)

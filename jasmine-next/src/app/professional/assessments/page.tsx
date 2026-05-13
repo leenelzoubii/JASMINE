@@ -1,310 +1,208 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { Upload, FileText, Clock, CheckCircle, RefreshCw, Download, X, Folder } from 'lucide-react';
+import { useState } from 'react';
+import { Upload, FileText, Clock, CheckCircle, AlertCircle, RefreshCw, Video, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { getPatients } from '@/lib/patients';
-import { getCurrentUser } from '@/lib/auth';
-import { Patient } from '@/lib/patients';
 
-const statusColors: Record<string, string> = {
-  Completed: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  Pending: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-};
+const ML_BACKEND_URL = process.env.NEXT_PUBLIC_ML_BACKEND_URL || 'http://localhost:8000';
 
-const riskColors: Record<string, string> = {
-  High: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-  Moderate: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-  Low: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  Unknown: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400',
-};
+interface ModelPrediction {
+  probability: number;
+  risk_level: string;
+}
+
+interface PredictionResult {
+  success: boolean;
+  ensemble_probability: number;
+  risk_level: string;
+  num_frames_processed?: number;
+  model_predictions: Record<string, ModelPrediction>;
+  error?: string;
+}
 
 export default function ProfessionalAssessmentsPage() {
   const [selectedPatient, setSelectedPatient] = useState('');
-  const [patients, setPatients] = useState<Patient[]>([]);
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [dragActive, setDragActive] = useState(false);
-  const [loadingPatients, setLoadingPatients] = useState(true);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const folderInputRef = useRef<HTMLInputElement>(null);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [result, setResult] = useState<PredictionResult | null>(null);
+  const [error, setError] = useState('');
 
-  useEffect(() => {
-    const user = getCurrentUser();
-    if (user) {
-      getPatients(user.id)
-        .then(setPatients)
-        .catch(console.error)
-        .finally(() => setLoadingPatients(false));
-    } else {
-      setLoadingPatients(false);
-    }
-  }, []);
-
-  const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragActive(true);
-    } else if (e.type === 'dragleave') {
-      setDragActive(false);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.name.match(/\.(mp4|mov|avi)$/i)) {
+        setError('Please select an MP4, MOV, or AVI video file.');
+        return;
+      }
+      setVideoFile(file);
+      setError('');
+      setResult(null);
     }
   };
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-
-    const files = Array.from(e.dataTransfer.files);
-    const validFiles = files.filter(file =>
-      file.type === 'application/json' ||
-      file.type === 'text/csv' ||
-      file.type === 'video/mp4'
-    );
-    setUploadedFiles(prev => [...prev, ...validFiles]);
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.currentTarget.files || []);
-    setUploadedFiles(prev => [...prev, ...files]);
-  };
-
-  const removeFile = (index: number) => {
-    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const handleUpload = async () => {
-    if (!selectedPatient || uploadedFiles.length === 0) {
-      alert('Please select a patient and upload at least one file');
+  const handleRunAssessment = async () => {
+    if (!videoFile || !selectedPatient) {
+      setError('Please select a patient and upload a video file.');
       return;
     }
 
     setUploading(true);
+    setError('');
+    setResult(null);
 
-    setTimeout(() => {
+    try {
+      const formData = new FormData();
+      formData.append('video', videoFile);
+      formData.append('fps', '15');
+
+      const res = await fetch(`${ML_BACKEND_URL}/api/predict`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data: PredictionResult = await res.json();
+
+      if (!data.success) {
+        setError(data.error || 'Assessment failed.');
+        return;
+      }
+
+      setResult(data);
+    } catch {
+      setError(
+        'Could not connect to the ML backend. Make sure the server is running on port 8000.\n\n' +
+        'Run: cd jasmine-next && pip install backend/requirements.txt && uvicorn backend.main:app --reload --port 8000'
+      );
+    } finally {
       setUploading(false);
-      setUploadedFiles([]);
-      alert(`Successfully processed ${uploadedFiles.length} file(s) for patient ${selectedPatient}`);
-    }, 2000);
+    }
   };
 
-  const getFileIcon = (file: File) => {
-    if (file.type === 'video/mp4') return '🎬';
-    if (file.type === 'text/csv') return '📊';
-    if (file.type === 'application/json') return '{ }';
-    return '📄';
+  const riskColor = (risk: string) => {
+    switch (risk) {
+      case 'High Risk': return { bg: 'rgba(220, 38, 38, 0.1)', text: '#dc2626' };
+      case 'Moderate Risk': return { bg: 'rgba(217, 119, 6, 0.1)', text: '#d97706' };
+      default: return { bg: 'rgba(22, 163, 74, 0.1)', text: '#16a34a' };
+    }
   };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Assessments</h1>
-        <p className="text-gray-500 dark:text-gray-400">Run and manage screenings</p>
+        <h1 className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>Assessments</h1>
+        <p style={{ color: 'var(--text-muted)' }}>Run ASD screening on patient video</p>
       </div>
 
-      {/* New Assessment Card */}
-      <div className="p-6 bg-white dark:bg-dark-surface rounded-2xl border border-gray-200 dark:border-dark-deep">
-        <div className="space-y-6">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Run New Assessment</h3>
+      {/* Upload Card */}
+      <div className="p-6 rounded-2xl border-2 border-dashed" style={{ backgroundColor: 'var(--background)', borderColor: 'var(--border)' }}>
+        <div className="flex flex-col items-center text-center">
+          <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: 'var(--primary-light)' }}>
+            <Video className="w-8 h-8" style={{ color: 'var(--primary)' }} />
+          </div>
+          <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--foreground)' }}>Run New Assessment</h3>
+          <p className="mb-4" style={{ color: 'var(--text-muted)' }}>Upload an MP4 video of the patient to analyze movement patterns</p>
 
-            {/* Patient Selection */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Select Patient
-              </label>
-              {loadingPatients ? (
-                <div className="w-full px-4 py-3 bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-deep rounded-xl flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-                  <span className="text-gray-500">Loading patients...</span>
-                </div>
-              ) : patients.length === 0 ? (
-                <div className="w-full px-4 py-3 bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-deep rounded-xl text-gray-500">
-                  No patients found. Add a patient first.
-                </div>
-              ) : (
-                <select
-                  value={selectedPatient}
-                  onChange={(e) => setSelectedPatient(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-deep rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
-                >
-                  <option value="">Choose a patient...</option>
-                  {patients.map((patient) => (
-                    <option key={patient.id} value={patient.name}>
-                      {patient.name}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
+          <div className="flex flex-col gap-3 w-full max-w-md">
+            <select
+              value={selectedPatient}
+              onChange={(e) => setSelectedPatient(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl"
+              style={{ backgroundColor: 'var(--background)', border: '1px solid var(--border)', color: 'var(--foreground)' }}
+            >
+              <option value="">Select patient...</option>
+              <option value="1">Emma Thompson</option>
+              <option value="2">Liam Johnson</option>
+              <option value="3">Sophie Williams</option>
+            </select>
 
-            {/* File Upload Area */}
-            {selectedPatient && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-6"
-              >
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Upload Assessment Files
-                </label>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                  Supported formats: MP4 (video), CSV (pose data), JSON (OpenPose)
-                </p>
-
-                {/* Drag & Drop Zone */}
-                <div
-                  onDragEnter={handleDrag}
-                  onDragLeave={handleDrag}
-                  onDragOver={handleDrag}
-                  onDrop={handleDrop}
-                  className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
-                    dragActive
-                      ? 'border-primary bg-primary/5'
-                      : 'border-gray-200 dark:border-dark-deep bg-gray-50 dark:bg-dark-bg'
-                  }`}
-                >
-                  <div className="flex flex-col items-center">
-                    <Upload className={`w-12 h-12 mb-3 ${dragActive ? 'text-primary' : 'text-gray-400'}`} />
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {dragActive ? 'Drop files here' : 'Drag files here or click to select'}
-                    </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      You can upload multiple files or entire folders
-                    </p>
-                  </div>
-
-                  {/* Hidden file inputs */}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    multiple
-                    accept=".mp4,.csv,.json"
-                    onChange={handleFileSelect}
-                    className="hidden"
-                  />
-                  <input
-                    ref={folderInputRef}
-                    type="file"
-                    multiple
-                    onChange={handleFileSelect}
-                    className="hidden"
-                    {...{ webkitdirectory: 'true' as unknown as string, directory: 'true' as unknown as string }}
-                  />
-
-                  {/* Click area */}
-                  <div
-                    onClick={() => fileInputRef.current?.click()}
-                    className="absolute inset-0 rounded-xl cursor-pointer"
-                  />
-
-                  {/* Button overlay */}
-                  <div className="absolute bottom-4 right-4 flex gap-2">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        fileInputRef.current?.click();
-                      }}
-                      className="px-4 py-2 bg-primary hover:bg-primary-dark text-white text-sm font-medium rounded-lg transition-colors"
-                    >
-                      Select Files
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        folderInputRef.current?.click();
-                      }}
-                      className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-dark-deep dark:hover:bg-dark-deep/80 text-gray-900 dark:text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
-                    >
-                      <Folder className="w-4 h-4" />
-                      Select Folder
-                    </button>
-                  </div>
-                </div>
-
-                {/* Uploaded Files List */}
-                {uploadedFiles.length > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mt-4"
-                  >
-                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Uploaded Files ({uploadedFiles.length})
-                    </p>
-                    <div className="space-y-2 max-h-40 overflow-y-auto">
-                      {uploadedFiles.map((file, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between p-3 bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-deep rounded-lg"
-                        >
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <span className="text-lg">{getFileIcon(file)}</span>
-                            <div className="min-w-0">
-                              <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                {file.name}
-                              </p>
-                              <p className="text-xs text-gray-500 dark:text-gray-400">
-                                {(file.size / 1024 / 1024).toFixed(2)} MB
-                              </p>
-                            </div>
-                          </div>
-                          <button
-                            onClick={() => removeFile(index)}
-                            className="p-1.5 bg-red-100 text-red-600 hover:bg-red-200 rounded-md transition-colors ml-2"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </motion.div>
+            {!result && (
+              <label className="w-full px-4 py-3 rounded-xl text-center cursor-pointer"
+                style={{ backgroundColor: 'var(--background-alt)', border: '1px solid var(--border)' }}>
+                <input
+                  type="file"
+                  accept=".mp4,.mov,.avi"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                {videoFile ? (
+                  <span style={{ color: 'var(--foreground)' }}>{videoFile.name}</span>
+                ) : (
+                  <span style={{ color: 'var(--text-muted)' }}>Click to select MP4 video</span>
                 )}
-
-                {/* Action Buttons */}
-                <div className="flex gap-3 mt-6">
-                  <button
-                    onClick={handleUpload}
-                    disabled={uploadedFiles.length === 0 || uploading}
-                    className="flex-1 px-6 py-3 bg-primary hover:bg-primary-dark text-white font-medium rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {uploading ? (
-                      <>
-                        <RefreshCw className="w-5 h-5 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        <Upload className="w-5 h-5" />
-                        Run Assessment
-                      </>
-                    )}
-                  </button>
-                  {uploadedFiles.length > 0 && (
-                    <button
-                      onClick={() => setUploadedFiles([])}
-                      className="px-6 py-3 border border-gray-200 dark:border-dark-deep text-gray-700 dark:text-gray-300 font-medium rounded-xl hover:bg-gray-50 dark:hover:bg-dark-deep transition-colors"
-                    >
-                      Clear
-                    </button>
-                  )}
-                </div>
-              </motion.div>
+              </label>
             )}
+
+            <button
+              onClick={handleRunAssessment}
+              disabled={!videoFile || !selectedPatient || uploading}
+              className="w-full px-6 py-3 text-white font-medium rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              style={{ backgroundColor: 'var(--primary)' }}
+            >
+              {uploading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <Upload className="w-5 h-5" />
+                  Run Assessment
+                </>
+              )}
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Recent Assessments */}
-      <div className="bg-white dark:bg-dark-surface rounded-2xl border border-gray-200 dark:border-dark-deep overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 dark:border-dark-deep">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Assessments</h2>
+      {/* Error */}
+      {error && (
+        <div className="p-4 rounded-xl whitespace-pre-line" style={{ backgroundColor: 'rgba(220, 38, 38, 0.1)', border: '1px solid #dc2626', color: '#dc2626' }}>
+          <p className="text-sm">{error}</p>
         </div>
-        <div className="px-6 py-12 text-center">
-          <p className="text-gray-500 dark:text-gray-400">No recent assessments. Run an assessment to see results here.</p>
-        </div>
+      )}
+
+      {/* Results */}
+      {result && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-6 rounded-2xl"
+          style={{ backgroundColor: 'var(--background)', border: '1px solid var(--border)' }}
+        >
+          <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--foreground)' }}>Assessment Result</h2>
+
+          {/* Ensemble Score */}
+          <div className="text-center mb-6">
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Ensemble ASD Probability</p>
+            <p className="text-5xl font-bold my-2" style={{ color: riskColor(result.risk_level).text }}>
+              {(result.ensemble_probability * 100).toFixed(1)}%
+            </p>
+            <span className="inline-block px-4 py-1.5 rounded-full text-lg font-semibold"
+              style={{ backgroundColor: riskColor(result.risk_level).bg, color: riskColor(result.risk_level).text }}>
+              {result.risk_level}
+            </span>
+          </div>
+
+          {/* Model Breakdown */}
+          <div className="pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
+            <p className="text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>Model Predictions:</p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {Object.entries(result.model_predictions).map(([model, pred]) => (
+                <div key={model} className="p-3 rounded-lg" style={{ backgroundColor: 'var(--background-alt)' }}>
+                  <p className="text-xs uppercase" style={{ color: 'var(--text-muted)' }}>{model}</p>
+                  <p className="text-lg font-semibold" style={{ color: 'var(--foreground)' }}>{(pred.probability * 100).toFixed(0)}%</p>
+                  <p className="text-xs" style={{ color: riskColor(pred.risk_level).text }}>{pred.risk_level}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Recent Assessments placeholder */}
+      <div className="p-6 rounded-2xl" style={{ backgroundColor: 'var(--background)', border: '1px solid var(--border)' }}>
+        <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--foreground)' }}>Recent Assessments</h2>
+        <p style={{ color: 'var(--text-muted)' }}>No assessments run yet. Upload a video above to begin.</p>
       </div>
     </div>
   );

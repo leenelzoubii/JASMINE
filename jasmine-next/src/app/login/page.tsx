@@ -45,13 +45,9 @@ function LoginForm() {
         router.push('/professional');
       }
     } catch (error: unknown) {
-      const code = (error as { code?: string })?.code;
-      if (code === 'auth/invalid-credential' || code === 'auth/user-not-found' || code === 'auth/wrong-password') {
-        setError('No account found with this email. Please create an account first.');
-      } else {
-        setError('Something went wrong. Please try again.');
-        console.error('Login error:', error);
-      }
+      const message = error instanceof Error ? error.message : 'Something went wrong. Please try again.';
+      setError(message);
+      console.error('Login error:', error);
     } finally {
       setLoading(false);
     }
@@ -171,6 +167,28 @@ function LoginForm() {
               Forgot your password?
             </Link>
           </p>
+
+          {error && (
+            <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
+              <p className="text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>Demo quick login:</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { setEmail('parent@demo.com'); setPassword('demo123'); }}
+                  className="flex-1 px-3 py-2 text-xs font-medium rounded-lg"
+                  style={{ backgroundColor: 'var(--primary-light)', color: 'var(--primary)' }}
+                >
+                  Parent Demo
+                </button>
+                <button
+                  onClick={() => { setEmail('doctor@demo.com'); setPassword('demo123'); }}
+                  className="flex-1 px-3 py-2 text-xs font-medium rounded-lg"
+                  style={{ backgroundColor: 'var(--primary-light)', color: 'var(--primary)' }}
+                >
+                  Doctor Demo
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </motion.div>
     </div>

@@ -59,7 +59,8 @@ export default function RegisterPage() {
       }
     } catch (error) {
       console.error(error);
-      setError("Registration failed. Please try again.");
+      const errMsg = error instanceof Error ? error.message : "Registration failed. Please try again.";
+      setError(errMsg);
     } finally {
       setLoading(false);
     }
