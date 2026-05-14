@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { ProfessionalSidebar } from '@/components/layout/professional-sidebar';
 import { NotificationBell } from '@/components/ui/notification-bell';
+import { getCurrentUser } from '@/lib/auth';
 
 export default function ProfessionalLayout({
   children,
