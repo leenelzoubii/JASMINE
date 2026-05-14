@@ -6,6 +6,8 @@ import { motion, useAnimation } from 'framer-motion';
 import { getPatients, addPatient, Patient } from '@/lib/patients';
 import { getCurrentUser } from '@/lib/auth';
 import { createPatientAccess } from '@/lib/patient-access';
+import { sendParentRequest } from '@/lib/parent-requests';
+import { addNotification } from '@/lib/notifications';
 
 function calculateAge(dob: string): number {
   const birth = new Date(dob);
@@ -82,6 +84,33 @@ export default function ProfessionalPatientsPage() {
         risk: 'Unknown',
       });
       setPatients(prev => [newPatient, ...prev]);
+
+      // Send parent request (friend request to parent email)
+      try {
+        await sendParentRequest({
+          professionalId: user.id,
+          professionalName: user.name,
+          patientId: newPatient.id,
+          patientName: newPatient.name,
+          parentEmail: formData.email,
+          parentName: formData.parentName,
+        });
+      } catch (err) {
+        console.warn('Failed to send parent request:', err);
+      }
+
+      // Notification for professional
+      try {
+        await addNotification({
+          userId: user.id,
+          type: 'patient_added',
+          title: 'Patient Added',
+          message: `${newPatient.name} has been added successfully.`,
+          link: '/professional/patients',
+        });
+      } catch (err) {
+        console.warn('Failed to create notification:', err);
+      }
 
       if (sendCredentials) {
         const accessResult = await createPatientAccess({

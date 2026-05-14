@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { ParentSidebar } from '@/components/layout/parent-sidebar';
 import { getCurrentUser } from '@/lib/auth';
+import { NotificationBell } from '@/components/ui/notification-bell';
 
 export default function ParentLayout({
   children,
@@ -47,9 +48,12 @@ export default function ParentLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-dark-bg">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--background-alt)' }}>
       <ParentSidebar />
       <main className="lg:pl-64 min-h-screen">
+        <div className="sticky top-0 z-30 flex items-center justify-end px-6 py-3" style={{ backgroundColor: 'var(--background)', borderBottom: '1px solid var(--border)' }}>
+          <NotificationBell />
+        </div>
         <div className="p-6 lg:p-8">{children}</div>
       </main>
     </div>

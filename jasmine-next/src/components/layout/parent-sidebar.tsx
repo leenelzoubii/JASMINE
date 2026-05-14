@@ -3,13 +3,14 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { Brain, LayoutDashboard, Baby, FileText, MessageSquare, User, LogOut, Menu, X } from 'lucide-react';
+import { Brain, LayoutDashboard, Baby, FileText, MessageSquare, User, LogOut, Menu, X, UserPlus } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { logoutUser, getCurrentUser } from '@/lib/auth';
 
 const parentLinks = [
   { href: '/parent', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/parent/results', label: 'Results', icon: FileText },
+  { href: '/parent/requests', label: 'Requests', icon: UserPlus },
   { href: '/parent/messages', label: 'Messages', icon: MessageSquare },
   { href: '/parent/profile', label: 'Profile', icon: User },
 ];

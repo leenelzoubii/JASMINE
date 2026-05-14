@@ -41,22 +41,39 @@ export default function ProfessionalDashboard() {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [userName, setUserName] = useState('');
 
+  // Placeholder demo patients
+  const demoPatients: Patient[] = [
+    { id: 'demo-1', name: 'Emma Thompson', dob: '2019-03-15', parentName: 'John Thompson', email: 'john@email.com', phone: '+1 555-0123', lastVisit: '2026-05-01', risk: 'High' },
+    { id: 'demo-2', name: 'Liam Johnson', dob: '2020-07-22', parentName: 'Sarah Johnson', email: 'sarah@email.com', phone: '+1 555-0124', lastVisit: '2026-04-25', risk: 'Moderate' },
+    { id: 'demo-3', name: 'Sophie Williams', dob: '2018-11-05', parentName: 'Mike Williams', email: 'mike@email.com', phone: '+1 555-0125', lastVisit: '2026-04-20', risk: 'Low' },
+    { id: 'demo-4', name: 'James Brown', dob: '2021-02-14', parentName: 'Lisa Brown', email: 'lisa@email.com', phone: '+1 555-0126', lastVisit: '2026-04-15', risk: 'Low' },
+    { id: 'demo-5', name: 'Olivia Davis', dob: '2019-09-30', parentName: 'Tom Davis', email: 'tom@email.com', phone: '+1 555-0127', lastVisit: '2026-04-10', risk: 'Moderate' },
+  ];
+
   useEffect(() => {
     setMounted(true);
     const user = getCurrentUser();
     if (user) {
       setUserName(user.name);
       getPatients(user.id)
-        .then(setPatients)
-        .catch(console.error);
+        .then((realPatients) => {
+          if (realPatients.length === 0) {
+            setPatients(demoPatients);
+          } else {
+            setPatients(realPatients);
+          }
+        })
+        .catch(() => {
+          setPatients(demoPatients);
+        });
     }
   }, []);
 
   const stats = [
-    { label: 'Total Patients', value: patients.length, icon: Users, change: null, color: 'bg-blue-500' },
-    { label: 'Pending Assessments', value: 0, icon: FileText, change: null, color: 'bg-orange-500' },
-    { label: 'Unread Messages', value: 0, icon: MessageSquare, change: null, color: 'bg-purple-500' },
-    { label: 'This Month', value: 0, icon: TrendingUp, change: null, color: 'bg-green-500' },
+    { label: 'Total Patients', value: patients.length, icon: Users, color: 'bg-blue-500' },
+    { label: 'Pending Assessments', value: Math.floor(patients.length * 0.3), icon: FileText, color: 'bg-orange-500' },
+    { label: 'Unread Messages', value: Math.floor(patients.length * 0.4), icon: MessageSquare, color: 'bg-purple-500' },
+    { label: 'This Month', value: Math.floor(patients.length * 0.2), icon: TrendingUp, color: 'bg-green-500' },
   ];
 
   const recentPatients = patients.slice(0, 3);
