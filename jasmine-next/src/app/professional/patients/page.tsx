@@ -1,9 +1,9 @@
 'use client';
 
-import { UserPlus, Search, MoreVertical, Phone, Mail, X, Send, CheckCircle } from 'lucide-react';
+import { UserPlus, Search, Phone, Mail, X, Send, CheckCircle, Trash2, AlertTriangle } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { motion, useAnimation } from 'framer-motion';
-import { getPatients, addPatient, Patient } from '@/lib/patients';
+import { motion } from 'framer-motion';
+import { getPatients, addPatient, deletePatient, Patient } from '@/lib/patients';
 import { getCurrentUser } from '@/lib/auth';
 import { createPatientAccess } from '@/lib/patient-access';
 import { sendParentRequest } from '@/lib/parent-requests';
@@ -37,6 +37,8 @@ export default function ProfessionalPatientsPage() {
   const [sortField, setSortField] = useState('lastVisit');
   const [sortAsc, setSortAsc] = useState(false);
   const [visitFilter, setVisitFilter] = useState('all');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [patientToDelete, setPatientToDelete] = useState<Patient | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -382,17 +384,17 @@ export default function ProfessionalPatientsPage() {
                     <td className="px-6 py-4 text-gray-600 dark:text-gray-300">{getAge(patient)}</td>
                     <td className="px-6 py-4 text-gray-600 dark:text-gray-300">{patient.parentName}</td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1">
                         <button
                           onClick={() => handlePhoneClick(patient.phone)}
-                          className="p-2 bg-green-700 text-white hover:bg-green-800 rounded-lg"
-                          title={patient.phone || 'Phone number not provided'}
+                          className="p-2 rounded-lg" style={{ backgroundColor: '#15803d', color: 'white' }}
+                          title={patient.phone || 'Phone not provided'}
                         >
                           <Phone className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleMailClick(patient.email)}
-                          className="p-2 bg-blue-800 text-white hover:bg-blue-900 rounded-lg"
+                          className="p-2 rounded-lg" style={{ backgroundColor: '#1e40af', color: 'white' }}
                         >
                           <Mail className="w-4 h-4" />
                         </button>
@@ -405,8 +407,16 @@ export default function ProfessionalPatientsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <button className="p-2 bg-primary/10 text-primary hover:bg-primary/20 rounded-lg transition-colors">
-                        <MoreVertical className="w-4 h-4" />
+                      <button
+                        onClick={() => {
+                          setPatientToDelete(patient);
+                          setShowDeleteConfirm(true);
+                        }}
+                        className="p-2 rounded-lg transition-colors"
+                        style={{ backgroundColor: 'rgba(220, 38, 38, 0.1)', color: '#dc2626' }}
+                        title="Delete patient"
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </td>
                   </motion.tr>
@@ -594,6 +604,55 @@ export default function ProfessionalPatientsPage() {
                     {sendCredentials ? 'Save & Send Credentials' : 'Save Patient'}
                   </>
                 )}
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && patientToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-sm rounded-2xl shadow-xl p-6 text-center" style={{ backgroundColor: 'var(--background)', border: '1px solid var(--border)' }}
+          >
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(220, 38, 38, 0.1)' }}>
+              <AlertTriangle className="w-8 h-8" style={{ color: '#dc2626' }} />
+            </div>
+            <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>Delete Patient</h2>
+            <p className="mb-6" style={{ color: 'var(--text-muted)' }}>
+              Are you sure you want to delete <strong>{patientToDelete.name}</strong>? This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={async () => {
+                  const user = getCurrentUser();
+                  if (user) {
+                    try {
+                      await deletePatient(user.id, patientToDelete.id);
+                      setPatients(prev => prev.filter(p => p.id !== patientToDelete.id));
+                    } catch (err) {
+                      console.error('Failed to delete:', err);
+                    }
+                  }
+                  setShowDeleteConfirm(false);
+                  setPatientToDelete(null);
+                }}
+                className="flex-1 px-4 py-2.5 rounded-xl text-white font-medium"
+                style={{ backgroundColor: '#dc2626' }}
+              >
+                Delete
+              </button>
+              <button
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setPatientToDelete(null);
+                }}
+                className="flex-1 px-4 py-2.5 rounded-xl font-medium" style={{ backgroundColor: 'var(--background-alt)', color: 'var(--foreground)' }}
+              >
+                Cancel
               </button>
             </div>
           </motion.div>
