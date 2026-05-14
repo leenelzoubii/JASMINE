@@ -13,7 +13,6 @@ import {
   where,
   updateDoc,
   deleteDoc,
-  orderBy,
   serverTimestamp,
   Timestamp,
 } from "firebase/firestore";
@@ -32,9 +31,14 @@ export interface ParentRequest {
   createdAt: Timestamp;
 }
 
-/**
- * Professional sends a parent request
- */
+function sortByCreatedAtDesc(items: ParentRequest[]): ParentRequest[] {
+  return items.sort((a, b) => {
+    const tA = (a.createdAt as any)?.toMillis?.() || 0;
+    const tB = (b.createdAt as any)?.toMillis?.() || 0;
+    return tB - tA;
+  });
+}
+
 export async function sendParentRequest(data: {
   professionalId: string;
   professionalName: string;
@@ -58,47 +62,33 @@ export async function sendParentRequest(data: {
   return { id: docRef.id, ...snap.data() } as ParentRequest;
 }
 
-/**
- * Get pending requests for a parent (by email)
- */
 export async function getParentRequestsByEmail(email: string): Promise<ParentRequest[]> {
   const q = query(
     collection(db, "parentRequests"),
     where("parentEmail", "==", email.toLowerCase().trim()),
-    where("status", "==", "pending"),
-    orderBy("createdAt", "desc")
+    where("status", "==", "pending")
   );
   const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as ParentRequest));
+  return sortByCreatedAtDesc(snap.docs.map((d) => ({ id: d.id, ...d.data() } as ParentRequest)));
 }
 
-/**
- * Get sent requests for a professional
- */
 export async function getProfessionalRequests(professionalId: string): Promise<ParentRequest[]> {
   const q = query(
     collection(db, "parentRequests"),
-    where("professionalId", "==", professionalId),
-    orderBy("createdAt", "desc")
+    where("professionalId", "==", professionalId)
   );
   const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as ParentRequest));
+  return sortByCreatedAtDesc(snap.docs.map((d) => ({ id: d.id, ...d.data() } as ParentRequest)));
 }
 
-/**
- * Accept a parent request - also creates a connection in Firestore
- */
 export async function acceptParentRequest(requestId: string, parentId: string): Promise<void> {
   const reqRef = doc(db, "parentRequests", requestId);
   const reqSnap = await getDoc(reqRef);
   if (!reqSnap.exists()) throw new Error("Request not found");
 
   const request = reqSnap.data() as ParentRequest;
-
-  // Update request status
   await updateDoc(reqRef, { status: "accepted", parentId });
 
-  // Create a connection document for messaging
   await addDoc(collection(db, "connections"), {
     professionalId: request.professionalId,
     professionalName: request.professionalName,
@@ -110,20 +100,13 @@ export async function acceptParentRequest(requestId: string, parentId: string): 
   });
 }
 
-/**
- * Decline a parent request
- */
 export async function declineParentRequest(requestId: string): Promise<void> {
   await deleteDoc(doc(db, "parentRequests", requestId));
 }
 
-/**
- * Get connections (accepted pairs) for a user
- */
 export async function getUserConnections(userId: string): Promise<any[]> {
   const q1 = query(collection(db, "connections"), where("professionalId", "==", userId));
   const q2 = query(collection(db, "connections"), where("parentId", "==", userId));
-
   const [s1, s2] = await Promise.all([getDocs(q1), getDocs(q2)]);
   return [...s1.docs, ...s2.docs].map((d) => ({ id: d.id, ...d.data() }));
 }

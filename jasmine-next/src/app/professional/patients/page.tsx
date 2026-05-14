@@ -633,6 +633,14 @@ export default function ProfessionalPatientsPage() {
                     try {
                       await deletePatient(user.id, patientToDelete.id);
                       setPatients(prev => prev.filter(p => p.id !== patientToDelete.id));
+                      // Notification for deletion
+                      await addNotification({
+                        userId: user.id,
+                        type: 'patient_removed',
+                        title: 'Patient Removed',
+                        message: `${patientToDelete.name} has been removed.`,
+                        link: '/professional/patients',
+                      });
                     } catch (err) {
                       console.error('Failed to delete:', err);
                     }

@@ -8,13 +8,12 @@ import {
   getDoc,
   doc,
   updateDoc,
+  setDoc,
   query,
   where,
-  orderBy,
   onSnapshot,
   serverTimestamp,
   Timestamp,
-  limit,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
@@ -28,9 +27,6 @@ export interface Message {
   read: boolean;
 }
 
-/**
- * Send a message
- */
 export async function sendMessage(
   senderId: string,
   receiverId: string,
@@ -38,7 +34,6 @@ export async function sendMessage(
 ): Promise<void> {
   const conversationId = [senderId, receiverId].sort().join("_");
 
-  // Add message document
   await addDoc(collection(db, "messages"), {
     conversationId,
     senderId,
@@ -60,8 +55,7 @@ export async function sendMessage(
       [`unreadCount.${receiverId}`]: (data.unreadCount?.[receiverId] || 0) + 1,
     });
   } else {
-    // Create conversation doc
-    await updateDoc(convRef, {
+    await setDoc(convRef, {
       participantIds: [senderId, receiverId],
       lastMessage: text,
       lastMessageTime: serverTimestamp(),
@@ -71,36 +65,33 @@ export async function sendMessage(
   }
 }
 
-/**
- * Subscribe to messages for a conversation
- */
 export function subscribeToMessages(
   userId1: string,
   userId2: string,
   callback: (messages: Message[]) => void
 ) {
   const conversationId = [userId1, userId2].sort().join("_");
+  // No orderBy to avoid composite index - sort client side
   const q = query(
     collection(db, "messages"),
-    where("conversationId", "==", conversationId),
-    orderBy("createdAt", "asc"),
-    limit(100)
+    where("conversationId", "==", conversationId)
   );
 
   return onSnapshot(q, (snapshot) => {
     const msgs = snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as Message));
+    msgs.sort((a, b) => {
+      const tA = (a.createdAt as any)?.toMillis?.() || 0;
+      const tB = (b.createdAt as any)?.toMillis?.() || 0;
+      return tA - tB; // oldest first
+    });
     callback(msgs);
   });
 }
 
-/**
- * Get conversations for a user
- */
 export async function getUserConversations(userId: string): Promise<any[]> {
   const q = query(
     collection(db, "conversations"),
-    where("participantIds", "array-contains", userId),
-    orderBy("lastMessageTime", "desc")
+    where("participantIds", "array-contains", userId)
   );
   const snap = await getDocs(q);
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
