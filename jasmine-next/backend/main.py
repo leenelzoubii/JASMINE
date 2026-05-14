@@ -6,6 +6,7 @@ import os
 import sys
 import json
 import tempfile
+import subprocess
 from pathlib import Path
 from typing import Dict
 
@@ -225,6 +226,80 @@ async def predict_json(file: UploadFile = File(...)):
         })
     finally:
         os.unlink(tmp_path)
+
+
+@app.post("/api/predict-youtube")
+async def predict_youtube(data: dict):
+    """Accept YouTube URL, download video, extract pose, and return ASD risk prediction."""
+    youtube_url = data.get("youtube_url", "").strip()
+    fps = data.get("fps", 15)
+
+    if not youtube_url:
+        return JSONResponse(status_code=400, content={"success": False, "error": "YouTube URL is required."})
+
+    # Download YouTube video using yt-dlp
+    tmp_dir = tempfile.mkdtemp()
+    output_template = os.path.join(tmp_dir, "%(title)s.%(ext)s")
+
+    try:
+        subprocess.run(
+            ["yt-dlp", "-f", "mp4", "-o", output_template, youtube_url],
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=120,
+        )
+    except subprocess.CalledProcessError as e:
+        return JSONResponse(
+            status_code=400,
+            content={"success": False, "error": f"Failed to download YouTube video: {e.stderr or 'Unknown error'}"}
+        )
+    except FileNotFoundError:
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": "yt-dlp is not installed. Install with: pip install yt-dlp"}
+        )
+
+    # Find downloaded file
+    video_files = [f for f in os.listdir(tmp_dir) if f.endswith((".mp4", ".mkv", ".webm"))]
+    if not video_files:
+        return JSONResponse(status_code=400, content={"success": False, "error": "Could not find downloaded video."})
+
+    video_path = os.path.join(tmp_dir, video_files[0])
+
+    try:
+        # Process through existing pipeline
+        from backend.pose_extractor import extract_keypoints_from_mp4
+        keypoints = extract_keypoints_from_mp4(video_path, fps_target=fps)
+
+        features, dl_sequence = extract_features_from_keypoints(keypoints, fps=fps)
+        models = load_models()
+        predictions = get_ensemble_prediction(models, features, dl_sequence)
+
+        ensemble_prob = float(np.mean(list(predictions.values()))) if predictions else 0.0
+        risk_level = get_risk_level(ensemble_prob)
+
+        return JSONResponse(content={
+            "success": True,
+            "ensemble_probability": ensemble_prob,
+            "risk_level": risk_level,
+            "num_frames_processed": int(keypoints.shape[0]),
+            "source": "youtube",
+            "youtube_url": youtube_url,
+            "model_predictions": {
+                k: {"probability": v, "risk_level": get_risk_level(v)}
+                for k, v in predictions.items()
+            },
+        })
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": str(e)}
+        )
+    finally:
+        # Cleanup
+        import shutil
+        shutil.rmtree(tmp_dir, ignore_errors=True)
 
 
 if __name__ == "__main__":

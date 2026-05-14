@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Upload, FileText, Clock, CheckCircle, AlertCircle, RefreshCw, Video, Loader2 } from 'lucide-react';
+import { Upload, FileText, Clock, CheckCircle, AlertCircle, RefreshCw, Video, Loader2, Youtube, Link2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const ML_BACKEND_URL = process.env.NEXT_PUBLIC_ML_BACKEND_URL || 'http://localhost:8000';
@@ -16,6 +16,8 @@ interface PredictionResult {
   ensemble_probability: number;
   risk_level: string;
   num_frames_processed?: number;
+  source?: string;
+  youtube_url?: string;
   model_predictions: Record<string, ModelPrediction>;
   error?: string;
 }
@@ -24,6 +26,8 @@ export default function ProfessionalAssessmentsPage() {
   const [selectedPatient, setSelectedPatient] = useState('');
   const [uploading, setUploading] = useState(false);
   const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [youtubeUrl, setYoutubeUrl] = useState('');
+  const [inputMode, setInputMode] = useState<'file' | 'youtube'>('file');
   const [result, setResult] = useState<PredictionResult | null>(null);
   const [error, setError] = useState('');
 
@@ -41,8 +45,18 @@ export default function ProfessionalAssessmentsPage() {
   };
 
   const handleRunAssessment = async () => {
-    if (!videoFile || !selectedPatient) {
-      setError('Please select a patient and upload a video file.');
+    if (!selectedPatient) {
+      setError('Please select a patient.');
+      return;
+    }
+
+    if (inputMode === 'file' && !videoFile) {
+      setError('Please upload a video file.');
+      return;
+    }
+
+    if (inputMode === 'youtube' && !youtubeUrl.trim()) {
+      setError('Please enter a YouTube URL.');
       return;
     }
 
@@ -51,14 +65,23 @@ export default function ProfessionalAssessmentsPage() {
     setResult(null);
 
     try {
-      const formData = new FormData();
-      formData.append('video', videoFile);
-      formData.append('fps', '15');
+      let res;
 
-      const res = await fetch(`${ML_BACKEND_URL}/api/predict`, {
-        method: 'POST',
-        body: formData,
-      });
+      if (inputMode === 'youtube') {
+        res = await fetch(`${ML_BACKEND_URL}/api/predict-youtube`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ youtube_url: youtubeUrl.trim(), fps: 15 }),
+        });
+      } else {
+        const formData = new FormData();
+        formData.append('video', videoFile!);
+        formData.append('fps', '15');
+        res = await fetch(`${ML_BACKEND_URL}/api/predict`, {
+          method: 'POST',
+          body: formData,
+        });
+      }
 
       const data: PredictionResult = await res.json();
 
@@ -71,7 +94,7 @@ export default function ProfessionalAssessmentsPage() {
     } catch {
       setError(
         'Could not connect to the ML backend. Make sure the server is running on port 8000.\n\n' +
-        'Run: cd jasmine-next && pip install backend/requirements.txt && uvicorn backend.main:app --reload --port 8000'
+        'Run: cd jasmine-next && pip install -r backend/requirements.txt && uvicorn backend.main:app --reload --port 8000'
       );
     } finally {
       setUploading(false);
@@ -84,6 +107,10 @@ export default function ProfessionalAssessmentsPage() {
       case 'Moderate Risk': return { bg: 'rgba(217, 119, 6, 0.1)', text: '#d97706' };
       default: return { bg: 'rgba(22, 163, 74, 0.1)', text: '#16a34a' };
     }
+  };
+
+  const isValidUrl = (url: string) => {
+    return url.match(/^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/i);
   };
 
   return (
@@ -100,7 +127,33 @@ export default function ProfessionalAssessmentsPage() {
             <Video className="w-8 h-8" style={{ color: 'var(--primary)' }} />
           </div>
           <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--foreground)' }}>Run New Assessment</h3>
-          <p className="mb-4" style={{ color: 'var(--text-muted)' }}>Upload an MP4 video of the patient to analyze movement patterns</p>
+          <p className="mb-4" style={{ color: 'var(--text-muted)' }}>Analyze movement patterns to assess ASD risk</p>
+
+          {/* Input Mode Toggle */}
+          <div className="flex items-center gap-2 mb-4 p-1 rounded-xl" style={{ backgroundColor: 'var(--background-alt)' }}>
+            <button
+              onClick={() => setInputMode('file')}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+              style={{
+                backgroundColor: inputMode === 'file' ? 'var(--primary)' : 'transparent',
+                color: inputMode === 'file' ? 'white' : 'var(--text-muted)',
+              }}
+            >
+              <Upload className="w-4 h-4" />
+              Upload MP4
+            </button>
+            <button
+              onClick={() => setInputMode('youtube')}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+              style={{
+                backgroundColor: inputMode === 'youtube' ? 'var(--primary)' : 'transparent',
+                color: inputMode === 'youtube' ? 'white' : 'var(--text-muted)',
+              }}
+            >
+              <Youtube className="w-4 h-4" />
+              YouTube URL
+            </button>
+          </div>
 
           <div className="flex flex-col gap-3 w-full max-w-md">
             <select
@@ -115,7 +168,7 @@ export default function ProfessionalAssessmentsPage() {
               <option value="3">Sophie Williams</option>
             </select>
 
-            {!result && (
+            {!result && inputMode === 'file' && (
               <label className="w-full px-4 py-3 rounded-xl text-center cursor-pointer"
                 style={{ backgroundColor: 'var(--background-alt)', border: '1px solid var(--border)' }}>
                 <input
@@ -132,9 +185,28 @@ export default function ProfessionalAssessmentsPage() {
               </label>
             )}
 
+            {!result && inputMode === 'youtube' && (
+              <div className="relative">
+                <Link2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: 'var(--text-muted)' }} />
+                <input
+                  type="url"
+                  value={youtubeUrl}
+                  onChange={(e) => { setYoutubeUrl(e.target.value); setError(''); setResult(null); }}
+                  placeholder="https://youtube.com/watch?v=..."
+                  className="w-full pl-12 pr-4 py-3 rounded-xl"
+                  style={{ backgroundColor: 'var(--background-alt)', border: '1px solid var(--border)', color: 'var(--foreground)' }}
+                />
+              </div>
+            )}
+
             <button
               onClick={handleRunAssessment}
-              disabled={!videoFile || !selectedPatient || uploading}
+              disabled={
+                !selectedPatient ||
+                uploading ||
+                (inputMode === 'file' && !videoFile) ||
+                (inputMode === 'youtube' && (!youtubeUrl.trim() || !isValidUrl(youtubeUrl)))
+              }
               className="w-full px-6 py-3 text-white font-medium rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
               style={{ backgroundColor: 'var(--primary)' }}
             >
@@ -145,7 +217,7 @@ export default function ProfessionalAssessmentsPage() {
                 </>
               ) : (
                 <>
-                  <Upload className="w-5 h-5" />
+                  {inputMode === 'youtube' ? <Youtube className="w-5 h-5" /> : <Upload className="w-5 h-5" />}
                   Run Assessment
                 </>
               )}
@@ -169,7 +241,21 @@ export default function ProfessionalAssessmentsPage() {
           className="p-6 rounded-2xl"
           style={{ backgroundColor: 'var(--background)', border: '1px solid var(--border)' }}
         >
-          <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--foreground)' }}>Assessment Result</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold" style={{ color: 'var(--foreground)' }}>Assessment Result</h2>
+            {result.source === 'youtube' && (
+              <a
+                href={result.youtube_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs"
+                style={{ backgroundColor: 'var(--background-alt)', color: 'var(--primary)' }}
+              >
+                <Youtube className="w-3 h-3" />
+                Source Video
+              </a>
+            )}
+          </div>
 
           {/* Ensemble Score */}
           <div className="text-center mb-6">
@@ -181,6 +267,11 @@ export default function ProfessionalAssessmentsPage() {
               style={{ backgroundColor: riskColor(result.risk_level).bg, color: riskColor(result.risk_level).text }}>
               {result.risk_level}
             </span>
+            {result.num_frames_processed && (
+              <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
+                {result.num_frames_processed} frames processed
+              </p>
+            )}
           </div>
 
           {/* Model Breakdown */}
@@ -202,7 +293,7 @@ export default function ProfessionalAssessmentsPage() {
       {/* Recent Assessments placeholder */}
       <div className="p-6 rounded-2xl" style={{ backgroundColor: 'var(--background)', border: '1px solid var(--border)' }}>
         <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--foreground)' }}>Recent Assessments</h2>
-        <p style={{ color: 'var(--text-muted)' }}>No assessments run yet. Upload a video above to begin.</p>
+        <p style={{ color: 'var(--text-muted)' }}>No assessments run yet. Upload a video or paste a YouTube link above to begin.</p>
       </div>
     </div>
   );
