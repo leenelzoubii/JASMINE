@@ -126,3 +126,4 @@
  GET /professional 500 in 115ms (next.js: 95ms, application-code: 20ms)
  GET /login 500 in 134ms (next.js: 87ms, application-code: 47ms)
  GET /professional 500 in 134ms (next.js: 106ms, application-code: 28ms)
+[?25h

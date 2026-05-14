@@ -33559,3 +33559,1587 @@ Import traces:
   Client Component SSR:
     ./src/app/professional/profile/page.tsx [Client Component SSR]
     ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-client] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 
+[browser] ./src/app/professional/profile/page.tsx:18:1
+Export changeCurrentUserPassword doesn't exist in target module
+  16 | } from 'lucide-react';
+  17 | import { motion } from 'framer-motion';
+> 18 | import { getCurrentUser, updateUser, changeCurrentUserPassword } from '@/lib/auth';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  19 |
+  20 | export default function ProfessionalProfilePage() {
+  21 |   const [name, setName] = useState('');
+
+The export changeCurrentUserPassword was not found in module [project]/src/lib/auth.ts [app-ssr] (ecmascript).
+Did you mean to import getCurrentUser?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./src/app/professional/profile/page.tsx [Client Component Browser]
+    ./src/app/professional/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/professional/profile/page.tsx [Client Component SSR]
+    ./src/app/professional/profile/page.tsx [Server Component] 

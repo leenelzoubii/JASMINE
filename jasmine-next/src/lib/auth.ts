@@ -7,6 +7,10 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  updatePassword,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 
 import {
@@ -212,4 +216,28 @@ export async function updateUser(
     localStorage.setItem("currentUser", JSON.stringify(updated));
   }
   return updated;
+}
+
+export async function changeCurrentUserPassword(
+  currentPassword: string,
+  newPassword: string
+): Promise<void> {
+  const user = auth.currentUser;
+  if (!user || !user.email) {
+    throw new Error("No authenticated user found");
+  }
+  const credential = EmailAuthProvider.credential(
+    user.email,
+    currentPassword
+  );
+  await reauthenticateWithCredential(user, credential);
+  await updatePassword(user, newPassword);
+}
+
+export async function sendFirebaseResetPasswordEmail(email: string): Promise<void> {
+  const cleanEmail = email.trim().toLowerCase();
+  if (!cleanEmail) {
+    throw new Error("Email is required");
+  }
+  await sendPasswordResetEmail(auth, cleanEmail);
 }
