@@ -5,6 +5,9 @@ import {
   collection,
   addDoc,
   getDocs,
+  getDoc,
+  doc,
+  updateDoc,
   query,
   where,
   orderBy,
@@ -17,21 +20,12 @@ import { db } from "@/lib/firebase";
 
 export interface Message {
   id: string;
+  conversationId: string;
   senderId: string;
   receiverId: string;
   text: string;
   createdAt: Timestamp;
   read: boolean;
-}
-
-export interface Conversation {
-  id: string;
-  participantIds: string[];
-  participantNames: Record<string, string>;
-  participantRoles: Record<string, string>;
-  lastMessage?: string;
-  lastMessageTime?: Timestamp;
-  unreadCount?: number;
 }
 
 /**
@@ -44,7 +38,7 @@ export async function sendMessage(
 ): Promise<void> {
   const conversationId = [senderId, receiverId].sort().join("_");
 
-  // Add message
+  // Add message document
   await addDoc(collection(db, "messages"), {
     conversationId,
     senderId,
@@ -54,20 +48,31 @@ export async function sendMessage(
     createdAt: serverTimestamp(),
   });
 
-  // Update conversation metadata
+  // Upsert conversation metadata
   const convRef = doc(db, "conversations", conversationId);
   const convSnap = await getDoc(convRef);
+
   if (convSnap.exists()) {
+    const data = convSnap.data();
     await updateDoc(convRef, {
       lastMessage: text,
       lastMessageTime: serverTimestamp(),
-      [`unreadCount.${receiverId}`]: (convSnap.data().unreadCount?.[receiverId] || 0) + 1,
+      [`unreadCount.${receiverId}`]: (data.unreadCount?.[receiverId] || 0) + 1,
+    });
+  } else {
+    // Create conversation doc
+    await updateDoc(convRef, {
+      participantIds: [senderId, receiverId],
+      lastMessage: text,
+      lastMessageTime: serverTimestamp(),
+      unreadCount: { [receiverId]: 1 },
+      createdAt: serverTimestamp(),
     });
   }
 }
 
 /**
- * Get messages for a conversation (between two users)
+ * Subscribe to messages for a conversation
  */
 export function subscribeToMessages(
   userId1: string,
@@ -94,7 +99,8 @@ export function subscribeToMessages(
 export async function getUserConversations(userId: string): Promise<any[]> {
   const q = query(
     collection(db, "conversations"),
-    where("participantIds", "array-contains", userId)
+    where("participantIds", "array-contains", userId),
+    orderBy("lastMessageTime", "desc")
   );
   const snap = await getDocs(q);
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));

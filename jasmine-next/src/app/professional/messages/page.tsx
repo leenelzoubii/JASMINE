@@ -1,166 +1,214 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Send, Search, MoreVertical } from 'lucide-react';
 import { motion } from 'framer-motion';
-
-const initialConversations = [
-  { id: 1, name: 'John Thompson', lastMessage: 'Thank you for the update...', time: '2h ago', unread: 2, avatar: 'JT' },
-  { id: 2, name: 'Sarah Johnson', lastMessage: 'When is the next appointment?', time: '1d ago', unread: 0, avatar: 'SJ' },
-  { id: 3, name: 'Mike Williams', lastMessage: 'Got it, thank you!', time: '3d ago', unread: 0, avatar: 'MW' },
-];
-
-const initialMessages = [
-  { id: 1, sender: 'parent', text: 'Hello Dr. Jasmine, I wanted to ask about Emma\'s assessment results.', time: '10:30 AM' },
-  { id: 2, sender: 'professional', text: 'Hi John! The results show some areas we should monitor. I\'ll send the full report shortly.', time: '10:32 AM' },
-  { id: 3, sender: 'parent', text: 'Thank you for the update. Should we schedule a follow-up?', time: '10:35 AM' },
-  { id: 4, sender: 'professional', text: 'Yes, let\'s schedule one for next week. I\'ll send some available times.', time: '10:40 AM' },
-  { id: 5, sender: 'parent', text: 'Thank you for the update. Should we schedule a follow-up?', time: '10:35 AM' },
-  { id: 6, sender: 'professional', text: 'Yes, let\'s schedule one for next week. I\'ll send some available times.', time: '10:40 AM' },
-];
+import { getCurrentUser } from '@/lib/auth';
+import { getUserConnections } from '@/lib/parent-requests';
+import { sendMessage, subscribeToMessages, Message } from '@/lib/messages';
+import { addNotification } from '@/lib/notifications';
 
 export default function ProfessionalMessagesPage() {
-  const [selectedChat, setSelectedChat] = useState(1);
+  const [selectedChat, setSelectedChat] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState('');
   const [mounted, setMounted] = useState(false);
-  const [conversations, setConversations] = useState(initialConversations);
-  const [messages, setMessages] = useState(initialMessages);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [connections, setConnections] = useState<any[]>([]);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const currentUser = mounted ? getCurrentUser() : null;
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  useEffect(() => {
+    if (!currentUser) return;
+    getUserConnections(currentUser.id)
+      .then(setConnections)
+      .catch(console.error);
+  }, [currentUser]);
+
+  // Subscribe to messages when a chat is selected
+  useEffect(() => {
+    if (!selectedChat || !currentUser) return;
+
+    const unsub = subscribeToMessages(currentUser.id, selectedChat, (msgs) => {
+      setMessages(msgs);
+    });
+
+    return () => unsub();
+  }, [selectedChat, currentUser]);
+
+  // Auto-scroll to bottom
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const activeConnection = connections.find(
+    (c) => c.professionalId === currentUser?.id && (c.parentId === selectedChat || c.professionalId === selectedChat)
+  );
+
+  const handleSend = async () => {
+    if (!newMessage.trim() || !currentUser || !selectedChat) return;
+
+    try {
+      await sendMessage(currentUser.id, selectedChat, newMessage.trim());
+
+      // Notify receiver
+      await addNotification({
+        userId: selectedChat,
+        type: 'message',
+        title: 'New Message',
+        message: `${currentUser.name} sent you a message.`,
+        link: '/parent/messages',
+      });
+
+      setNewMessage('');
+    } catch (err) {
+      console.error('Failed to send message:', err);
+    }
+  };
+
   if (!mounted) {
     return (
       <div className="h-[calc(100vh-8rem)]">
-        <div className="flex h-full bg-white dark:bg-dark-surface rounded-2xl border border-gray-200 dark:border-dark-deep animate-pulse" />
+        <div className="flex h-full rounded-2xl border animate-pulse" style={{ backgroundColor: 'var(--background)', borderColor: 'var(--border)' }} />
       </div>
     );
   }
 
-  const activeConversation = conversations.find(c => c.id === selectedChat);
-
-  const handleSend = () => {
-    if (newMessage.trim()) {
-      const now = new Date();
-      const timeString = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-      const newMsg = { id: Date.now(), sender: 'professional', text: newMessage.trim(), time: timeString };
-      setMessages(prev => [...prev, newMsg]);
-      setConversations(prev => prev.map(conv => 
-        conv.id === selectedChat 
-          ? { ...conv, lastMessage: newMessage.trim(), time: 'Just now' }
-          : conv
-      ));
-      setNewMessage('');
-    }
-  };
-
   return (
     <div className="h-[calc(100vh-8rem)]">
-      <div className="flex h-full bg-white dark:bg-dark-surface rounded-2xl border border-gray-200 dark:border-dark-deep overflow-hidden">
+      <div className="flex h-full rounded-2xl border overflow-hidden" style={{ backgroundColor: 'var(--background)', borderColor: 'var(--border)' }}>
         {/* Conversations List */}
-        <div className="w-80 border-r border-gray-200 dark:border-dark-deep flex flex-col">
-          <div className="p-4 border-b border-gray-100 dark:border-dark-deep">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Messages</h2>
+        <div className="w-80 flex flex-col" style={{ borderRight: '1px solid var(--border)' }}>
+          <div className="p-4" style={{ borderBottom: '1px solid var(--border)' }}>
+            <h2 className="text-lg font-semibold" style={{ color: 'var(--foreground)' }}>Messages</h2>
             <div className="relative mt-3">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-muted)' }} />
               <input
                 type="text"
-                placeholder="Search messages..."
-                className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-deep rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                placeholder="Search..."
+                className="w-full pl-10 pr-4 py-2 rounded-lg text-sm"
+                style={{ backgroundColor: 'var(--background-alt)', border: '1px solid var(--border)', color: 'var(--foreground)' }}
               />
             </div>
           </div>
           <div className="flex-1 overflow-y-auto">
-            {conversations.map((conv) => (
-              <button
-                key={conv.id}
-                onClick={() => setSelectedChat(conv.id)}
-                className={`w-full p-4 flex items-center gap-3 text-left hover:bg-gray-50 dark:hover:bg-dark-deep transition-colors ${
-                  selectedChat === conv.id ? 'bg-primary-light/30 dark:bg-primary-dark/20' : ''
-                }`}
-              >
-                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-semibold text-sm">
-                  {conv.avatar}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <p className="font-medium text-gray-900 dark:text-white truncate">{conv.name}</p>
-                    <span className="text-xs text-gray-400">{conv.time}</span>
-                  </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{conv.lastMessage}</p>
-                </div>
-                {conv.unread > 0 && (
-                  <span className="w-5 h-5 rounded-full bg-primary text-white text-xs flex items-center justify-center">
-                    {conv.unread}
-                  </span>
-                )}
-              </button>
-            ))}
+            {connections.length === 0 ? (
+              <div className="py-8 text-center px-4">
+                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No conversations yet.</p>
+                <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                  Add a patient and have the parent accept your request to start messaging.
+                </p>
+              </div>
+            ) : (
+              connections.map((conn) => {
+                const otherUserId = conn.parentId;
+                const otherName = conn.parentName || 'Parent';
+                const initials = otherName.split(' ').map((n: string) => n[0]).join('').toUpperCase();
+                const isActive = selectedChat === otherUserId;
+
+                return (
+                  <button
+                    key={conn.id}
+                    onClick={() => setSelectedChat(otherUserId)}
+                    className="w-full p-4 flex items-center gap-3 text-left transition-colors"
+                    style={{
+                      backgroundColor: isActive ? 'rgba(74, 155, 184, 0.08)' : 'transparent',
+                    }}
+                  >
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm" style={{ backgroundColor: 'var(--primary)' }}>
+                      {initials}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate" style={{ color: 'var(--foreground)' }}>{otherName}</p>
+                      <p className="text-sm truncate" style={{ color: 'var(--text-muted)' }}>
+                        Patient: {conn.patientName || 'N/A'}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })
+            )}
           </div>
         </div>
 
         {/* Chat Area */}
         <div className="flex-1 flex flex-col">
-          {/* Chat Header */}
-          <div className="p-4 border-b border-gray-100 dark:border-dark-deep flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-semibold">
-                {activeConversation?.avatar}
-              </div>
-              <div>
-                <p className="font-medium text-gray-900 dark:text-white">{activeConversation?.name}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Parent of patient</p>
-              </div>
+          {!selectedChat ? (
+            <div className="flex-1 flex items-center justify-center">
+              <p style={{ color: 'var(--text-muted)' }}>Select a conversation to start messaging</p>
             </div>
-            <button className="p-2 bg-primary/10 text-primary hover:bg-primary/20 rounded-lg transition-colors">
-              <MoreVertical className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.map((msg) => (
-              <motion.div
-                key={msg.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`flex ${msg.sender === 'professional' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div className={`max-w-md px-4 py-3 rounded-2xl ${
-                  msg.sender === 'professional'
-                    ? 'bg-primary text-white rounded-br-md'
-                    : 'bg-gray-100 dark:bg-dark-deep text-gray-900 dark:text-white rounded-bl-md'
-                }`}>
-                  <p className="text-sm">{msg.text}</p>
-                  <p className={`text-xs mt-1 ${msg.sender === 'professional' ? 'text-white/70' : 'text-gray-400'}`}>
-                    {msg.time}
-                  </p>
+          ) : (
+            <>
+              {/* Chat Header */}
+              <div className="p-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--border)' }}>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold" style={{ backgroundColor: 'var(--primary)' }}>
+                    {activeConnection?.parentName?.charAt(0) || 'P'}
+                  </div>
+                  <div>
+                    <p className="font-medium" style={{ color: 'var(--foreground)' }}>{activeConnection?.parentName || 'Parent'}</p>
+                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Parent of {activeConnection?.patientName || 'patient'}</p>
+                  </div>
                 </div>
-              </motion.div>
-            ))}
-          </div>
+              </div>
 
-          {/* Input */}
-          <div className="p-4 border-t border-gray-100 dark:border-dark-deep">
-            <div className="flex items-center gap-3">
-              <input
-                type="text"
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Type a message..."
-                className="flex-1 px-4 py-3 bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-deep rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
-                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              />
-              <button
-                onClick={handleSend}
-                disabled={!newMessage.trim()}
-                className="p-3 bg-primary hover:bg-primary-dark text-white rounded-xl transition-all disabled:opacity-50"
-              >
-                <Send className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {messages.length === 0 ? (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No messages yet. Start a conversation!</p>
+                  </div>
+                ) : (
+                  messages.map((msg) => (
+                    <motion.div
+                      key={msg.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={`flex ${msg.senderId === currentUser?.id ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div className={`max-w-md px-4 py-3 rounded-2xl ${
+                        msg.senderId === currentUser?.id
+                          ? 'rounded-br-md text-white'
+                          : 'rounded-bl-md'
+                      }`} style={{
+                        backgroundColor: msg.senderId === currentUser?.id ? 'var(--primary)' : 'var(--background-alt)',
+                        color: msg.senderId === currentUser?.id ? 'white' : 'var(--foreground)',
+                      }}>
+                        <p className="text-sm">{msg.text}</p>
+                      </div>
+                    </motion.div>
+                  ))
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Input */}
+              <div className="p-4" style={{ borderTop: '1px solid var(--border)' }}>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="text"
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    placeholder="Type a message..."
+                    className="flex-1 px-4 py-3 rounded-xl"
+                    style={{ backgroundColor: 'var(--background-alt)', border: '1px solid var(--border)', color: 'var(--foreground)' }}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                  />
+                  <button
+                    onClick={handleSend}
+                    disabled={!newMessage.trim()}
+                    className="p-3 text-white rounded-xl transition-all disabled:opacity-50"
+                    style={{ backgroundColor: 'var(--primary)' }}
+                  >
+                    <Send className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
