@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Upload, FileText, Clock, CheckCircle, AlertCircle, RefreshCw, Video, Loader2, Youtube, Link2 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Upload, Video, Youtube, Loader2, Link2, CheckCircle, Play, Layers, BarChart3, Brain, Activity } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const ML_BACKEND_URL = process.env.NEXT_PUBLIC_ML_BACKEND_URL || 'http://localhost:8000';
 
@@ -22,6 +22,14 @@ interface PredictionResult {
   error?: string;
 }
 
+const pipelineStages = [
+  { key: 'video', label: 'Video Input', icon: Video, desc: 'MP4 or YouTube link' },
+  { key: 'pose', label: 'Pose Detection', icon: Activity, desc: 'MediaPipe → 25 body keypoints' },
+  { key: 'features', label: 'Feature Extraction', icon: BarChart3, desc: 'Kinematic + Statistical features' },
+  { key: 'models', label: 'ML Models', icon: Layers, desc: 'RF · SVM · LSTM · Transformer' },
+  { key: 'ensemble', label: 'Ensemble', icon: Brain, desc: 'Risk score aggregation' },
+];
+
 export default function ProfessionalAssessmentsPage() {
   const [selectedPatient, setSelectedPatient] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -30,6 +38,8 @@ export default function ProfessionalAssessmentsPage() {
   const [inputMode, setInputMode] = useState<'file' | 'youtube'>('file');
   const [result, setResult] = useState<PredictionResult | null>(null);
   const [error, setError] = useState('');
+  const [currentStage, setCurrentStage] = useState(-1);
+  const [showPipeline, setShowPipeline] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -44,17 +54,23 @@ export default function ProfessionalAssessmentsPage() {
     }
   };
 
+  const simulatePipeline = async () => {
+    // Animate through pipeline stages
+    for (let i = 0; i < pipelineStages.length; i++) {
+      setCurrentStage(i);
+      await new Promise(r => setTimeout(r, 800));
+    }
+  };
+
   const handleRunAssessment = async () => {
     if (!selectedPatient) {
       setError('Please select a patient.');
       return;
     }
-
     if (inputMode === 'file' && !videoFile) {
       setError('Please upload a video file.');
       return;
     }
-
     if (inputMode === 'youtube' && !youtubeUrl.trim()) {
       setError('Please enter a YouTube URL.');
       return;
@@ -63,6 +79,11 @@ export default function ProfessionalAssessmentsPage() {
     setUploading(true);
     setError('');
     setResult(null);
+    setShowPipeline(true);
+    setCurrentStage(-1);
+
+    // Start pipeline animation
+    simulatePipeline();
 
     try {
       let res;
@@ -91,6 +112,7 @@ export default function ProfessionalAssessmentsPage() {
       }
 
       setResult(data);
+      setCurrentStage(pipelineStages.length); // mark all complete
     } catch {
       setError(
         'Could not connect to the ML backend. Make sure the server is running on port 8000.\n\n' +
@@ -129,39 +151,23 @@ export default function ProfessionalAssessmentsPage() {
           <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--foreground)' }}>Run New Assessment</h3>
           <p className="mb-4" style={{ color: 'var(--text-muted)' }}>Analyze movement patterns to assess ASD risk</p>
 
-          {/* Input Mode Toggle */}
           <div className="flex items-center gap-2 mb-4 p-1 rounded-xl" style={{ backgroundColor: 'var(--background-alt)' }}>
-            <button
-              onClick={() => setInputMode('file')}
+            <button onClick={() => setInputMode('file')}
               className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all"
-              style={{
-                backgroundColor: inputMode === 'file' ? 'var(--primary)' : 'transparent',
-                color: inputMode === 'file' ? 'white' : 'var(--text-muted)',
-              }}
-            >
-              <Upload className="w-4 h-4" />
-              Upload MP4
+              style={{ backgroundColor: inputMode === 'file' ? 'var(--primary)' : 'transparent', color: inputMode === 'file' ? 'white' : 'var(--text-muted)' }}>
+              <Upload className="w-4 h-4" /> Upload MP4
             </button>
-            <button
-              onClick={() => setInputMode('youtube')}
+            <button onClick={() => setInputMode('youtube')}
               className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all"
-              style={{
-                backgroundColor: inputMode === 'youtube' ? 'var(--primary)' : 'transparent',
-                color: inputMode === 'youtube' ? 'white' : 'var(--text-muted)',
-              }}
-            >
-              <Youtube className="w-4 h-4" />
-              YouTube URL
+              style={{ backgroundColor: inputMode === 'youtube' ? 'var(--primary)' : 'transparent', color: inputMode === 'youtube' ? 'white' : 'var(--text-muted)' }}>
+              <Youtube className="w-4 h-4" /> YouTube URL
             </button>
           </div>
 
           <div className="flex flex-col gap-3 w-full max-w-md">
-            <select
-              value={selectedPatient}
-              onChange={(e) => setSelectedPatient(e.target.value)}
+            <select value={selectedPatient} onChange={(e) => setSelectedPatient(e.target.value)}
               className="w-full px-4 py-3 rounded-xl"
-              style={{ backgroundColor: 'var(--background)', border: '1px solid var(--border)', color: 'var(--foreground)' }}
-            >
+              style={{ backgroundColor: 'var(--background)', border: '1px solid var(--border)', color: 'var(--foreground)' }}>
               <option value="">Select patient...</option>
               <option value="1">Emma Thompson</option>
               <option value="2">Liam Johnson</option>
@@ -169,62 +175,97 @@ export default function ProfessionalAssessmentsPage() {
             </select>
 
             {!result && inputMode === 'file' && (
-              <label className="w-full px-4 py-3 rounded-xl text-center cursor-pointer"
-                style={{ backgroundColor: 'var(--background-alt)', border: '1px solid var(--border)' }}>
-                <input
-                  type="file"
-                  accept=".mp4,.mov,.avi"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-                {videoFile ? (
-                  <span style={{ color: 'var(--foreground)' }}>{videoFile.name}</span>
-                ) : (
-                  <span style={{ color: 'var(--text-muted)' }}>Click to select MP4 video</span>
-                )}
+              <label className="w-full px-4 py-3 rounded-xl text-center cursor-pointer" style={{ backgroundColor: 'var(--background-alt)', border: '1px solid var(--border)' }}>
+                <input type="file" accept=".mp4,.mov,.avi" onChange={handleFileChange} className="hidden" />
+                <span style={{ color: videoFile ? 'var(--foreground)' : 'var(--text-muted)' }}>
+                  {videoFile ? videoFile.name : 'Click to select MP4 video'}
+                </span>
               </label>
             )}
 
             {!result && inputMode === 'youtube' && (
               <div className="relative">
                 <Link2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: 'var(--text-muted)' }} />
-                <input
-                  type="url"
-                  value={youtubeUrl}
-                  onChange={(e) => { setYoutubeUrl(e.target.value); setError(''); setResult(null); }}
+                <input type="url" value={youtubeUrl} onChange={(e) => { setYoutubeUrl(e.target.value); setError(''); setResult(null); }}
                   placeholder="https://youtube.com/watch?v=..."
-                  className="w-full pl-12 pr-4 py-3 rounded-xl"
-                  style={{ backgroundColor: 'var(--background-alt)', border: '1px solid var(--border)', color: 'var(--foreground)' }}
-                />
+                  className="w-full pl-12 pr-4 py-3 rounded-xl" style={{ backgroundColor: 'var(--background-alt)', border: '1px solid var(--border)', color: 'var(--foreground)' }} />
               </div>
             )}
 
-            <button
-              onClick={handleRunAssessment}
-              disabled={
-                !selectedPatient ||
-                uploading ||
-                (inputMode === 'file' && !videoFile) ||
-                (inputMode === 'youtube' && (!youtubeUrl.trim() || !isValidUrl(youtubeUrl)))
-              }
+            <button onClick={handleRunAssessment}
+              disabled={!selectedPatient || uploading || (inputMode === 'file' && !videoFile) || (inputMode === 'youtube' && (!youtubeUrl.trim() || !isValidUrl(youtubeUrl)))}
               className="w-full px-6 py-3 text-white font-medium rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-              style={{ backgroundColor: 'var(--primary)' }}
-            >
-              {uploading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  {inputMode === 'youtube' ? <Youtube className="w-5 h-5" /> : <Upload className="w-5 h-5" />}
-                  Run Assessment
-                </>
-              )}
+              style={{ backgroundColor: 'var(--primary)' }}>
+              {uploading ? <><Loader2 className="w-5 h-5 animate-spin" /> Processing...</> : <>{inputMode === 'youtube' ? <Youtube className="w-5 h-5" /> : <Upload className="w-5 h-5" />} Run Assessment</>}
             </button>
           </div>
         </div>
       </div>
+
+      {/* Pipeline Visualization */}
+      <AnimatePresence>
+        {showPipeline && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
+            className="p-6 rounded-2xl" style={{ backgroundColor: 'var(--background)', border: '1px solid var(--border)' }}>
+            <h2 className="text-lg font-semibold mb-6" style={{ color: 'var(--foreground)' }}>Processing Pipeline</h2>
+
+            <div className="relative">
+              {/* Connecting line */}
+              <div className="absolute top-8 left-6 right-6 h-0.5" style={{ backgroundColor: 'var(--border)' }} />
+
+              {/* Stages */}
+              <div className="flex justify-between relative">
+                {pipelineStages.map((stage, i) => {
+                  const isActive = currentStage >= i;
+                  const isCurrent = currentStage === i;
+                  const isComplete = currentStage > i || currentStage === pipelineStages.length;
+
+                  return (
+                    <motion.div key={stage.key} className="flex flex-col items-center gap-2 z-10" style={{ width: 120 }}>
+                      <motion.div
+                        animate={isCurrent ? { scale: [1, 1.15, 1], transition: { repeat: Infinity, duration: 1.5 } } : {}}
+                        className="w-14 h-14 rounded-full flex items-center justify-center relative"
+                        style={{
+                          backgroundColor: isComplete ? '#16a34a' : isActive ? 'var(--primary)' : 'var(--background-alt)',
+                          border: isActive ? 'none' : '2px solid var(--border)',
+                        }}
+                      >
+                        {isComplete ? (
+                          <CheckCircle className="w-6 h-6 text-white" />
+                        ) : (
+                          <stage.icon className="w-6 h-6" style={{ color: isActive ? 'white' : 'var(--text-muted)' }} />
+                        )}
+                        {isCurrent && (
+                          <motion.span
+                            animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0, 0.5] }}
+                            transition={{ repeat: Infinity, duration: 1.5 }}
+                            className="absolute inset-0 rounded-full" style={{ backgroundColor: 'var(--primary)', opacity: 0.3 }}
+                          />
+                        )}
+                      </motion.div>
+                      <p className="text-xs font-medium text-center" style={{ color: isActive ? 'var(--foreground)' : 'var(--text-muted)' }}>
+                        {stage.label}
+                      </p>
+                      <p className="text-[10px] text-center leading-tight" style={{ color: 'var(--text-muted)' }}>
+                        {stage.desc}
+                      </p>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Current action message */}
+            <motion.p key={currentStage} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm text-center mt-4" style={{ color: 'var(--text-muted)' }}>
+              {currentStage < pipelineStages.length && currentStage >= 0
+                ? `Running: ${pipelineStages[currentStage].label} — ${pipelineStages[currentStage].desc}`
+                : currentStage === pipelineStages.length
+                  ? 'Pipeline complete!'
+                  : 'Initializing...'}
+            </motion.p>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Error */}
       {error && (
@@ -235,29 +276,18 @@ export default function ProfessionalAssessmentsPage() {
 
       {/* Results */}
       {result && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="p-6 rounded-2xl"
-          style={{ backgroundColor: 'var(--background)', border: '1px solid var(--border)' }}
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          className="p-6 rounded-2xl" style={{ backgroundColor: 'var(--background)', border: '1px solid var(--border)' }}>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold" style={{ color: 'var(--foreground)' }}>Assessment Result</h2>
             {result.source === 'youtube' && (
-              <a
-                href={result.youtube_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs"
-                style={{ backgroundColor: 'var(--background-alt)', color: 'var(--primary)' }}
-              >
-                <Youtube className="w-3 h-3" />
-                Source Video
+              <a href={result.youtube_url} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs" style={{ backgroundColor: 'var(--background-alt)', color: 'var(--primary)' }}>
+                <Youtube className="w-3 h-3" /> Source Video
               </a>
             )}
           </div>
 
-          {/* Ensemble Score */}
           <div className="text-center mb-6">
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Ensemble ASD Probability</p>
             <p className="text-5xl font-bold my-2" style={{ color: riskColor(result.risk_level).text }}>
@@ -268,13 +298,10 @@ export default function ProfessionalAssessmentsPage() {
               {result.risk_level}
             </span>
             {result.num_frames_processed && (
-              <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
-                {result.num_frames_processed} frames processed
-              </p>
+              <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>{result.num_frames_processed} frames processed</p>
             )}
           </div>
 
-          {/* Model Breakdown */}
           <div className="pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
             <p className="text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>Model Predictions:</p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -290,7 +317,7 @@ export default function ProfessionalAssessmentsPage() {
         </motion.div>
       )}
 
-      {/* Recent Assessments placeholder */}
+      {/* Recent Assessments */}
       <div className="p-6 rounded-2xl" style={{ backgroundColor: 'var(--background)', border: '1px solid var(--border)' }}>
         <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--foreground)' }}>Recent Assessments</h2>
         <p style={{ color: 'var(--text-muted)' }}>No assessments run yet. Upload a video or paste a YouTube link above to begin.</p>
