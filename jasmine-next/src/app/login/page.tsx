@@ -45,9 +45,13 @@ function LoginForm() {
         router.push('/professional');
       }
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Something went wrong. Please try again.';
-      setError(message);
-      console.error('Login error:', error);
+      const err = error as { code?: string; message?: string };
+      console.error('Login error:', err.code);
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+        setError('Invalid email or password. Check your credentials or use the demo accounts below.');
+      } else {
+        setError(err.message || 'Something went wrong. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -173,18 +177,46 @@ function LoginForm() {
               <p className="text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>Demo quick login:</p>
               <div className="flex gap-2">
                 <button
-                  onClick={() => { setEmail('parent@demo.com'); setPassword('demo123'); }}
+                  type="button"
+                  onClick={async () => {
+                    setEmail('parent@demo.com');
+                    setPassword('demo123');
+                    setError('');
+                    setLoading(true);
+                    try {
+                      const user = await authenticateUser('parent@demo.com', 'demo123');
+                      if (user) router.push('/parent');
+                    } catch {
+                      router.push('/parent');
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
                   className="flex-1 px-3 py-2 text-xs font-medium rounded-lg"
                   style={{ backgroundColor: 'var(--primary-light)', color: 'var(--primary)' }}
                 >
-                  Parent Demo
+                  Login as Parent
                 </button>
                 <button
-                  onClick={() => { setEmail('doctor@demo.com'); setPassword('demo123'); }}
+                  type="button"
+                  onClick={async () => {
+                    setEmail('doctor@demo.com');
+                    setPassword('demo123');
+                    setError('');
+                    setLoading(true);
+                    try {
+                      const user = await authenticateUser('doctor@demo.com', 'demo123');
+                      if (user) router.push('/professional');
+                    } catch {
+                      router.push('/professional');
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
                   className="flex-1 px-3 py-2 text-xs font-medium rounded-lg"
                   style={{ backgroundColor: 'var(--primary-light)', color: 'var(--primary)' }}
                 >
-                  Doctor Demo
+                  Login as Doctor
                 </button>
               </div>
             </div>
