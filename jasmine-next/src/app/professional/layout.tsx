@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { ProfessionalSidebar } from '@/components/layout/professional-sidebar';
 import { NotificationBell } from '@/components/ui/notification-bell';
+import { ToastContainer } from '@/components/ui/toast';
 import { getCurrentUser } from '@/lib/auth';
 
 export default function ProfessionalLayout({
@@ -49,6 +50,7 @@ export default function ProfessionalLayout({
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background-alt)' }}>
+      <ToastContainer />
       <ProfessionalSidebar />
       <main className="lg:pl-64 min-h-screen">
         {/* Top bar with notification bell */}

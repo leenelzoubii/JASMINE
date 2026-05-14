@@ -8,6 +8,7 @@ import { getCurrentUser } from '@/lib/auth';
 import { createPatientAccess } from '@/lib/patient-access';
 import { sendParentRequest } from '@/lib/parent-requests';
 import { addNotification } from '@/lib/notifications';
+import { showToast } from '@/components/ui/toast';
 
 function calculateAge(dob: string): number {
   const birth = new Date(dob);
@@ -135,6 +136,7 @@ export default function ProfessionalPatientsPage() {
       }
 
       setSaved(true);
+      showToast('success', 'Patient Added', `${newPatient.name} has been added successfully.`);
       setFormData({ name: '', dob: '', parentName: '', email: '', phone: '' });
       setFormError('');
       setTimeout(() => {
@@ -633,6 +635,7 @@ export default function ProfessionalPatientsPage() {
                     try {
                       await deletePatient(user.id, patientToDelete.id);
                       setPatients(prev => prev.filter(p => p.id !== patientToDelete.id));
+                      showToast('success', 'Patient Removed', `${patientToDelete.name} has been removed successfully.`);
                       // Notification for deletion
                       await addNotification({
                         userId: user.id,
