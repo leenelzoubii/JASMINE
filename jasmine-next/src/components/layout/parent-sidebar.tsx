@@ -6,6 +6,7 @@ import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { Brain, LayoutDashboard, Baby, FileText, MessageSquare, User, LogOut, Menu, X, UserPlus } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { logoutUser, getCurrentUser } from '@/lib/auth';
+import { useUnreadMessages } from '@/lib/use-unread-messages';
 
 const parentLinks = [
   { href: '/parent', label: 'Dashboard', icon: LayoutDashboard },
@@ -25,6 +26,7 @@ export function ParentSidebar() {
   }, []);
 
   const user = mounted ? getCurrentUser() : null;
+  const unreadMessages = useUnreadMessages(user?.id || null);
 
   const handleLogout = async () => {
     await logoutUser();
@@ -70,7 +72,12 @@ export function ParentSidebar() {
                   }}
                 >
                   <link.icon className="w-5 h-5" />
-                  <span className="font-medium">{link.label}</span>
+                  <span className="font-medium flex-1">{link.label}</span>
+                  {link.href.includes('/messages') && unreadMessages > 0 && (
+                    <span className="px-2 py-0.5 rounded-full text-xs font-bold text-white" style={{ backgroundColor: '#dc2626' }}>
+                      {unreadMessages > 99 ? '99+' : unreadMessages}
+                    </span>
+                  )}
                 </Link>
               );
             })}

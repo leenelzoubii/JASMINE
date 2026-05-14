@@ -45,21 +45,13 @@ export default function ParentRequestsPage() {
       console.error('Failed to accept:', err);
       showToast('error', 'Failed', 'Could not accept the request. Please try again.');
     }
-
-  const handleDecline = async (reqId: string) => {
-    try {
-      await declineParentRequest(reqId);
-      setRequests(prev => prev.filter(r => r.id !== reqId));
-      showToast('success', 'Request Declined', 'The connection request has been declined.');
-    } catch (err) {
-      console.error('Failed to decline:', err);
-    }
   };
 
   const handleDecline = async (reqId: string) => {
     try {
       await declineParentRequest(reqId);
       setRequests(prev => prev.filter(r => r.id !== reqId));
+      showToast('success', 'Request Declined', 'The connection request has been declined.');
     } catch (err) {
       console.error('Failed to decline:', err);
     }
