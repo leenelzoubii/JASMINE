@@ -8,47 +8,31 @@ import numpy as np
 import tempfile
 import os
 from pathlib import Path
-
-mp_pose = mp.solutions.pose
-pose = mp_pose.Pose(
-    static_image_mode=False,
-    model_complexity=1,
-    smooth_landmarks=True,
-    enable_segmentation=False,
-    min_detection_confidence=0.5,
-    min_tracking_confidence=0.5,
-)
+from mediapipe.tasks.python import BaseOptions
+from mediapipe.tasks.python.vision import PoseLandmarker, PoseLandmarkerOptions
+from mediapipe.tasks.python.vision import RunningMode
 
 # MediaPipe Pose gives 33 landmarks.
 # We map to BODY-25 format (25 keypoints) for compatibility.
-# MediaPipe index -> BODY-25 index mapping
 MP_TO_BODY25 = {
     0: 0,   # nose
     1: 1,   # neck (approximate: midpoint between ears)
-    # Right arm
     12: 2,  # RShoulder
     14: 3,  # RElbow
     16: 4,  # RWrist
-    # Left arm
     11: 5,  # LShoulder
     13: 6,  # LElbow
     15: 7,  # LWrist
-    # MidHip (average of hips)
-    # Right leg
     24: 9,  # RHip
     26: 10, # RKnee
     28: 11, # RAnkle
-    # Left leg
     23: 12, # LHip
     25: 13, # LKnee
     27: 14, # LAnkle
-    # Eyes
     8: 15,  # REye (left in MP)
     7: 16,  # LEye (right in MP)
-    # Ears
     10: 17, # REar (left in MP)
     9: 18,  # LEar (right in MP)
-    # Feet
     32: 19, # LBigToe (heel in MP)
     30: 22, # RBigToe (heel in MP)
 }
@@ -61,31 +45,46 @@ def mediapipe_to_body25(mp_landmarks, h, w):
     """
     body25 = np.zeros((25, 3), dtype=np.float32)
 
-    # Fill mapped points
     for mp_idx, b25_idx in MP_TO_BODY25.items():
         lm = mp_landmarks[mp_idx]
-        body25[b25_idx] = [lm.x, lm.y, lm.visibility]
+        body25[b25_idx] = [lm.x, lm.y, lm.presence]
 
-    # Neck: midpoint of shoulders
-    if 11 in [lm for lm in mp_landmarks] and 12 in [lm for lm in mp_landmarks]:
-        lshoulder = mp_landmarks[11]
-        rshoulder = mp_landmarks[12]
-        neck_x = (lshoulder.x + rshoulder.x) / 2
-        neck_y = (lshoulder.y + rshoulder.y) / 2
-        neck_vis = min(lshoulder.visibility, rshoulder.visibility)
-        body25[1] = [neck_x, neck_y, neck_vis]
+    lshoulder = mp_landmarks[11]
+    rshoulder = mp_landmarks[12]
+    neck_x = (lshoulder.x + rshoulder.x) / 2
+    neck_y = (lshoulder.y + rshoulder.y) / 2
+    neck_vis = min(lshoulder.presence, rshoulder.presence)
+    body25[1] = [neck_x, neck_y, neck_vis]
 
-    # Midhip: average of hips
-    if 23 in [lm for lm in mp_landmarks] and 24 in [lm for lm in mp_landmarks]:
-        lhip = mp_landmarks[23]
-        rhip = mp_landmarks[24]
-        body25[8] = [
-            (lhip.x + rhip.x) / 2,
-            (lhip.y + rhip.y) / 2,
-            min(lhip.visibility, rhip.visibility),
-        ]
+    lhip = mp_landmarks[23]
+    rhip = mp_landmarks[24]
+    body25[8] = [
+        (lhip.x + rhip.x) / 2,
+        (lhip.y + rhip.y) / 2,
+        min(lhip.presence, rhip.presence),
+    ]
 
     return body25
+
+
+def get_model_path() -> str:
+    """Get or download the pose landmarker model."""
+    model_path = Path(__file__).parent / 'pose_landmarker.task'
+    if model_path.exists():
+        return str(model_path)
+    
+    import urllib.request
+    url = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task'
+    print(f"Downloading pose landmarker model to {model_path}...")
+    
+    try:
+        urllib.request.urlretrieve(url, model_path)
+        print(f"Model downloaded successfully to {model_path}")
+    except Exception as e:
+        print(f"Failed to download model: {e}")
+        raise
+    
+    return str(model_path)
 
 
 def extract_keypoints_from_mp4(video_path: str, max_frames: int = 300, fps_target: int = 15) -> np.ndarray:
@@ -103,39 +102,46 @@ def extract_keypoints_from_mp4(video_path: str, max_frames: int = 300, fps_targe
     if original_fps <= 0:
         original_fps = 30
 
-    # Calculate frame sampling to get fps_target
-    sample_every = max(1, int(original_fps / fps_target))
+    frame_duration = 1.0 / fps_target
+    frame_idx = 0
+
+    model_path = get_model_path()
+    base_options = BaseOptions(model_asset_path=model_path)
+    options = PoseLandmarkerOptions(
+        base_options=base_options,
+        running_mode=RunningMode.VIDEO,
+        num_poses=1
+    )
+    landmarker = PoseLandmarker.create_from_options(options)
 
     all_frames = []
-    frame_count = 0
 
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
             break
 
-        # Sample frames
-        if frame_count % sample_every != 0:
-            frame_count += 1
-            continue
-
-        frame_count += 1
         if len(all_frames) >= max_frames:
             break
 
-        # Convert BGR to RGB
+        timestamp_ms = int(frame_idx * frame_duration * 1000)
+        
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        results = pose.process(rgb_frame)
+        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
+        
+        result = landmarker.detect_for_video(mp_image, timestamp_ms)
 
-        if results.pose_landmarks:
+        if result.pose_landmarks:
             h, w = frame.shape[:2]
-            body25 = mediapipe_to_body25(results.pose_landmarks.landmark, h, w)
+            body25 = mediapipe_to_body25(result.pose_landmarks[0], h, w)
             all_frames.append(body25)
         else:
-            # No pose detected, add zeros
             all_frames.append(np.zeros((25, 3), dtype=np.float32))
 
+        frame_idx += 1
+
     cap.release()
+    landmarker.close()
 
     if len(all_frames) == 0:
         raise ValueError("No frames extracted from video")

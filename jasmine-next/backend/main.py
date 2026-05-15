@@ -17,10 +17,21 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 # Add project root to path so we can import the ML code
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent  # jasmine-next/../
-sys.path.insert(0, str(PROJECT_ROOT))
+PROJECT_ROOT = Path(__file__).resolve().parent.parent  # jasmine-next/
+PARENT_ROOT = PROJECT_ROOT.parent  # JASMINE/
+sys.path.insert(0, str(PROJECT_ROOT))  # for backend imports
+sys.path.insert(0, str(PARENT_ROOT))   # for src/ imports (ML code)
 
 app = FastAPI(title="JASMINE ML Backend")
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Download pose landmarker model on startup."""
+    print("Checking for pose landmarker model...")
+    from backend.pose_extractor import get_model_path
+    model_path = get_model_path()
+    print(f"Using model at: {model_path}")
 
 app.add_middleware(
     CORSMiddleware,
@@ -43,22 +54,32 @@ def load_models():
     from src.models.ml_models import MLModelTrainer
     from src.models.dl_models import DLModelTrainer
 
-    models_dir = PROJECT_ROOT / "models"
+    models_dir_1 = PROJECT_ROOT / "models"
+    models_dir_2 = PARENT_ROOT / "models"
+
     models = {}
 
     for model_type in ['rf', 'svm']:
-        model_path = models_dir / f'{model_type}_model.pkl'
-        if model_path.exists():
-            trainer = MLModelTrainer(model_type=model_type)
-            trainer.load(str(model_path))
-            models[model_type] = trainer
+        for check_dir in [models_dir_1, models_dir_2]:
+            model_path = check_dir / f'{model_type}_model.pkl'
+            if model_path.exists():
+                try:
+                    trainer = MLModelTrainer(model_type=model_type)
+                    trainer.load(str(model_path))
+                    models[model_type] = trainer
+                except Exception as e:
+                    pass
 
     for model_type in ['lstm', 'transformer']:
-        model_path = models_dir / f'{model_type}_model.pth'
-        if model_path.exists():
-            trainer = DLModelTrainer(model_type=model_type)
-            trainer.load(str(model_path))
-            models[model_type] = trainer
+        for check_dir in [models_dir_1, models_dir_2]:
+            model_path = check_dir / f'{model_type}_model.pth'
+            if model_path.exists():
+                try:
+                    trainer = DLModelTrainer(model_type=model_type)
+                    trainer.load(str(model_path))
+                    models[model_type] = trainer
+                except Exception as e:
+                    pass
 
     _models_cache = models
     return models
@@ -85,7 +106,7 @@ def extract_features_from_keypoints(keypoints: np.ndarray, fps: int = 15) -> tup
     kin_features, _ = extract_kinematic_features(coords_2d, fps=fps)
 
     # Statistical features
-    stat_features = extract_all_features(coords_2d, fps=fps)
+    stat_features, _ = extract_all_features(coords_2d, fps=fps)
 
     # Combine
     all_features = np.concatenate([kin_features, stat_features])
