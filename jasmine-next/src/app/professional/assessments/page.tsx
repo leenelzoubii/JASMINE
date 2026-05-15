@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Upload, Video, Youtube, Loader2, Link2, CheckCircle, Play, Layers, BarChart3, Brain, Activity } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getCurrentUser } from '@/lib/auth';
+import { getPatients, Patient } from '@/lib/patients';
 
 const ML_BACKEND_URL = process.env.NEXT_PUBLIC_ML_BACKEND_URL || 'http://localhost:8000';
 
@@ -32,6 +34,8 @@ const pipelineStages = [
 
 export default function ProfessionalAssessmentsPage() {
   const [selectedPatient, setSelectedPatient] = useState('');
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [patientsLoading, setPatientsLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [youtubeUrl, setYoutubeUrl] = useState('');
@@ -40,6 +44,25 @@ export default function ProfessionalAssessmentsPage() {
   const [error, setError] = useState('');
   const [currentStage, setCurrentStage] = useState(-1);
   const [showPipeline, setShowPipeline] = useState(false);
+
+  useEffect(() => {
+    const loadPatients = async () => {
+      const user = getCurrentUser();
+      if (!user) {
+        setPatientsLoading(false);
+        return;
+      }
+      try {
+        const patientsData = await getPatients(user.id);
+        setPatients(patientsData);
+      } catch (err) {
+        console.error('Error loading patients:', err);
+      } finally {
+        setPatientsLoading(false);
+      }
+    };
+    loadPatients();
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -167,11 +190,17 @@ export default function ProfessionalAssessmentsPage() {
           <div className="flex flex-col gap-3 w-full max-w-md">
             <select value={selectedPatient} onChange={(e) => setSelectedPatient(e.target.value)}
               className="w-full px-4 py-3 rounded-xl"
-              style={{ backgroundColor: 'var(--background)', border: '1px solid var(--border)', color: 'var(--foreground)' }}>
-              <option value="">Select patient...</option>
-              <option value="1">Emma Thompson</option>
-              <option value="2">Liam Johnson</option>
-              <option value="3">Sophie Williams</option>
+              style={{ backgroundColor: 'var(--background)', border: '1px solid var(--border)', color: 'var(--foreground)' }}
+              disabled={patientsLoading}>
+              <option value="">{patientsLoading ? 'Loading patients...' : 'Select patient...'}</option>
+              {!patientsLoading && patients.length === 0 && (
+                <option value="" disabled>No patients found. Add patients first.</option>
+              )}
+              {patients.map((patient) => (
+                <option key={patient.id} value={patient.id}>
+                  {patient.name}
+                </option>
+              ))}
             </select>
 
             {!result && inputMode === 'file' && (
