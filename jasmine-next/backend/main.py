@@ -14,7 +14,7 @@ import numpy as np
 import uvicorn
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 
 # Add project root to path so we can import the ML code
 PROJECT_ROOT = Path(__file__).resolve().parent.parent  # jasmine-next/
@@ -145,6 +145,47 @@ def get_risk_level(probability: float) -> str:
         return "High Risk"
 
 
+def format_sse(event: str, data: dict) -> str:
+    return f"event: {event}\ndata: {json.dumps(data)}\n\n"
+
+
+def run_pipeline_from_file(video_path: str, fps: int = 15, extra_result_fields: dict = None):
+    """Sync generator: runs ML pipeline yielding SSE progress events."""
+    try:
+        yield format_sse("progress", {"stage": 1, "message": "Extracting pose keypoints from video..."})
+        from backend.pose_extractor import extract_keypoints_from_mp4
+        keypoints = extract_keypoints_from_mp4(video_path, fps_target=fps)
+
+        yield format_sse("progress", {"stage": 2, "message": "Extracting kinematic and statistical features..."})
+        features, dl_sequence = extract_features_from_keypoints(keypoints, fps=fps)
+
+        yield format_sse("progress", {"stage": 3, "message": "Loading trained ML models..."})
+        models = load_models()
+
+        yield format_sse("progress", {"stage": 4, "message": "Running ensemble prediction..."})
+        predictions = get_ensemble_prediction(models, features, dl_sequence)
+
+        ensemble_prob = float(np.mean(list(predictions.values()))) if predictions else 0.0
+        risk_level = get_risk_level(ensemble_prob)
+
+        result = {
+            "success": True,
+            "ensemble_probability": ensemble_prob,
+            "risk_level": risk_level,
+            "num_frames_processed": int(keypoints.shape[0]),
+            "model_predictions": {
+                k: {"probability": v, "risk_level": get_risk_level(v)}
+                for k, v in predictions.items()
+            },
+        }
+        if extra_result_fields:
+            result.update(extra_result_fields)
+
+        yield format_sse("result", result)
+    except Exception as e:
+        yield format_sse("error", {"message": str(e)})
+
+
 @app.get("/api/health")
 async def health():
     return {"status": "ok"}
@@ -154,6 +195,7 @@ async def health():
 async def predict_video(video: UploadFile = File(...), fps: int = Form(15)):
     """
     Accept MP4 video upload, extract pose, and return ASD risk prediction.
+    Streams SSE progress events for each pipeline stage.
     """
     if not video.filename or not video.filename.endswith(('.mp4', '.mov', '.avi')):
         return JSONResponse(
@@ -167,46 +209,22 @@ async def predict_video(video: UploadFile = File(...), fps: int = Form(15)):
         tmp.write(await video.read())
         tmp_path = tmp.name
 
-    try:
-        # Step 1: Extract pose keypoints from video
-        from backend.pose_extractor import extract_keypoints_from_mp4
-        keypoints = extract_keypoints_from_mp4(tmp_path, fps_target=fps)
+    def generate():
+        try:
+            yield from run_pipeline_from_file(tmp_path, fps)
+        finally:
+            if os.path.exists(tmp_path):
+                os.unlink(tmp_path)
 
-        # Step 2: Extract features
-        features, dl_sequence = extract_features_from_keypoints(keypoints, fps=fps)
-
-        # Step 3: Load models and predict
-        models = load_models()
-        predictions = get_ensemble_prediction(models, features, dl_sequence)
-
-        # Step 4: Compute ensemble score
-        if predictions:
-            ensemble_prob = float(np.mean(list(predictions.values())))
-        else:
-            ensemble_prob = 0.0
-
-        risk_level = get_risk_level(ensemble_prob)
-
-        result = {
-            "success": True,
-            "ensemble_probability": ensemble_prob,
-            "risk_level": risk_level,
-            "num_frames_processed": int(keypoints.shape[0]),
-            "model_predictions": {
-                k: {"probability": v, "risk_level": get_risk_level(v)}
-                for k, v in predictions.items()
-            },
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
         }
-
-        return JSONResponse(content=result)
-
-    except Exception as e:
-        return JSONResponse(
-            status_code=500,
-            content={"success": False, "error": str(e)}
-        )
-    finally:
-        os.unlink(tmp_path)
+    )
 
 
 @app.post("/api/predict-json")
@@ -251,76 +269,56 @@ async def predict_json(file: UploadFile = File(...)):
 
 @app.post("/api/predict-youtube")
 async def predict_youtube(data: dict):
-    """Accept YouTube URL, download video, extract pose, and return ASD risk prediction."""
+    """Accept YouTube URL, download video, extract pose, and return ASD risk prediction.
+    Streams SSE progress events for each pipeline stage."""
     youtube_url = data.get("youtube_url", "").strip()
     fps = data.get("fps", 15)
 
     if not youtube_url:
         return JSONResponse(status_code=400, content={"success": False, "error": "YouTube URL is required."})
 
-    # Download YouTube video using yt-dlp
-    tmp_dir = tempfile.mkdtemp()
-    output_template = os.path.join(tmp_dir, "%(title)s.%(ext)s")
+    def generate():
+        tmp_dir = None
+        try:
+            tmp_dir = tempfile.mkdtemp()
+            output_template = os.path.join(tmp_dir, "%(title)s.%(ext)s")
 
-    try:
-        subprocess.run(
-            ["yt-dlp", "-f", "mp4", "-o", output_template, youtube_url],
-            capture_output=True,
-            text=True,
-            check=True,
-            timeout=120,
-        )
-    except subprocess.CalledProcessError as e:
-        return JSONResponse(
-            status_code=400,
-            content={"success": False, "error": f"Failed to download YouTube video: {e.stderr or 'Unknown error'}"}
-        )
-    except FileNotFoundError:
-        return JSONResponse(
-            status_code=500,
-            content={"success": False, "error": "yt-dlp is not installed. Install with: pip install yt-dlp"}
-        )
+            yield format_sse("progress", {"stage": 0, "message": "Downloading video from YouTube..."})
+            subprocess.run(
+                ["yt-dlp", "-f", "mp4", "-o", output_template, youtube_url],
+                capture_output=True, text=True, check=True, timeout=120,
+            )
 
-    # Find downloaded file
-    video_files = [f for f in os.listdir(tmp_dir) if f.endswith((".mp4", ".mkv", ".webm"))]
-    if not video_files:
-        return JSONResponse(status_code=400, content={"success": False, "error": "Could not find downloaded video."})
+            video_files = [f for f in os.listdir(tmp_dir) if f.endswith((".mp4", ".mkv", ".webm"))]
+            if not video_files:
+                yield format_sse("error", {"message": "Could not find downloaded video."})
+                return
 
-    video_path = os.path.join(tmp_dir, video_files[0])
+            video_path = os.path.join(tmp_dir, video_files[0])
+            yield from run_pipeline_from_file(
+                video_path, fps,
+                extra_result_fields={"source": "youtube", "youtube_url": youtube_url}
+            )
+        except subprocess.CalledProcessError as e:
+            yield format_sse("error", {"message": f"Failed to download YouTube video: {e.stderr or 'Unknown error'}"})
+        except FileNotFoundError:
+            yield format_sse("error", {"message": "yt-dlp is not installed. Install with: pip install yt-dlp"})
+        except Exception as e:
+            yield format_sse("error", {"message": str(e)})
+        finally:
+            if tmp_dir and os.path.exists(tmp_dir):
+                import shutil
+                shutil.rmtree(tmp_dir, ignore_errors=True)
 
-    try:
-        # Process through existing pipeline
-        from backend.pose_extractor import extract_keypoints_from_mp4
-        keypoints = extract_keypoints_from_mp4(video_path, fps_target=fps)
-
-        features, dl_sequence = extract_features_from_keypoints(keypoints, fps=fps)
-        models = load_models()
-        predictions = get_ensemble_prediction(models, features, dl_sequence)
-
-        ensemble_prob = float(np.mean(list(predictions.values()))) if predictions else 0.0
-        risk_level = get_risk_level(ensemble_prob)
-
-        return JSONResponse(content={
-            "success": True,
-            "ensemble_probability": ensemble_prob,
-            "risk_level": risk_level,
-            "num_frames_processed": int(keypoints.shape[0]),
-            "source": "youtube",
-            "youtube_url": youtube_url,
-            "model_predictions": {
-                k: {"probability": v, "risk_level": get_risk_level(v)}
-                for k, v in predictions.items()
-            },
-        })
-    except Exception as e:
-        return JSONResponse(
-            status_code=500,
-            content={"success": False, "error": str(e)}
-        )
-    finally:
-        # Cleanup
-        import shutil
-        shutil.rmtree(tmp_dir, ignore_errors=True)
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        }
+    )
 
 
 if __name__ == "__main__":

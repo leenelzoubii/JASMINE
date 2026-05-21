@@ -32,6 +32,52 @@ const pipelineStages = [
   { key: 'ensemble', label: 'Ensemble', icon: Brain, desc: 'Risk score aggregation' },
 ];
 
+const readSSEStream = async (
+  response: Response,
+  onProgress: (stage: number, message: string) => void,
+  onResult: (data: PredictionResult) => void,
+  onError: (message: string) => void,
+) => {
+  const reader = response.body!.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    const parts = buffer.split('\n\n');
+    buffer = parts.pop() || '';
+
+    for (const part of parts) {
+      const lines = part.split('\n');
+      let event = 'message';
+      let dataStr = '';
+
+      for (const line of lines) {
+        if (line.startsWith('event: ')) event = line.slice(7);
+        else if (line.startsWith('data: ')) dataStr = line.slice(6);
+      }
+
+      if (dataStr) {
+        try {
+          const parsed = JSON.parse(dataStr);
+          if (event === 'progress') {
+            onProgress(parsed.stage, parsed.message);
+          } else if (event === 'result') {
+            onResult(parsed);
+          } else if (event === 'error') {
+            onError(parsed.message);
+          }
+        } catch {
+          // skip malformed JSON
+        }
+      }
+    }
+  }
+};
+
 export default function ProfessionalAssessmentsPage() {
   const [selectedPatient, setSelectedPatient] = useState('');
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -77,14 +123,6 @@ export default function ProfessionalAssessmentsPage() {
     }
   };
 
-  const simulatePipeline = async () => {
-    // Animate through pipeline stages
-    for (let i = 0; i < pipelineStages.length; i++) {
-      setCurrentStage(i);
-      await new Promise(r => setTimeout(r, 800));
-    }
-  };
-
   const handleRunAssessment = async () => {
     if (!selectedPatient) {
       setError('Please select a patient.');
@@ -103,16 +141,13 @@ export default function ProfessionalAssessmentsPage() {
     setError('');
     setResult(null);
     setShowPipeline(true);
-    setCurrentStage(-1);
-
-    // Start pipeline animation
-    simulatePipeline();
+    setCurrentStage(0);
 
     try {
-      let res;
+      let response: Response;
 
       if (inputMode === 'youtube') {
-        res = await fetch(`${ML_BACKEND_URL}/api/predict-youtube`, {
+        response = await fetch(`${ML_BACKEND_URL}/api/predict-youtube`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ youtube_url: youtubeUrl.trim(), fps: 15 }),
@@ -121,21 +156,39 @@ export default function ProfessionalAssessmentsPage() {
         const formData = new FormData();
         formData.append('video', videoFile!);
         formData.append('fps', '15');
-        res = await fetch(`${ML_BACKEND_URL}/api/predict`, {
+        response = await fetch(`${ML_BACKEND_URL}/api/predict`, {
           method: 'POST',
           body: formData,
         });
       }
 
-      const data: PredictionResult = await res.json();
-
-      if (!data.success) {
-        setError(data.error || 'Assessment failed.');
+      if (!response.ok) {
+        const errData = await response.json().catch(() => null);
+        setError(errData?.error || `Server error: ${response.status}`);
         return;
       }
 
-      setResult(data);
-      setCurrentStage(pipelineStages.length); // mark all complete
+      const contentType = response.headers.get('content-type') || '';
+
+      if (contentType.includes('text/event-stream')) {
+        await readSSEStream(
+          response,
+          (stage) => setCurrentStage(stage),
+          (data) => {
+            setResult(data);
+            setCurrentStage(pipelineStages.length);
+          },
+          (message) => setError(message),
+        );
+      } else {
+        const data: PredictionResult = await response.json();
+        if (!data.success) {
+          setError(data.error || 'Assessment failed.');
+          return;
+        }
+        setResult(data);
+        setCurrentStage(pipelineStages.length);
+      }
     } catch {
       setError(
         'Could not connect to the ML backend. Make sure the server is running on port 8000.\n\n' +
