@@ -1,157 +1,259 @@
-<<<<<<< HEAD
-# Autism Screening via Pose Estimation
+# JASMINE — Autism Screening via Pose Estimation
 
-A privacy-preserving demo for autism spectrum disorder (ASD) screening in children using 2D pose estimation keypoints from the MMASD dataset.
+A privacy-preserving web application for autism spectrum disorder (ASD) screening in children using 2D/3D pose estimation keypoints. Built with **Next.js 14** + **FastAPI** + **Firebase**, replacing the original Streamlit prototype.
 
-## Overview
+> **⚠️ Research demo — NOT a diagnostic tool.** Consult a qualified healthcare professional for diagnosis.
 
-This system analyzes children's movement patterns through skeletal keypoints extracted via OpenPose/MediaPipe. **No raw video or images are stored** - only 2D coordinates, preserving complete privacy.
+---
 
-### Pipeline
+## Architecture
 
 ```
-Video Input → OpenPose 2D → Keypoints (25 joints) → Feature Extraction → ML/DL Models → Prediction
+┌─────────────────────────────┐     SSE Stream      ┌──────────────────────┐
+│   Next.js 14 Frontend       │ ◄──────────────────► │   FastAPI Backend    │
+│   (TypeScript, Tailwind v4) │    /api/predict      │   (Python 3.13)      │
+│   Firebase Auth + Firestore │                      │   MediaPipe Tasks    │
+│   Port 3000                 │                      │   Port 8000          │
+└─────────────────────────────┘                      └──────────────────────┘
 ```
 
-### Models Compared
+### ML Pipeline
+
+```
+Video Input (MP4 / YouTube) 
+    → MediaPipe PoseLandmarker 
+    → BODY-25 Keypoints (25 joints × x,y,confidence) 
+    → Feature Extraction (Kinematic + Statistical) 
+    → 4 Models (RF, SVM, LSTM, Transformer) 
+    → Ensemble Risk Score (averaged probability)
+```
+
+### Models
 
 | Model | Type | Description |
 |-------|------|-------------|
-| Random Forest | ML | Ensemble of decision trees with feature importance |
+| Random Forest | ML | Decision-tree ensemble with feature importance |
 | SVM | ML | Kernel-based classifier (RBF + linear) |
 | LSTM | DL | Bidirectional recurrent neural network |
 | Transformer | DL | Self-attention based sequence classifier |
 
+---
+
+## Features
+
+### Role-Based Portals
+
+| Feature | Professional | Parent |
+|---------|-------------|--------|
+| Run assessments (file/YouTube) | ✅ | ❌ |
+| Manage patients | ✅ | ❌ |
+| Review & share results | ✅ | ✅ (view only) |
+| Pose skeleton visualization | ✅ | ✅ |
+| Real-time SSE pipeline animation | ✅ | ❌ |
+| Child profiles | ❌ | ✅ |
+| Results dashboard | ✅ | ✅ |
+| Messaging | ✅ | ✅ |
+| Notifications | ✅ | ✅ |
+
+### Key Functionality
+
+- **SSE Streaming Pipeline** — Real progress events from backend drive animation (pose → features → models → ensemble)
+- **Pose Skeleton Viewer** — Canvas-based BODY-25 renderer with labeled joints
+- **Doctor Review & Share** — Review results, add clinical notes, then share with parent
+- **Doctor's Notes** — Optional notes attached when sharing, visible to both parties
+- **Discuss Results in Chat** — Each assessment has a "Discuss" button that opens the conversation with context
+- **Messaging System** — Real-time chat via Firestore `onSnapshot` with sent/delivered/read status tracking
+- **Notification System** — Bell icon with ding sound, toast popups, mark read/all read
+- **Friend Request System** — Doctor invites parent via email; parent accepts/declines
+- **YouTube Support** — Paste a YouTube URL, auto-downloads worst-quality MP4 via yt-dlp
+- **Dark/Light Theme** — Smooth transitions via next-themes
+
+---
+
 ## Quick Start
 
-### 1. Install Dependencies
+### Prerequisites
+
+- Node.js 18+
+- Python 3.13
+- Firebase project (or use demo accounts)
+
+### 1. Backend Setup
 
 ```bash
-pip install -r requirements.txt
+cd jasmine-next
+pip install -r backend/requirements.txt
+
+# Start the ML backend (auto-downloads pose model)
+uvicorn backend.main:app --reload --port 8000
 ```
 
-### 2. Train Models
-
-**With synthetic data (for testing):**
-```bash
-python train.py --synthetic --n_samples 100 --epochs 30
-```
-
-**With real MMASD dataset:**
-```bash
-python train.py --data_dir /path/to/mmasd/csv/files --epochs 50 --cv_folds 5
-```
-
-### 3. Run the Streamlit App
+### 2. Frontend Setup
 
 ```bash
-streamlit run app/app.py
+cd jasmine-next
+npm install --legacy-peer-deps
+
+# Create .env.local with Firebase config
+echo "NEXT_PUBLIC_FIREBASE_API_KEY=..." >> .env.local
+echo "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=..." >> .env.local
+# ... (see .env.example for all fields)
+
+npm run dev
 ```
 
-### 4. Run Tests
+### 3. Open the App
 
-```bash
-pytest tests/ -v
-```
+- **Frontend**: http://localhost:3000
+- **Backend**: http://localhost:8000
+- **API Docs**: http://localhost:8000/docs
+
+### Demo Accounts
+
+| Email | Password | Role | Portal |
+|-------|----------|------|--------|
+| `parent@demo.com` | `demo123` | Parent | `/parent` |
+| `doctor@demo.com` | `demo123` | Professional | `/professional` |
+
+Demo accounts work even without Firebase (localStorage fallback). The parent demo auto-creates a child profile "Emma" (age 6) with a pre-shared Moderate Risk assessment and Dr. Jasmine as connected professional.
+
+---
 
 ## Project Structure
 
 ```
 autism-screening-pose/
-├── src/
-│   ├── config.py              # Constants: keypoint names, skeleton connections, thresholds
-│   ├── data/
-│   │   └── loader.py          # MMASD CSV + OpenPose JSON data loading
+├── jasmine-next/
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── page.tsx               # Landing page
+│   │   │   ├── login/                 # Login page
+│   │   │   ├── register/              # Registration with role selection
+│   │   │   ├── reset-password/        # Forgot password flow
+│   │   │   ├── about/                 # About/mission/privacy page
+│   │   │   ├── parent/                # Parent portal
+│   │   │   │   ├── page.tsx           # Dashboard (children count, latest score)
+│   │   │   │   ├── children/          # Children list + detail/[id] profile
+│   │   │   │   ├── results/           # Shared assessment results
+│   │   │   │   ├── messages/          # Chat with professionals
+│   │   │   │   ├── requests/          # Friend requests from doctors
+│   │   │   │   └── profile/           # Account settings
+│   │   │   └── professional/          # Professional portal
+│   │   │       ├── page.tsx           # Dashboard (stats, recent)
+│   │   │       ├── assessments/       # Run assessments, SSE pipeline, review/share
+│   │   │       ├── patients/          # Patient CRUD + access management
+│   │   │       ├── messages/          # Chat with parents
+│   │   │       ├── requests/          # Pending/accepted requests
+│   │   │       └── profile/           # Account settings
+│   │   ├── components/
+│   │   │   ├── ui/
+│   │   │   │   ├── pose-viewer.tsx    # Canvas BODY-25 skeleton renderer
+│   │   │   │   ├── notification-bell.tsx
+│   │   │   │   └── toast.tsx
+│   │   │   └── layout/
+│   │   │       ├── parent-sidebar.tsx
+│   │   │       └── professional-sidebar.tsx
+│   │   └── lib/
+│   │       ├── auth.ts                # Firebase Auth + demo account fallback
+│   │       ├── firebase.ts            # Firebase config initialization
+│   │       ├── assessments.ts         # Firestore CRUD for assessments
+│   │       ├── patients.ts            # Patient CRUD
+│   │       ├── messages.ts            # Real-time messaging via onSnapshot
+│   │       ├── notifications.ts       # Notification CRUD + subscribe
+│   │       ├── patient-access.ts      # Parent-patient linking
+│   │       ├── parent-requests.ts     # Friend request system
+│   │       ├── demo-data.ts           # Mock data for demo accounts
+│   │       ├── parent-accounts.ts     # Parent account creation
+│   │       ├── password.ts            # Password hashing
+│   │       ├── use-unread-messages.ts # Unread count hook
+│   │       └── emails/               # Mailtrap email service
+│   └── backend/
+│       ├── main.py                    # FastAPI app: SSE streaming, pose extraction, ML pipeline
+│       ├── pose_extractor.py          # MediaPipe Tasks PoseLandmarker → BODY-25
+│       └── requirements.txt           # Backend Python deps
+├── src/                               # ML training code (original)
+│   ├── config.py
 │   ├── features/
-│   │   ├── kinematic.py       # Joint angles, velocities, inter-joint distances, symmetry
-│   │   └── statistical.py     # Keypoint stats, temporal features, FFT frequency features
+│   │   ├── kinematic.py
+│   │   └── statistical.py
 │   ├── models/
-│   │   ├── ml_models.py       # Random Forest + SVM with GridSearchCV
-│   │   ├── dl_models.py       # LSTM + Transformer with PyTorch
-│   │   └── training.py        # Cross-validation pipeline and model comparison
+│   │   ├── ml_models.py
+│   │   ├── dl_models.py
+│   │   └── training.py
 │   └── visualization/
-│       └── plots.py           # Matplotlib plots + interactive HTML skeleton viewer
-├── app/
-│   ├── app.py                 # Streamlit application (4 pages)
-│   └── utils.py               # Model loading, ensemble prediction, report generation
-├── models/                    # Saved trained models
-│   ├── rf_model.pkl
-│   ├── svm_model.pkl
-│   ├── lstm_model.pth
-│   ├── transformer_model.pth
-│   └── comparison_results.json
+│       └── plots.py
+├── models/                            # Saved trained models
 ├── tests/
-│   ├── test_data.py           # Data loading tests
-│   ├── test_features.py       # Feature extraction tests
-│   └── test_models.py         # ML/DL model tests
-├── train.py                   # Training script
-├── verify.py                  # Verification script
-└── requirements.txt           # Python dependencies
+├── train.py
+└── requirements.txt
 ```
 
-## Features Extracted
+---
 
-### Kinematic Features
-- **Joint angles**: 10 predefined angle triplets (elbows, knees, torso)
-- **Joint velocities**: Frame-to-frame movement speed per joint
-- **Inter-joint distances**: 8 key distance pairs (shoulder width, hip width, etc.)
-- **Body symmetry**: Left vs right side movement differences
+## API Endpoints (Backend)
 
-### Statistical Features
-- **Keypoint statistics**: Mean, std, min, max, median, range per joint coordinate
-- **Temporal dynamics**: Frame-to-frame differences, autocorrelation
-- **Frequency analysis**: FFT power spectrum, dominant frequency, power ratios
+| Method | Route | Description |
+|--------|-------|-------------|
+| POST | `/api/predict` | Upload MP4 video → SSE progress → result |
+| POST | `/api/predict-youtube` | YouTube URL → download → SSE progress → result |
+| GET | `/api/health` | Health check |
 
-## Streamlit App Pages
+Both prediction endpoints return **Server-Sent Events (SSE)**:
+```
+event: progress
+data: {"stage": 0, "message": "..."}
 
-1. **Home**: Overview, pipeline diagram, feature/model descriptions
-2. **Model Comparison**: Side-by-side metrics, confusion matrices, feature importance
-3. **Run Inference**: Upload pose data, get predictions from all 4 models with confidence scores
-4. **Pose Viewer**: Interactive skeleton visualization with frame-by-frame navigation
+event: result
+data: {"ensemble_probability": 0.72, "risk_level": "Moderate Risk", ...}
 
-## Dataset
+event: error
+data: {"message": "..."}
+```
 
-### MMASD+ (Enhanced Format)
-- CSV files with 25-26 joints × 3 coordinates (x, y, z)
-- Normalized coordinates in [0, 1] range
-- Labels: Action (0-10) + ASD status (0/1)
+---
 
-### Original MMASD (OpenPose Format)
-- OpenPose JSON files with BODY_25 (25 joints × 2D coordinates + confidence)
-- Excel metadata with subject information
+## Feature Extraction
+
+### Kinematic
+- Joint angles (10 predefined triplets: elbows, knees, torso)
+- Joint velocities (frame-to-frame speed per joint)
+- Inter-joint distances (shoulder width, hip width, etc.)
+- Body symmetry (left vs right side differences)
+
+### Statistical
+- Keypoint statistics (mean, std, min, max, median, range)
+- Temporal dynamics (frame differences, autocorrelation)
+- Frequency analysis (FFT power spectrum, dominant frequency)
+
+---
 
 ## Privacy
 
 This system processes **only 2D/3D skeletal keypoints** (x, y, z coordinates). No raw video frames, images, or personally identifiable visual data are stored or transmitted.
 
-## Disclaimer
+---
 
-**This is a research demo and NOT a diagnostic tool.** Results should not be used for clinical decision-making. Consult a qualified healthcare professional for diagnosis.
+## Tech Stack
 
-## 🛠️ Tech Stack (might change)
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Next.js 14, TypeScript, Tailwind v4, Framer Motion, next-themes |
+| Backend | FastAPI, Python 3.13, Uvicorn |
+| Auth & DB | Firebase Authentication, Firestore |
+| ML | MediaPipe Tasks, scikit-learn, PyTorch, NumPy |
+| Video | yt-dlp, OpenCV |
+| Messaging | Firestore real-time listeners (onSnapshot) |
+| Streaming | Server-Sent Events (SSE) |
+| Email | Mailtrap (sandbox) |
 
-* Python, TensorFlow
-* OpenCV, MediaPipe
-* FastAPI (Backend)
-* Streamlit (Frontend)
-* PostgreSQL (Database)
+---
 
-## Future Work
+## Team
 
-- Real-time video processing pipeline
-- 3D pose estimation integration
-- Non-MMASD dataset generalization
-- Deployment to production environment
-- Pose-based behavioral analysis using MediaPipe
-- Deep learning model (CNN + BiLSTM + Attention)
-- Automated assessment reports
-- Role-based system (Specialist / Admin)
+- Leen El Zoubii
+- Siba Al Jarrah
+- Shahd Abu Baker
 
-## 👥 Team
+---
 
-* Leen El Zoubii
-* Siba Al Jarrah
-* Shahd Abu Baker
-
-# 📌 Drive Link: https://drive.google.com/drive/folders/1xk-wovtIv0COjoROa7w7g1B47cueubmV?usp=sharing
-=======
+> **Drive Link**: https://drive.google.com/drive/folders/1xk-wovtIv0COjoROa7w7g1B47cueubmV?usp=sharing
