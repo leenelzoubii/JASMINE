@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Suspense, useState } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Brain, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -18,11 +18,11 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get('returnUrl') || null;
 
-  useState(() => {
+  useEffect(() => {
     if (searchParams.get('loggedout') === 'true') {
       setLoggedOut(true);
     }
-  });
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
