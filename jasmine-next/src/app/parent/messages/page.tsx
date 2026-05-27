@@ -5,6 +5,7 @@ import { Send, Phone, Mail } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getCurrentUser } from '@/lib/auth';
 import { getUserConnections } from '@/lib/parent-requests';
+import { isDemoUser, getDemoConnections } from '@/lib/demo-data';
 import {
   sendMessage,
   subscribeToMessages,
@@ -27,7 +28,11 @@ export default function ParentMessagesPage() {
 
   useEffect(() => {
     if (!currentUser) return;
-    getUserConnections(currentUser.id).then(setConnections).catch(console.error);
+    if (isDemoUser(currentUser.id)) {
+      setConnections(getDemoConnections(currentUser.id));
+    } else {
+      getUserConnections(currentUser.id).then(setConnections).catch(console.error);
+    }
   }, [currentUser]);
 
   useEffect(() => {

@@ -18,6 +18,7 @@ export interface PatientAccessLink {
   patientId: string;
   patientName: string;
   professionalId: string;
+  professionalName?: string;
   parentId: string;
   parentEmail: string;
   parentName: string;
@@ -32,6 +33,7 @@ export interface PatientAccessInput {
   patientId: string;
   patientName: string;
   professionalId: string;
+  professionalName?: string;
   parentName: string;
   parentEmail: string;
 }
@@ -83,6 +85,7 @@ export async function createPatientAccess(
       patientId: data.patientId,
       patientName: data.patientName,
       professionalId: data.professionalId,
+      professionalName: data.professionalName || 'Specialist',
       parentId: parentResult.parent.id,
       parentEmail: data.parentEmail.toLowerCase(),
       parentName: data.parentName,

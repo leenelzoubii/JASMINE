@@ -130,9 +130,12 @@ export default function HomePage() {
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
             © 2026 JASMINE. Research demo - not for clinical use.
           </p>
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4" style={{ color: 'var(--risk-low)' }} />
-            <span className="text-sm" style={{ color: 'var(--text-muted)' }}>Privacy-preserving</span>
+          <div className="flex items-center gap-6">
+            <Link href="/about" className="text-sm" style={{ color: 'var(--text-muted)' }}>About</Link>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4" style={{ color: 'var(--risk-low)' }} />
+              <span className="text-sm" style={{ color: 'var(--text-muted)' }}>Privacy-preserving</span>
+            </div>
           </div>
         </div>
       </footer>

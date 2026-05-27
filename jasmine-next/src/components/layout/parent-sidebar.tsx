@@ -10,6 +10,7 @@ import { useUnreadMessages } from '@/lib/use-unread-messages';
 
 const parentLinks = [
   { href: '/parent', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/parent/children', label: 'Children', icon: Baby },
   { href: '/parent/results', label: 'Results', icon: FileText },
   { href: '/parent/requests', label: 'Requests', icon: UserPlus },
   { href: '/parent/messages', label: 'Messages', icon: MessageSquare },

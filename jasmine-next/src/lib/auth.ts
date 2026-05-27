@@ -27,6 +27,7 @@ export interface User {
   name: string;
   email: string;
   role: "parent" | "professional";
+  phone?: string;
   child?: {
     name: string;
     age: number;

@@ -120,6 +120,7 @@ export default function ProfessionalPatientsPage() {
           patientId: newPatient.id,
           patientName: newPatient.name,
           professionalId: user.id,
+          professionalName: user.name,
           parentName: formData.parentName,
           parentEmail: formData.email,
         });

@@ -1,22 +1,77 @@
 'use client';
 
-import { FileText, Calendar, TrendingUp, AlertCircle } from 'lucide-react';
+import { FileText, Calendar, TrendingUp, AlertCircle, Loader2, MessageSquare, Send } from 'lucide-react';
 import { motion } from 'framer-motion';
-
-const results = [
-  { id: 1, child: 'Emma', date: '2026-05-01', score: 0.82, risk: 'High', models: { rf: 0.78, svm: 0.85, lstm: 0.80, transformer: 0.84 } },
-  { id: 2, child: 'Emma', date: '2026-03-15', score: 0.65, risk: 'Moderate', models: { rf: 0.62, svm: 0.68, lstm: 0.63, transformer: 0.67 } },
-  { id: 3, child: 'Liam', date: '2026-04-01', score: 0.23, risk: 'Low', models: { rf: 0.21, svm: 0.25, lstm: 0.22, transformer: 0.24 } },
-];
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { getCurrentUser } from '@/lib/auth';
+import { getPatientLinksByParent, PatientAccessLink } from '@/lib/patient-access';
+import { getAssessmentsByPatient, AssessmentResult } from '@/lib/assessments';
+import { isDemoUser, getDemoLinksByParent, getDemoAssessmentsByPatient } from '@/lib/demo-data';
 
 const riskColors: Record<string, string> = {
-  High: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-  Moderate: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-  Low: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  'High Risk': 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  'Moderate Risk': 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+  'Low Risk': 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
   Unknown: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400',
 };
 
+const riskColorValue: Record<string, string> = {
+  'High Risk': '#dc2626',
+  'Moderate Risk': '#d97706',
+  'Low Risk': '#16a34a',
+};
+
 export default function ParentResultsPage() {
+  const [links, setLinks] = useState<PatientAccessLink[]>([]);
+  const [assessments, setAssessments] = useState<AssessmentResult[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const user = getCurrentUser();
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    const loadData = async () => {
+      if (isDemoUser(user.id)) {
+        setLinks(getDemoLinksByParent() as any);
+        setAssessments(getDemoAssessmentsByPatient());
+      } else {
+        const linksData = await getPatientLinksByParent(user.id);
+        setLinks(linksData);
+
+        const allAssessments: AssessmentResult[] = [];
+        for (const link of linksData) {
+          try {
+            const childAssessments = await getAssessmentsByPatient(link.professionalId, link.patientId);
+            allAssessments.push(...childAssessments.filter(a => a.shared));
+          } catch (err) {
+            console.warn(`Failed to fetch assessments for ${link.patientName}:`, err);
+          }
+        }
+
+        allAssessments.sort((a, b) => {
+          const tA = (a.createdAt as any)?.toMillis?.() || 0;
+          const tB = (b.createdAt as any)?.toMillis?.() || 0;
+          return tB - tA;
+        });
+
+        setAssessments(allAssessments);
+      }
+    };
+    loadData().catch(console.error).finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -31,61 +86,95 @@ export default function ParentResultsPage() {
         <div>
           <p className="font-medium text-yellow-800 dark:text-yellow-200">Important Notice</p>
           <p className="text-sm text-yellow-700 dark:text-yellow-300">
-            This is a research demo and NOT a diagnostic tool. Results should not be used for clinical decision-making. 
+            This is a research demo and NOT a diagnostic tool. Results should not be used for clinical decision-making.
             Consult a qualified healthcare professional for diagnosis.
           </p>
         </div>
       </div>
 
-      {/* Results Cards */}
-      <div className="space-y-4">
-        {results.map((result, index) => (
-          <motion.div
-            key={result.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            className="p-6 bg-white dark:bg-dark-surface rounded-2xl border border-gray-200 dark:border-dark-deep"
-          >
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-primary-light flex items-center justify-center">
-                  <FileText className="w-6 h-6 text-primary" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{result.child}</h3>
-                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                    <Calendar className="w-4 h-4" />
-                    {result.date}
+      {assessments.length === 0 ? (
+        <div className="py-16 text-center">
+          <FileText className="w-12 h-12 mx-auto mb-4" style={{ color: 'var(--text-muted)' }} />
+          <p className="text-lg font-medium" style={{ color: 'var(--foreground)' }}>No results yet</p>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            When a professional completes an assessment, results will appear here.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {assessments.map((result, index) => (
+            <motion.div
+              key={result.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className="p-6 bg-white dark:bg-dark-surface rounded-2xl border border-gray-200 dark:border-dark-deep"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-primary-light flex items-center justify-center">
+                    <FileText className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{result.patientName}</h3>
+                    <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                      <Calendar className="w-4 h-4" />
+                      {result.date}
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="text-right">
-                  <p className="text-3xl font-bold text-gray-900 dark:text-white">{(result.score * 100).toFixed(0)}%</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">ASD Probability</p>
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <p className="text-3xl font-bold text-gray-900 dark:text-white">{(result.ensemble_probability * 100).toFixed(0)}%</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">ASD Probability</p>
+                  </div>
+                  <span className={`px-4 py-2 rounded-full text-lg font-semibold ${riskColors[result.risk_level] || riskColors.Unknown}`}>
+                    {result.risk_level}
+                  </span>
                 </div>
-                <span className={`px-4 py-2 rounded-full text-lg font-semibold ${riskColors[result.risk] || ''}`}>
-                  {result.risk} Risk
-                </span>
               </div>
-            </div>
 
-            {/* Model Breakdown */}
-            <div className="pt-4 border-t border-gray-100 dark:border-dark-deep">
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Model Predictions:</p>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {Object.entries(result.models).map(([model, score]) => (
-                  <div key={model} className="p-3 bg-gray-50 dark:bg-dark-bg rounded-lg">
-                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase">{model}</p>
-                    <p className="text-lg font-semibold text-gray-900 dark:text-white">{(score * 100).toFixed(0)}%</p>
+              {/* Model Breakdown */}
+              {result.model_predictions && Object.keys(result.model_predictions).length > 0 && (
+                <div className="pt-4 border-t border-gray-100 dark:border-dark-deep">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Model Predictions:</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {Object.entries(result.model_predictions).map(([model, pred]) => (
+                      <div key={model} className="p-3 bg-gray-50 dark:bg-dark-bg rounded-lg">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 uppercase">{model}</p>
+                        <p className="text-lg font-semibold text-gray-900 dark:text-white">{(pred.probability * 100).toFixed(0)}%</p>
+                        <p className="text-xs" style={{ color: riskColorValue[pred.risk_level] || '#6b7280' }}>{pred.risk_level}</p>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </div>
+              )}
+
+              {/* Doctor's Notes */}
+              {result.sharedNotes && (
+                <div className="pt-4 border-t border-gray-100 dark:border-dark-deep">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Doctor&apos;s Notes:</p>
+                  <div className="p-3 rounded-xl text-sm" style={{ backgroundColor: 'var(--background-alt)' }}>
+                    <p style={{ color: 'var(--foreground)' }}>{result.sharedNotes}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Discuss in Chat */}
+              <div className="pt-4 border-t border-gray-100 dark:border-dark-deep">
+                <Link
+                  href="/parent/messages"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all hover:scale-[1.02]"
+                  style={{ backgroundColor: 'var(--primary)', color: 'white' }}
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  Discuss Results with Doctor
+                </Link>
               </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

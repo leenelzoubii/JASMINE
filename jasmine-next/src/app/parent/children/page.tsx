@@ -2,10 +2,12 @@
 
 import { Baby, Calendar, Phone, FileText, Search, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { getCurrentUser } from '@/lib/auth';
 import { getPatientLinksByParent } from '@/lib/patient-access';
 import { PatientAccessLink } from '@/lib/patient-access';
+import { isDemoUser, getDemoLinksByParent } from '@/lib/demo-data';
 
 function calculateAge(dob: string): number {
   const birth = new Date(dob);
@@ -37,8 +39,12 @@ export default function ParentChildrenPage() {
     }
 
     try {
-      const linksData = await getPatientLinksByParent(user.id);
-      setLinks(linksData);
+      if (isDemoUser(user.id)) {
+        setLinks(getDemoLinksByParent() as any);
+      } else {
+        const linksData = await getPatientLinksByParent(user.id);
+        setLinks(linksData);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -119,12 +125,18 @@ export default function ParentChildrenPage() {
               </div>
 
               <div className="mt-4 pt-4 border-t border-gray-100 dark:border-dark-deep flex gap-2">
-                <button
-                  onClick={() => window.location.href = `/parent/results?child=${link.patientId}`}
-                  className="flex-1 px-4 py-2 bg-primary-light/50 dark:bg-primary-dark/20 text-primary dark:text-primary-light rounded-lg font-medium hover:bg-primary-light transition-colors"
+                <Link
+                  href={`/parent/children/${link.patientId}`}
+                  className="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors text-center"
+                >
+                  View Profile
+                </Link>
+                <Link
+                  href={`/parent/results`}
+                  className="flex-1 px-4 py-2 bg-primary-light/50 dark:bg-primary-dark/20 text-primary dark:text-primary-light rounded-lg font-medium hover:bg-primary-light transition-colors text-center"
                 >
                   View Results
-                </button>
+                </Link>
               </div>
             </motion.div>
           ))}

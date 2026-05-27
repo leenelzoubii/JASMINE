@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { ProfessionalSidebar } from '@/components/layout/professional-sidebar';
+import { getCurrentUser } from '@/lib/auth';
 import { NotificationBell } from '@/components/ui/notification-bell';
 import { ToastContainer } from '@/components/ui/toast';
-import { getCurrentUser } from '@/lib/auth';
 
 export default function ProfessionalLayout({
   children,
