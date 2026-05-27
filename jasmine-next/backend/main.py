@@ -68,7 +68,7 @@ def load_models():
                     trainer.load(str(model_path))
                     models[model_type] = trainer
                 except Exception as e:
-                    pass
+                    print(f"[Models] Failed to load {model_type}: {e}")
 
     for model_type in ['lstm', 'transformer']:
         for check_dir in [models_dir_1, models_dir_2]:
@@ -79,7 +79,7 @@ def load_models():
                     trainer.load(str(model_path))
                     models[model_type] = trainer
                 except Exception as e:
-                    pass
+                    print(f"[Models] Failed to load {model_type}: {e}")
 
     _models_cache = models
     return models
@@ -111,9 +111,9 @@ def extract_features_from_keypoints(keypoints: np.ndarray, fps: int = 15) -> tup
     # Combine
     all_features = np.concatenate([kin_features, stat_features])
 
-    # For DL models: flatten keypoints per frame
-    frames = coords_2d.shape[0]
-    dl_sequence = coords_2d.reshape(frames, -1)
+    # For DL models: flatten all 3 keypoint values per frame (x, y, confidence)
+    frames = keypoints.shape[0]
+    dl_sequence = keypoints[:, :, :3].reshape(frames, -1)
 
     return all_features, dl_sequence
 
@@ -149,6 +149,29 @@ def format_sse(event: str, data: dict) -> str:
     return f"event: {event}\ndata: {json.dumps(data)}\n\n"
 
 
+def sample_keypoints_for_viz(keypoints: np.ndarray, num_samples: int = 3) -> list:
+    """Pick evenly spaced frames and return keypoint coordinates (x,y,confidence) for visualization."""
+    total = keypoints.shape[0]
+    if total == 0:
+        return []
+    indices = [int(i * (total - 1) / (num_samples - 1)) for i in range(num_samples)] if num_samples > 1 else [0]
+    samples = []
+    for idx in indices:
+        frame_kps = keypoints[idx, :, :3].tolist()
+        samples.append({"frame": int(idx), "keypoints": frame_kps})
+    return samples
+
+
+def sanitize_youtube_url(url: str) -> str:
+    """Strip playlist, index, and other tracking params from a YouTube URL."""
+    import re
+    # Match youtube.com/watch?v=VIDEO_ID or youtu.be/VIDEO_ID
+    match = re.search(r'(?:youtube\.com/watch\?v=|youtu\.be/)([a-zA-Z0-9_-]{11})', url)
+    if match:
+        return f"https://www.youtube.com/watch?v={match.group(1)}"
+    return url
+
+
 def run_pipeline_from_file(video_path: str, fps: int = 15, extra_result_fields: dict = None):
     """Sync generator: runs ML pipeline yielding SSE progress events."""
     try:
@@ -168,6 +191,9 @@ def run_pipeline_from_file(video_path: str, fps: int = 15, extra_result_fields: 
         ensemble_prob = float(np.mean(list(predictions.values()))) if predictions else 0.0
         risk_level = get_risk_level(ensemble_prob)
 
+        # Sample frames for skeleton visualization
+        viz_keypoints = sample_keypoints_for_viz(keypoints)
+
         result = {
             "success": True,
             "ensemble_probability": ensemble_prob,
@@ -177,6 +203,7 @@ def run_pipeline_from_file(video_path: str, fps: int = 15, extra_result_fields: 
                 k: {"probability": v, "risk_level": get_risk_level(v)}
                 for k, v in predictions.items()
             },
+            "viz_keypoints": viz_keypoints,
         }
         if extra_result_fields:
             result.update(extra_result_fields)
@@ -269,13 +296,14 @@ async def predict_json(file: UploadFile = File(...)):
 
 @app.post("/api/predict-youtube")
 async def predict_youtube(data: dict):
-    """Accept YouTube URL, download video, extract pose, and return ASD risk prediction.
-    Streams SSE progress events for each pipeline stage."""
-    youtube_url = data.get("youtube_url", "").strip()
+    """Accept YouTube URL, download video, extract pose, and return ASD risk prediction."""
+    raw_url = data.get("youtube_url", "").strip()
     fps = data.get("fps", 15)
 
-    if not youtube_url:
+    if not raw_url:
         return JSONResponse(status_code=400, content={"success": False, "error": "YouTube URL is required."})
+
+    youtube_url = sanitize_youtube_url(raw_url)
 
     def generate():
         tmp_dir = None
@@ -283,11 +311,18 @@ async def predict_youtube(data: dict):
             tmp_dir = tempfile.mkdtemp()
             output_template = os.path.join(tmp_dir, "%(title)s.%(ext)s")
 
-            yield format_sse("progress", {"stage": 0, "message": "Downloading video from YouTube..."})
-            subprocess.run(
-                ["yt-dlp", "-f", "mp4", "-o", output_template, youtube_url],
-                capture_output=True, text=True, check=True, timeout=120,
+            yield format_sse("progress", {"stage": 0, "message": "Downloading video from YouTube (this may take a few minutes)..."})
+            result = subprocess.run(
+                [sys.executable, "-m", "yt_dlp", "-f", "worst[ext=mp4]", "-o", output_template, youtube_url],
+                capture_output=True, text=True, timeout=300,
             )
+            if result.returncode != 0:
+                stderr = (result.stderr or "").strip()
+                if "timed out" in stderr.lower() or "timeout" in stderr.lower():
+                    yield format_sse("error", {"message": "YouTube download timed out. Try a shorter video or upload an MP4 file."})
+                else:
+                    yield format_sse("error", {"message": f"Failed to download video: {stderr or 'Unknown error'}"})
+                return
 
             video_files = [f for f in os.listdir(tmp_dir) if f.endswith((".mp4", ".mkv", ".webm"))]
             if not video_files:
@@ -299,10 +334,10 @@ async def predict_youtube(data: dict):
                 video_path, fps,
                 extra_result_fields={"source": "youtube", "youtube_url": youtube_url}
             )
-        except subprocess.CalledProcessError as e:
-            yield format_sse("error", {"message": f"Failed to download YouTube video: {e.stderr or 'Unknown error'}"})
+        except subprocess.TimeoutExpired:
+            yield format_sse("error", {"message": "YouTube download timed out. Try a shorter video or upload an MP4 file."})
         except FileNotFoundError:
-            yield format_sse("error", {"message": "yt-dlp is not installed. Install with: pip install yt-dlp"})
+            yield format_sse("error", {"message": "yt-dlp is not installed. Run: pip install yt-dlp"})
         except Exception as e:
             yield format_sse("error", {"message": str(e)})
         finally:
