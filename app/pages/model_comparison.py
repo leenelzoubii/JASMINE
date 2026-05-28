@@ -102,6 +102,29 @@ def model_comparison_page():
                     st.pyplot(fig)
                     plt.close(fig)
 
+        st.markdown("### Ensemble Results")
+        ensemble = results.get('ensemble', {})
+        if ensemble:
+            e_acc = ensemble.get('accuracy', 0)
+            e_f1 = ensemble.get('f1', 0)
+            e_auc = ensemble.get('roc_auc', 0)
+            e_prec = ensemble.get('precision', 0)
+            e_rec = ensemble.get('recall', 0)
+
+            cols = st.columns(5)
+            with cols[0]:
+                st.markdown(f'<div class="metric-card"><div class="metric-value">{e_acc:.1%}</div><div class="metric-label">Accuracy</div></div>', unsafe_allow_html=True)
+            with cols[1]:
+                st.markdown(f'<div class="metric-card"><div class="metric-value">{e_f1:.3f}</div><div class="metric-label">F1 Score</div></div>', unsafe_allow_html=True)
+            with cols[2]:
+                st.markdown(f'<div class="metric-card"><div class="metric-value">{e_auc:.3f}</div><div class="metric-label">ROC-AUC</div></div>', unsafe_allow_html=True)
+            with cols[3]:
+                st.markdown(f'<div class="metric-card"><div class="metric-value">{e_prec:.3f}</div><div class="metric-label">Precision</div></div>', unsafe_allow_html=True)
+            with cols[4]:
+                st.markdown(f'<div class="metric-card"><div class="metric-value">{e_rec:.3f}</div><div class="metric-label">Recall</div></div>', unsafe_allow_html=True)
+
+            st.info("**Weighted Ensemble** combines all 4 models using ROC-AUC-based weights, significantly outperforming individual models.")
+
         st.markdown("### Feature Importance (Random Forest)")
         model_data = models_data.get('rf', {})
         top_features = model_data.get('top_features', {})

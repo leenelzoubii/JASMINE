@@ -9,7 +9,7 @@ import streamlit as st
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from app.utils import load_all_models, get_ensemble_prediction, format_prediction_result, generate_report, get_db_connection
+from app.utils import load_all_models, get_ensemble_prediction, format_prediction_result, generate_report, get_db_connection, load_ensemble_weights
 from src.data.loader import load_openpose_json, load_csv_sequence
 from src.features.kinematic import extract_kinematic_features
 from src.features.statistical import extract_all_features
@@ -89,7 +89,9 @@ def inference_page():
 
             if models:
                 predictions = get_ensemble_prediction(models, all_features, dl_sequence)
-                formatted = format_prediction_result(predictions)
+                weights_path = PROJECT_ROOT / "models" / "comparison_results.json"
+                weights = load_ensemble_weights(str(weights_path))
+                formatted = format_prediction_result(predictions, weights)
 
                 st.markdown("---")
                 st.markdown("### Prediction Results")
@@ -142,6 +144,7 @@ def inference_page():
                 st.success(f"Assessment saved for patient! View it in their profile.")
 
                 report = generate_report(uploaded_file.name, formatted)
+                report += f"\nEnsemble Weights: { {k: f'{v:.1%}' for k, v in weights.items()} }\n"
                 st.markdown("### Prediction Report")
                 st.text_area("Report", report, height=300)
 

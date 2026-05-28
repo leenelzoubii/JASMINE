@@ -54,6 +54,20 @@ def load_all_models(models_dir: str) -> Dict:
     return models
 
 
+def load_ensemble_weights(results_path: str) -> Dict[str, float]:
+    """Load ensemble weights from comparison_results.json."""
+    default_weights = {'rf': 0.34, 'svm': 0.28, 'lstm': 0.19, 'transformer': 0.19}
+    try:
+        if os.path.exists(results_path):
+            import json
+            with open(results_path, 'r') as f:
+                data = json.load(f)
+            return data.get('ensemble_weights', default_weights)
+    except Exception:
+        pass
+    return default_weights
+
+
 def get_ensemble_prediction(models: Dict, features: np.ndarray,
                             sequence: np.ndarray) -> Dict[str, float]:
     """
@@ -74,7 +88,6 @@ def get_ensemble_prediction(models: Dict, features: np.ndarray,
         if model_type in models:
             features_2d = features.reshape(1, -1)
             proba = models[model_type].predict_proba(features_2d)[0]
-            # ASD probability (class 1)
             predictions[model_type] = float(proba[1]) if len(proba) > 1 else 0.0
 
     # DL model predictions
@@ -106,17 +119,31 @@ def get_risk_level(asd_probability: float) -> Tuple[str, str]:
         return 'High Risk', '#d62728'
 
 
-def format_prediction_result(predictions: Dict[str, float]) -> Dict:
+def format_prediction_result(predictions: Dict[str, float],
+                             weights: Optional[Dict[str, float]] = None) -> Dict:
     """
-    Format prediction results for display.
+    Format prediction results for display using weighted ensemble.
 
     Args:
         predictions: Dict with model_type -> ASD probability
+        weights: Optional dict of ensemble weights per model
 
     Returns:
         result: Formatted dict for display
     """
-    ensemble_prob = np.mean(list(predictions.values())) if predictions else 0.0
+    if weights is None:
+        weights = {'rf': 0.34, 'svm': 0.28, 'lstm': 0.19, 'transformer': 0.19}
+
+    weighted_sum = 0.0
+    total_weight = 0.0
+    for model_type, prob in predictions.items():
+        w = weights.get(model_type, 0.25)
+        weighted_sum += prob * w
+        total_weight += w
+
+    ensemble_prob = weighted_sum / total_weight if total_weight > 0 else (
+        np.mean(list(predictions.values())) if predictions else 0.0
+    )
     risk_level, color = get_risk_level(ensemble_prob)
 
     result = {
