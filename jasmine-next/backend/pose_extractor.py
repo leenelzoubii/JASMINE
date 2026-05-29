@@ -87,7 +87,7 @@ def get_model_path() -> str:
     return str(model_path)
 
 
-def extract_keypoints_from_mp4(video_path: str, max_frames: int = 300, fps_target: int = 15) -> np.ndarray:
+def extract_keypoints_from_mp4(video_path: str, max_frames: int = 300, fps_target: int = 15, use_gpu: bool = False) -> np.ndarray:
     """
     Process MP4 video and extract BODY-25 keypoints.
     
@@ -107,6 +107,8 @@ def extract_keypoints_from_mp4(video_path: str, max_frames: int = 300, fps_targe
 
     model_path = get_model_path()
     base_options = BaseOptions(model_asset_path=model_path)
+    if use_gpu:
+        base_options.delegate = BaseOptions.Delegate.GPU
     options = PoseLandmarkerOptions(
         base_options=base_options,
         running_mode=RunningMode.VIDEO,
