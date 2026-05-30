@@ -1,5 +1,5 @@
-# models
-models/
+# models (root-level trained model binaries)
+/models/
 *.pth
 *.pkl
 
