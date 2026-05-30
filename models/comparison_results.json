@@ -1,0 +1,208 @@
+{
+  "comparison": [
+    {
+      "Model": "RF",
+      "Accuracy": "0.7460",
+      "Precision": "0.7214",
+      "Recall": "0.5664",
+      "F1": "0.6346",
+      "ROC-AUC": "0.7936",
+      "Ensemble_Weight": "0.3374"
+    },
+    {
+      "Model": "SVM",
+      "Accuracy": "0.6863",
+      "Precision": "0.5867",
+      "Recall": "0.6579",
+      "F1": "0.6203",
+      "ROC-AUC": "0.7409",
+      "Ensemble_Weight": "0.2768"
+    },
+    {
+      "Model": "LSTM",
+      "Accuracy": "0.6259",
+      "Precision": "0.5186",
+      "Recall": "0.5477",
+      "F1": "0.5327",
+      "ROC-AUC": "0.6662",
+      "Ensemble_Weight": "0.1910"
+    },
+    {
+      "Model": "TRANSFORMER",
+      "Accuracy": "0.6143",
+      "Precision": "0.5043",
+      "Recall": "0.5421",
+      "F1": "0.5225",
+      "ROC-AUC": "0.6696",
+      "Ensemble_Weight": "0.1949"
+    },
+    {
+      "Model": "ENSEMBLE (weighted)",
+      "Accuracy": "0.9214",
+      "Precision": "0.9313",
+      "Recall": "0.8617",
+      "F1": "0.8951",
+      "ROC-AUC": "0.9799",
+      "Ensemble_Weight": "-"
+    }
+  ],
+  "models": {
+    "rf": {
+      "accuracy": 0.7459970887918487,
+      "precision": 0.7214285714285714,
+      "recall": 0.5663551401869159,
+      "f1": 0.6345549738219896,
+      "roc_auc": 0.7936417408352177,
+      "confusion_matrix": [
+        [
+          722,
+          117
+        ],
+        [
+          232,
+          303
+        ]
+      ],
+      "top_features": {
+        "velocity_LEar_range": 0.02123453485615166,
+        "kp_REye_x_max": 0.01902780192958973,
+        "diff_LEar_x_max": 0.018654899753876675,
+        "angle_MidHip_RHip_RKnee_min": 0.01503265933852454,
+        "fft_LShoulder_y_power_ratio": 0.014689286445039619,
+        "velocity_LEar_max": 0.014631380986068327,
+        "kp_Neck_y_std": 0.013535627492282732,
+        "kp_LShoulder_y_std": 0.013383620411374093,
+        "fft_REar_x_low_power": 0.012445247158164948,
+        "kp_LWrist_x_max": 0.01231850922221559,
+        "kp_RHeel_y_median": 0.012202580835570164,
+        "angle_MidHip_RHip_RKnee_range": 0.012172048601300783,
+        "kp_REye_x_mean": 0.012020434591372278,
+        "kp_LEar_x_range": 0.011945200131202139,
+        "fft_Neck_y_power_ratio": 0.01169800845654469,
+        "kp_RShoulder_y_std": 0.011694166801291395,
+        "velocity_LHeel_range": 0.011658788101851968,
+        "angle_MidHip_LHip_LKnee_min": 0.011656497225698701,
+        "angle_RHip_RKnee_RAnkle_mean": 0.011636414751659536,
+        "kp_LHip_y_median": 0.011417508763072013,
+        "kp_LEye_x_mean": 0.011343589250051118,
+        "angle_MidHip_LHip_LKnee_max": 0.011279611321124816,
+        "autocorr_RKnee_x": 0.011275719416221604,
+        "kp_LEar_x_std": 0.011147444956247208,
+        "angle_MidHip_LHip_LKnee_range": 0.010860549094865229,
+        "fft_REar_x_mid_power": 0.010707594398289989,
+        "velocity_LBigToe_max": 0.010480791928411417,
+        "velocity_LSmallToe_max": 0.01043916317917291,
+        "kp_LShoulder_y_median": 0.010394785217636947,
+        "autocorr_LElbow_y": 0.010337876296024805
+      }
+    },
+    "svm": {
+      "accuracy": 0.6863173216885007,
+      "precision": 0.5866666666666667,
+      "recall": 0.6579439252336449,
+      "f1": 0.6202643171806167,
+      "roc_auc": 0.7408686353357914,
+      "confusion_matrix": [
+        [
+          591,
+          248
+        ],
+        [
+          183,
+          352
+        ]
+      ],
+      "top_features": {
+        "fft_LHip_x_mid_power": 0.7771805340048764,
+        "kp_RAnkle_x_mean": 0.7597103771833323,
+        "kp_REar_y_mean": 0.6407359700893173,
+        "diff_RBigToe_x_max": 0.6271791482235269,
+        "velocity_LSmallToe_mean": 0.6208704596656938,
+        "kp_REar_x_mean": 0.6140771496192942,
+        "kp_RHeel_y_mean": 0.6124301764279888,
+        "fft_LBigToe_x_total_power": 0.5850078656443142,
+        "diff_LSmallToe_y_mean": 0.5712499488138458,
+        "fft_REar_x_mid_power": 0.5656029032144666,
+        "kp_LBigToe_y_mean": 0.5453224142147568,
+        "distance_Neck_MidHip_min": 0.5280858434602846,
+        "diff_LEar_x_max": 0.5277051614984711,
+        "kp_LSmallToe_x_mean": 0.5118225979009756,
+        "diff_LHeel_y_std": 0.49539977291998927,
+        "diff_LHeel_x_mean": 0.48909556786118286,
+        "distance_LShoulder_RHip_mean": 0.487245645059372,
+        "kp_REar_x_median": 0.4765193158355465,
+        "kp_MidHip_y_median": 0.4673382689232907,
+        "kp_LEye_y_mean": 0.46457568355657564,
+        "diff_RKnee_y_std": 0.4559937609425797,
+        "kp_Neck_y_std": 0.45301972446705907,
+        "autocorr_RShoulder_x": 0.43364892860830745,
+        "velocity_LSmallToe_std": 0.43328492511258343,
+        "kp_MidHip_y_max": 0.41763197412884956,
+        "kp_RBigToe_y_range": 0.41242110160563306,
+        "kp_REye_y_max": 0.40732285928825096,
+        "kp_LSmallToe_y_std": 0.38333707961262153,
+        "velocity_RElbow_mean": 0.37277820671730466,
+        "autocorr_LEar_x": 0.36695525968880116
+      }
+    },
+    "lstm": {
+      "accuracy": 0.6259097525473072,
+      "precision": 0.5185840707964602,
+      "recall": 0.5476635514018692,
+      "f1": 0.5327272727272727,
+      "roc_auc": 0.6662147861829281,
+      "confusion_matrix": [
+        [
+          567,
+          272
+        ],
+        [
+          242,
+          293
+        ]
+      ],
+      "top_features": {}
+    },
+    "transformer": {
+      "accuracy": 0.6142649199417758,
+      "precision": 0.5043478260869565,
+      "recall": 0.5420560747663551,
+      "f1": 0.5225225225225225,
+      "roc_auc": 0.6695910797233021,
+      "confusion_matrix": [
+        [
+          554,
+          285
+        ],
+        [
+          245,
+          290
+        ]
+      ],
+      "top_features": {}
+    }
+  },
+  "ensemble_weights": {
+    "rf": 0.3373965998087824,
+    "svm": 0.27675989909242055,
+    "lstm": 0.19098205703505272,
+    "transformer": 0.19486144406374434
+  },
+  "ensemble": {
+    "accuracy": 0.9213973799126638,
+    "precision": 0.9313131313131313,
+    "recall": 0.8616822429906542,
+    "f1": 0.8951456310679612,
+    "confusion_matrix": [
+      [
+        805,
+        34
+      ],
+      [
+        74,
+        461
+      ]
+    ],
+    "roc_auc": 0.9798825927617434
+  }
+}

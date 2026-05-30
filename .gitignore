@@ -1,7 +1,5 @@
-# models (root-level trained model binaries)
+# model binaries (tracked manually via git add -f)
 /models/
-*.pth
-*.pkl
 
 # python cache
 __pycache__/
