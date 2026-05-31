@@ -45,35 +45,35 @@ function ConfirmResetContent() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-dark-bg">
-      <div className="w-full max-w-md bg-dark-surface rounded-2xl shadow-xl p-8 border border-dark-deep">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12" style={{ backgroundColor: 'var(--background)' }}>
+      <div className="w-full max-w-md rounded-2xl shadow-xl p-8" style={{ backgroundColor: 'var(--background)', border: '1px solid var(--border)' }}>
         <div className="text-center mb-8">
           <div className="w-14 h-14 mx-auto rounded-xl bg-primary flex items-center justify-center mb-4">
             <Mail className="w-7 h-7 text-white" />
           </div>
 
-          <h1 className="text-2xl font-bold text-white">
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>
             Password Reset Request
           </h1>
 
-          <p className="text-gray-400 mt-2">
+          <p className="mt-2" style={{ color: 'var(--text-muted)' }}>
             Did you request to reset the password for this account?
           </p>
 
-          <p className="text-primary font-medium mt-3">
+          <p className="text-primary dark:text-primary-light font-medium mt-3">
             {email}
           </p>
         </div>
 
         {message && (
-          <div className="mb-4 p-4 rounded-xl bg-green-900/20 text-green-400 flex items-center gap-2">
+          <div className="mb-4 p-4 rounded-xl flex items-center gap-2" style={{ backgroundColor: 'var(--color-green-50)', color: 'var(--color-green-700)' }}>
             <CheckCircle className="w-5 h-5" />
             <span className="text-sm">{message}</span>
           </div>
         )}
 
         {error && (
-          <div className="mb-4 p-4 rounded-xl bg-red-900/20 text-red-400 flex items-center gap-2">
+          <div className="mb-4 p-4 rounded-xl flex items-center gap-2" style={{ backgroundColor: 'rgba(220, 38, 38, 0.1)', color: '#dc2626' }}>
             <AlertCircle className="w-5 h-5" />
             <span className="text-sm">{error}</span>
           </div>
@@ -91,7 +91,8 @@ function ConfirmResetContent() {
           <button
             onClick={handleNo}
             disabled={loading}
-            className="w-full py-3 rounded-xl border border-gray-600 text-gray-300 hover:bg-white/5 font-medium transition-all"
+            className="w-full py-3 rounded-xl font-medium transition-all disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-dark-deep"
+            style={{ backgroundColor: 'transparent', border: '1px solid var(--border)', color: 'var(--foreground)' }}
           >
             No, go back to login
           </button>

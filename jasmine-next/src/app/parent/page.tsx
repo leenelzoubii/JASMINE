@@ -88,9 +88,9 @@ export default function ParentDashboard() {
           animate={{ opacity: 1, y: 0 }}
           className="p-4 bg-white dark:bg-dark-surface rounded-2xl border border-gray-200 dark:border-dark-deep"
         >
-          <Baby className="w-8 h-8 text-primary mb-2" />
+          <Baby className="w-8 h-8 text-primary dark:text-primary-light mb-2" />
           <p className="text-2xl font-bold text-gray-900 dark:text-white">{links.length}</p>
-          <p className="text-sm text-gray-500">Children</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Children</p>
         </motion.div>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -98,9 +98,9 @@ export default function ParentDashboard() {
           transition={{ delay: 0.1 }}
           className="p-4 bg-white dark:bg-dark-surface rounded-2xl border border-gray-200 dark:border-dark-deep"
         >
-          <FileText className="w-8 h-8 text-primary mb-2" />
+          <FileText className="w-8 h-8 text-primary dark:text-primary-light mb-2" />
           <p className="text-2xl font-bold text-gray-900 dark:text-white">{(latestScore * 100).toFixed(0)}%</p>
-          <p className="text-sm text-gray-500">Latest Score</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Latest Score</p>
         </motion.div>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -108,9 +108,9 @@ export default function ParentDashboard() {
           transition={{ delay: 0.2 }}
           className="p-4 bg-white dark:bg-dark-surface rounded-2xl border border-gray-200 dark:border-dark-deep"
         >
-          <Calendar className="w-8 h-8 text-primary mb-2" />
+          <Calendar className="w-8 h-8 text-primary dark:text-primary-light mb-2" />
           <p className="text-lg font-bold text-gray-900 dark:text-white">{latestDate}</p>
-          <p className="text-sm text-gray-500">Last Check</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Last Check</p>
         </motion.div>
       </div>
 
@@ -163,7 +163,7 @@ export default function ParentDashboard() {
             className="mt-4 pt-4 border-t border-gray-100 dark:border-dark-deep space-y-2"
           >
         <Link href="/parent/messages" className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-dark-bg rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-deep">
-          <Send className="w-5 h-5 text-primary" />
+          <Send className="w-5 h-5 text-primary dark:text-primary-light" />
           Send Message to {links[0].professionalName || 'Specialist'}
         </Link>
           </motion.div>
@@ -182,11 +182,11 @@ export default function ParentDashboard() {
       {/* Quick Actions */}
       <div className="grid grid-cols-2 gap-4">
         <a href="/parent/results" className="flex items-center gap-3 p-4 bg-white dark:bg-dark-surface rounded-xl border border-gray-200 dark:border-dark-deep hover:border-primary transition-colors">
-          <FileText className="w-6 h-6 text-primary" />
+          <FileText className="w-6 h-6 text-primary dark:text-primary-light" />
           <span className="font-medium text-gray-900 dark:text-white">View Results</span>
         </a>
         <a href="/parent/messages" className="flex items-center gap-3 p-4 bg-white dark:bg-dark-surface rounded-xl border border-gray-200 dark:border-dark-deep hover:border-primary transition-colors">
-          <MessageSquare className="w-6 h-6 text-primary" />
+          <MessageSquare className="w-6 h-6 text-primary dark:text-primary-light" />
           <span className="font-medium text-gray-900 dark:text-white">Message Specialist</span>
         </a>
       </div>

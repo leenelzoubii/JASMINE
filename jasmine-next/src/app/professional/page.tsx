@@ -118,7 +118,7 @@ export default function ProfessionalDashboard() {
         <div className="p-6 bg-white dark:bg-dark-surface rounded-2xl border border-primary-light/30 dark:border-dark-deep">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Patients</h2>
-            <Link href="/professional/patients" className="text-sm text-primary hover:text-primary-dark flex items-center gap-1">
+            <Link href="/professional/patients" className="text-sm text-primary dark:text-primary-light hover:text-primary-dark flex items-center gap-1">
               View all <ArrowRight className="w-4 h-4" />
             </Link>
           </div>

@@ -129,7 +129,7 @@ function ResetPasswordForm() {
             <>
               <div className="text-center mb-6">
                 <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
-                  <Lock className="w-8 h-8 text-primary" />
+                  <Lock className="w-8 h-8 text-primary dark:text-primary-light" />
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Set New Password</h2>
                 <p className="text-gray-500 dark:text-gray-400">
@@ -161,7 +161,7 @@ function ResetPasswordForm() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 bg-gray-100 dark:bg-gray-700 rounded-md text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 bg-gray-100 dark:bg-gray-700 rounded-md text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
