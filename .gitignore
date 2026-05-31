@@ -1,7 +1,5 @@
-# models
-models/
-*.pth
-*.pkl
+# model binaries (tracked manually via git add -f)
+/models/
 
 # python cache
 __pycache__/
