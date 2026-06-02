@@ -11,7 +11,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from src.models.ml_models import MLModelTrainer
 from src.models.dl_models import DLModelTrainer, LSTMClassifier, TransformerClassifier
-
+# Import torch for architecture tests
+import torch
 
 class TestMLModels:
     """Tests for traditional ML models."""
@@ -185,5 +186,4 @@ class TestDLModels:
         assert output.shape == (batch_size, 2)
 
 
-# Import torch for architecture tests
-import torch
+
