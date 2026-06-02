@@ -324,7 +324,7 @@ export default function ProfessionalPatientsPage() {
             type="checkbox"
             checked={sortAsc}
             onChange={(e) => setSortAsc(e.target.checked)}
-            className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+            className="w-4 h-4 rounded border-gray-300 text-primary dark:text-primary-light focus:ring-primary"
           />
           <span className="text-sm text-gray-500 dark:text-gray-400">Ascending</span>
         </label>
@@ -378,7 +378,7 @@ export default function ProfessionalPatientsPage() {
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-primary-light flex items-center justify-center text-primary font-semibold">
+                        <div className="w-10 h-10 rounded-full bg-primary-light dark:bg-primary-dark/40 flex items-center justify-center text-primary dark:text-primary-light font-semibold">
                           {patient.name.charAt(0)}
                         </div>
                         <span className="font-medium text-gray-900 dark:text-white">{patient.name}</span>
@@ -564,10 +564,10 @@ export default function ProfessionalPatientsPage() {
                     type="checkbox"
                     checked={sendCredentials}
                     onChange={(e) => setSendCredentials(e.target.checked)}
-                    className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary"
+                    className="w-5 h-5 rounded border-gray-300 text-primary dark:text-primary-light focus:ring-primary"
                   />
                   <div className="flex items-center gap-2">
-                    <Send className="w-4 h-4 text-primary" />
+                    <Send className="w-4 h-4 text-primary dark:text-primary-light" />
                     <span className="text-sm text-gray-700 dark:text-gray-300">
                       Send account details to parent
                     </span>

@@ -112,8 +112,8 @@ export default function ParentResultsPage() {
             >
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-primary-light flex items-center justify-center">
-                    <FileText className="w-6 h-6 text-primary" />
+                  <div className="w-12 h-12 rounded-full bg-primary-light dark:bg-primary-dark/40 flex items-center justify-center">
+                    <FileText className="w-6 h-6 text-primary dark:text-primary-light" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{result.patientName}</h3>

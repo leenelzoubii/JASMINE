@@ -190,7 +190,7 @@ export default function PatientAccessPage() {
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-primary-light flex items-center justify-center text-primary font-semibold">
+                        <div className="w-10 h-10 rounded-full bg-primary-light dark:bg-primary-dark/40 flex items-center justify-center text-primary dark:text-primary-light font-semibold">
                           {getPatientName(link.patientId).charAt(0)}
                         </div>
                         <span className="font-medium text-gray-900 dark:text-white">
@@ -219,7 +219,7 @@ export default function PatientAccessPage() {
                         <button
                           onClick={() => handleResendCredentials(link)}
                           disabled={actionLoading === link.id}
-                          className="p-2 bg-primary/10 text-primary hover:bg-primary/20 rounded-lg disabled:opacity-50 transition-colors"
+                          className="p-2 bg-primary/10 text-primary dark:text-primary-light hover:bg-primary/20 rounded-lg disabled:opacity-50 transition-colors"
                           title="Resend credentials"
                         >
                           <RefreshCw className={`w-4 h-4 ${actionLoading === link.id ? 'animate-spin' : ''}`} />

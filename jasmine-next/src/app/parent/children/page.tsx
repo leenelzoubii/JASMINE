@@ -107,8 +107,8 @@ export default function ParentChildrenPage() {
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-full bg-primary-light flex items-center justify-center">
-                    <Baby className="w-8 h-8 text-primary" />
+                  <div className="w-16 h-16 rounded-full bg-primary-light dark:bg-primary-dark/40 flex items-center justify-center">
+                    <Baby className="w-8 h-8 text-primary dark:text-primary-light" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{link.patientName}</h3>
@@ -127,7 +127,8 @@ export default function ParentChildrenPage() {
               <div className="mt-4 pt-4 border-t border-gray-100 dark:border-dark-deep flex gap-2">
                 <Link
                   href={`/parent/children/${link.patientId}`}
-                  className="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors text-center"
+                  className="flex-1 px-4 py-2 bg-primary rounded-lg font-medium hover:bg-primary-dark transition-colors text-center"
+                  style={{ color: '#fff' }}
                 >
                   View Profile
                 </Link>

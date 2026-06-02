@@ -273,7 +273,7 @@ export default function ProfessionalProfilePage() {
               <span className="text-gray-700 dark:text-gray-300">Account type</span>
             </div>
 
-            <span className="text-primary font-medium">Professional</span>
+            <span className="text-primary dark:text-primary-light font-medium">Professional</span>
           </div>
 
           <div className="flex items-center justify-between py-3">
@@ -298,7 +298,7 @@ export default function ProfessionalProfilePage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Lock className="w-5 h-5 text-primary" />
+              <Lock className="w-5 h-5 text-primary dark:text-primary-light" />
             </div>
 
             <div>
@@ -313,7 +313,7 @@ export default function ProfessionalProfilePage() {
 
           <button
             onClick={() => setShowChangePassword(!showChangePassword)}
-            className="px-4 py-2 text-sm text-primary hover:bg-primary/10 rounded-lg transition-colors"
+            className="px-4 py-2 text-sm text-primary dark:text-primary-light hover:bg-primary/10 rounded-lg transition-colors"
           >
             {showChangePassword ? 'Cancel' : 'Change'}
           </button>
@@ -356,7 +356,7 @@ export default function ProfessionalProfilePage() {
                 <button
                   type="button"
                   onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 bg-gray-100 dark:bg-gray-700 rounded-md text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 bg-gray-100 dark:bg-gray-700 rounded-md text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
                 >
                   {showCurrentPassword ? (
                     <EyeOff className="w-4 h-4" />
@@ -384,7 +384,7 @@ export default function ProfessionalProfilePage() {
                 <button
                   type="button"
                   onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 bg-gray-100 dark:bg-gray-700 rounded-md text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 bg-gray-100 dark:bg-gray-700 rounded-md text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
                 >
                   {showNewPassword ? (
                     <EyeOff className="w-4 h-4" />

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
   /* Light mode - HIGH CONTRAST */
@@ -54,10 +55,14 @@
   --background: #0f1d25;
   --background-alt: #1a2e3d;
   --foreground: #f0f4f8;
+  --primary: #3d96b6;
+  --primary-hover: #4ca4c4;
+  --primary-muted: #5aaeca;
   --border: #2a3f52;
   --border-light: #1a2e3d;
   --text-secondary: #c4ccd6;
-  --text-muted: #8899a8;
+  --text-muted: #aab8c4;
+  --link: #5bc0de;
 }
 
 /* Base */
@@ -91,6 +96,14 @@ button {
 /* Links */
 a {
   color: var(--primary);
+}
+.dark a {
+  color: var(--link);
+}
+
+/* Dark mode icon/muted text contrast */
+.dark .text-gray-400 {
+  color: #c4ccd6;
 }
 
 /* Scrollbar */
