@@ -121,7 +121,7 @@ class TestCSVLoader:
 
             assert keypoints.shape[0] == 30  # frames
             assert keypoints.shape[1] == 17  # joints
-            assert keypoints.shape[2] == 3   # x, y, z
+            assert keypoints.shape[2] == 2   # x, y, z
             assert action_label is not None
             assert asd_label is not None
         finally:
