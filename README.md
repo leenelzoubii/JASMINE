@@ -126,8 +126,8 @@ autism-screening-pose/
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/leenelzoubii/autism-screening-pose.git
-cd autism-screening-pose
+git clone https://github.com/leenelzoubii/JASMINE.git
+cd JASMINE
 ```
 
 ### Backend Setup
@@ -316,5 +316,5 @@ Only **2D skeletal keypoints** (x, y coordinates) are extracted and processed. N
 
 ---
 
-**Repository**: https://github.com/leenelzoubii/autism-screening-pose
+**Repository**: https://github.com/leenelzoubii/JASMINE
 **Dataset**: https://drive.google.com/drive/folders/1xk-wovtIv0COjoROa7w7g1B47cueubmV?usp=sharing
