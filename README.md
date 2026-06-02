@@ -32,9 +32,22 @@ Frontend (Next.js 16, localhost:3000)
     ↔ Backend (FastAPI, localhost:8000)
 ```
 
+### Role-Based Portals
+
+| Feature | Professional | Parent |
+|---------|-------------|--------|
+| Run assessments (file/YouTube) | ✅ | ❌ |
+| Manage patients | ✅ | ❌ |
+| Review & share results | ✅ | ✅ (view only) |
+| Pose skeleton visualization | ✅ | ✅ |
+| Real-time SSE pipeline animation | ✅ | ❌ |
+| Child profiles | ❌ | ✅ |
+| Results dashboard | ✅ | ✅ |
+| Messaging | ✅ | ✅ |
+| Notifications | ✅ | ✅ |
+
 ### Key Features
 
-- **Role-based portals**: Professional (run assessments, manage patients) and Parent (view results, chat)
 - **SSE streaming pipeline**: Real-time progress animation during assessment computation
 - **Pose skeleton viewer**: Canvas-based BODY-25 renderer with labeled joints
 - **AI explainability panel**: Feature importance bars, per-model contributions, plain-language reasoning
