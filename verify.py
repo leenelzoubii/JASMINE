@@ -11,7 +11,7 @@ from src.models.ml_models import MLModelTrainer
 from src.models.dl_models import DLModelTrainer, LSTMClassifier, TransformerClassifier
 from src.models.training import run_full_comparison, save_results
 from src.visualization.plots import plot_pose_skeleton, create_interactive_skeleton_html
-from app.utils import load_all_models, get_ensemble_prediction, format_prediction_result
+from utils import load_all_models, get_ensemble_prediction, format_prediction_result
 print('All imports successful!')
 
 # Verify models were saved
