@@ -88,7 +88,11 @@ export function AnimatedTitle() {
       {LINES.map((line, i) => (
         <div
           key={i}
-          className={`type-line ${i === 0 ? 'text-6xl sm:text-7xl md:text-8xl lg:text-9xl' : ''}`}
+          className={`type-line whitespace-nowrap ${
+            i === 0
+              ? 'text-6xl sm:text-7xl md:text-8xl lg:text-9xl'
+              : 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl overflow-hidden'
+          }`}
           style={{ color: 'var(--text-primary)' }}
         >
           {line}
