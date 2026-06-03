@@ -6,6 +6,9 @@ import tempfile
 
 import numpy as np
 import pytest
+import torch
+
+pytest.importorskip("torch")
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
@@ -183,7 +186,3 @@ class TestDLModels:
         output = model(x, lengths)
 
         assert output.shape == (batch_size, 2)
-
-
-# Import torch for architecture tests
-import torch

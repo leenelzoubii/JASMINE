@@ -17,22 +17,24 @@ import os
 
 @pytest.fixture
 def synthetic_keypoints():
-    """Generate synthetic keypoint sequence (realistic movement)."""
+    """Generate synthetic keypoint sequence (sinusoidal movement, matching test_features.py pattern)."""
     num_frames = 100
     num_joints = 25
     
-    # Create structured movement pattern (simulating arm swinging)
-    t = np.linspace(0, 4 * np.pi, num_frames)
+    # Create structured sinusoidal movement pattern (similar to _create_test_sequence in test_features.py)
+    rng = np.random.RandomState(42)
     keypoints = np.zeros((num_frames, num_joints, 3), dtype=np.float32)
     
-    # Simulate body movement
+    # Use slightly longer period than unit tests for integration test realism
+    t = np.linspace(0, 4 * np.pi, num_frames)
+    
     for j in range(num_joints):
-        # X: horizontal movement
-        keypoints[:, j, 0] = 0.5 + 0.15 * np.sin(t + j * 0.2)
-        # Y: vertical movement
-        keypoints[:, j, 1] = 0.5 + 0.1 * np.cos(t + j * 0.15)
-        # Z: confidence/visibility
-        keypoints[:, j, 2] = 0.8 + 0.2 * np.random.rand()
+        # X: horizontal movement (sinusoidal)
+        keypoints[:, j, 0] = 0.5 + 0.2 * np.sin(t + j * 0.1)
+        # Y: vertical movement (cosine)
+        keypoints[:, j, 1] = 0.5 + 0.15 * np.cos(t + j * 0.15)
+        # Z: confidence/visibility (deterministic per joint)
+        keypoints[:, j, 2] = 0.8 + 0.15 * np.sin(j * 0.5)  # Deterministic, not random
     
     return keypoints
 

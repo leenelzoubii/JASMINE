@@ -1,5 +1,5 @@
 """
-Shared utilities for the Streamlit app.
+Shared utilities for model loading and prediction.
 """
 
 import os
@@ -10,7 +10,7 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 
 
-PROJECT_ROOT = Path(__file__).parent.parent
+PROJECT_ROOT = Path(__file__).parent
 
 
 def get_db_connection():

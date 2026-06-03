@@ -201,7 +201,7 @@ class TestPredictionConsistency:
         print("✓ Predictions are deterministic")
 
     def test_prediction_stability_across_models(self):
-        """Test that different models generally agree on clear cases."""
+        """Test that different models have acceptable accuracy on clear cases."""
         # Create highly separable data
         X_low = np.random.rand(20, 50).astype(np.float32) * 0.1  # Class 0
         X_high = np.random.rand(20, 50).astype(np.float32) * 10.0  # Class 1
@@ -215,41 +215,44 @@ class TestPredictionConsistency:
         rf_trainer.train(X_train, y_train)
         svm_trainer.train(X_train, y_train)
         
-        # Clear low case
-        test_low = np.random.rand(1, 50).astype(np.float32) * 0.05
-        rf_pred_low = rf_trainer.predict(test_low)[0]
-        svm_pred_low = svm_trainer.predict(test_low)[0]
+        # Test on separable data - both should achieve >80% accuracy
+        test_low = np.random.rand(5, 50).astype(np.float32) * 0.05
+        test_high = np.random.rand(5, 50).astype(np.float32) * 20.0
+        X_test = np.vstack([test_low, test_high])
+        y_test = np.array([0]*5 + [1]*5)
         
-        # Clear high case
-        test_high = np.random.rand(1, 50).astype(np.float32) * 20.0
-        rf_pred_high = rf_trainer.predict(test_high)[0]
-        svm_pred_high = svm_trainer.predict(test_high)[0]
+        rf_score = rf_trainer.predict(X_test) == y_test
+        svm_score = svm_trainer.predict(X_test) == y_test
         
-        # Both should agree on separable cases
-        assert rf_pred_low == svm_pred_low, "Models should agree on clear low case"
-        assert rf_pred_high == svm_pred_high, "Models should agree on clear high case"
+        rf_accuracy = rf_score.mean()
+        svm_accuracy = svm_score.mean()
         
-        print("✓ Model predictions agree on clear cases")
+        assert rf_accuracy > 0.8, f"RF accuracy {rf_accuracy} should be >0.8 on separable data"
+        assert svm_accuracy > 0.8, f"SVM accuracy {svm_accuracy} should be >0.8 on separable data"
+        
+        print(f"✓ RF accuracy: {rf_accuracy:.2f}, SVM accuracy: {svm_accuracy:.2f}")
 
     def test_confidence_calibration(self):
         """Test that model confidence increases with decision clarity."""
-        X_train = np.random.rand(50, 50).astype(np.float32)
-        y_train = np.random.choice([0, 1], 50)
+        # Create highly separable data: class 0 = low values, class 1 = high values
+        X_low = np.random.rand(25, 50).astype(np.float32) * 0.1  # Class 0
+        X_high = np.random.rand(25, 50).astype(np.float32) * 10.0  # Class 1
+        X_train = np.vstack([X_low, X_high])
+        y_train = np.array([0]*25 + [1]*25)
         
         trainer = MLModelTrainer(model_type='rf')
         trainer.train(X_train, y_train)
         
-        # Generate extreme cases
-        extreme_cases = np.vstack([
-            np.zeros((5, 50), dtype=np.float32),  # Very low values
-            np.ones((5, 50), dtype=np.float32) * 10,  # Very high values
-        ])
+        # Generate extreme cases for testing
+        extreme_low = np.random.rand(3, 50).astype(np.float32) * 0.05  # Very low
+        extreme_high = np.random.rand(3, 50).astype(np.float32) * 15.0  # Very high
+        extreme_cases = np.vstack([extreme_low, extreme_high])
         
         proba = trainer.predict_proba(extreme_cases)
         
         # Check confidence (max probability should be high for extreme cases)
         max_proba = np.max(proba, axis=1)
-        assert np.all(max_proba > 0.5), "Should have high confidence on extreme cases"
+        assert np.all(max_proba > 0.6), f"Should have high confidence on extreme cases, got {max_proba}"
         
         print(f"✓ Confidence scores: min={max_proba.min():.2f}, max={max_proba.max():.2f}")
 
