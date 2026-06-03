@@ -4,26 +4,11 @@ import Link from 'next/link';
 import { Navbar } from '@/components/layout/navbar';
 import {
   Brain, Shield, Users, Activity, ArrowRight, CheckCircle2,
-  Sparkles, BarChart3, Layers, Play, ScrollText
+  Sparkles, BarChart3, Layers, Play,
 } from 'lucide-react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import { useRef } from 'react';
 import { AnimatedTitle } from '@/components/animated-title';
-
-const container = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.2 } },
-};
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
-};
-
-const fadeInLeft = {
-  hidden: { opacity: 0, x: -30 },
-  show: { opacity: 1, x: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
-};
 
 const features = [
   { icon: Brain, title: 'Pose Estimation', description: 'Advanced 2D pose detection using 25 BODY-25 keypoints per frame' },
@@ -38,6 +23,56 @@ const steps = [
   { num: '03', title: 'Feature Analysis', desc: '983 kinematic & statistical features capture movement patterns' },
   { num: '04', title: 'Ensemble Prediction', desc: '4 models combine for a robust ASD likelihood score with explainability' },
 ];
+
+const stats = [
+  { value: '92.1%', label: 'Accuracy' },
+  { value: '0.98', label: 'ROC-AUC' },
+  { value: '1,374', label: 'Subjects' },
+  { value: '4', label: 'Ensemble Models' },
+];
+
+function SectionAnim({ children, className, style, delay = 0 }: {
+  children: React.ReactNode;
+  className?: string;
+  style?: React.CSSProperties;
+  delay?: number;
+}) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: false });
+
+  return (
+    <motion.div
+      ref={ref}
+      animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+      transition={{ duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] }}
+      className={className}
+      style={style}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function CardAnim({ children, className, delay = 0 }: {
+  children: React.ReactNode;
+  className?: string;
+  delay?: number;
+}) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: false, margin: '-60px 0px' });
+
+  return (
+    <motion.div
+      ref={ref}
+      animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+      transition={{ duration: 0.5, delay, ease: [0.16, 1, 0.3, 1] }}
+      whileHover={{ y: -4 }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
 
 export default function HomePage() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -157,67 +192,37 @@ export default function HomePage() {
       </motion.section>
 
       {/* === Stats Bar === */}
-      <motion.section
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
+      <SectionAnim
         className="py-12 px-4"
         style={{ backgroundColor: 'var(--background-alt)' }}
       >
         <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-          {[
-            { value: '92.1%', label: 'Accuracy' },
-            { value: '0.98', label: 'ROC-AUC' },
-            { value: '1,374', label: 'Subjects' },
-            { value: '4', label: 'Ensemble Models' },
-          ].map((stat, i) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-            >
+          {stats.map((stat, i) => (
+            <CardAnim key={stat.label} delay={i * 0.08}>
               <p className="text-3xl md:text-4xl font-bold" style={{ color: 'var(--primary)' }}>
                 {stat.value}
               </p>
               <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{stat.label}</p>
-            </motion.div>
+            </CardAnim>
           ))}
         </div>
-      </motion.section>
+      </SectionAnim>
 
       {/* === Features === */}
       <section className="py-20 md:py-28 px-4">
         <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
+          <SectionAnim className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ color: 'var(--foreground)' }}>
               Everything You Need for Accurate Screening
             </h2>
             <p className="text-lg max-w-2xl mx-auto" style={{ color: 'var(--text-muted)' }}>
               A comprehensive suite of tools designed for healthcare professionals
             </p>
-          </motion.div>
+          </SectionAnim>
 
-          <motion.div
-            variants={container}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
-          >
-            {features.map((feature, index) => (
-              <motion.div
-                key={index}
-                variants={fadeUp}
-                whileHover={{ y: -4 }}
-                className="premium-card p-6 group cursor-default"
-              >
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {features.map((feature, i) => (
+              <CardAnim key={i} delay={i * 0.08} className="premium-card p-6 group cursor-default">
                 <div
                   className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg"
                   style={{ background: 'var(--gradient-primary-subtle)' }}
@@ -230,39 +235,30 @@ export default function HomePage() {
                 <p className="text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
                   {feature.description}
                 </p>
-              </motion.div>
+              </CardAnim>
             ))}
-          </motion.div>
+          </div>
         </div>
       </section>
 
-      {/* === How It Works (Editorial Style) === */}
-      <section className="py-20 md:py-28 px-4" style={{ backgroundColor: 'var(--background-alt)' }}>
+      {/* === How It Works === */}
+      <section
+        className="py-20 md:py-28 px-4"
+        style={{ backgroundColor: 'var(--background-alt)' }}
+      >
         <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
+          <SectionAnim className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ color: 'var(--foreground)' }}>
               From Video to Insight
             </h2>
             <p className="text-lg max-w-2xl mx-auto" style={{ color: 'var(--text-muted)' }}>
               The ML pipeline transforms raw video into clinically meaningful predictions
             </p>
-          </motion.div>
+          </SectionAnim>
 
           <div className="space-y-6">
             {steps.map((step, i) => (
-              <motion.div
-                key={step.num}
-                initial={{ opacity: 0, x: i % 2 === 0 ? -30 : 30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="premium-card p-6 md:p-8 flex items-start gap-6"
-              >
+              <CardAnim key={step.num} delay={i * 0.08} className="premium-card p-6 md:p-8 flex items-start gap-6">
                 <div
                   className="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center text-lg font-bold text-white"
                   style={{ background: 'var(--gradient-primary)' }}
@@ -275,7 +271,7 @@ export default function HomePage() {
                   </h3>
                   <p className="text-base" style={{ color: 'var(--text-muted)' }}>{step.desc}</p>
                 </div>
-              </motion.div>
+              </CardAnim>
             ))}
           </div>
         </div>
@@ -293,11 +289,7 @@ export default function HomePage() {
         </div>
 
         <div className="max-w-3xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
+          <SectionAnim>
             <h2 className="text-3xl md:text-5xl font-bold mb-6" style={{ color: 'var(--text-primary)' }}>
               Ready to Transform Your Screening Workflow?
             </h2>
@@ -312,12 +304,18 @@ export default function HomePage() {
               Create Free Account
               <ArrowRight className="w-5 h-5" />
             </Link>
-          </motion.div>
+          </SectionAnim>
         </div>
       </section>
 
       {/* === Footer === */}
-      <footer className="py-10 px-4" style={{ backgroundColor: 'var(--background-alt)', borderTop: '1px solid var(--border-light)' }}>
+      <footer
+        className="py-10 px-4"
+        style={{
+          backgroundColor: 'var(--background-alt)',
+          borderTop: '1px solid var(--border-light)',
+        }}
+      >
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Brain className="w-5 h-5" style={{ color: 'var(--primary)' }} />
