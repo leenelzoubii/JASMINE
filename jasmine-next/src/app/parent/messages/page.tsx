@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Send, Phone, Mail } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser, User } from '@/lib/auth';
 import { getUserConnections } from '@/lib/parent-requests';
 import { isDemoUser, getDemoConnections } from '@/lib/demo-data';
 import {
@@ -18,13 +18,12 @@ import { addNotification } from '@/lib/notifications';
 export default function ParentMessagesPage() {
   const [selectedChat, setSelectedChat] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState('');
-  const [mounted, setMounted] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [connections, setConnections] = useState<any[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const currentUser = mounted ? getCurrentUser() : null;
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => { setCurrentUser(getCurrentUser()); }, []);
 
   useEffect(() => {
     if (!currentUser) return;
@@ -67,7 +66,7 @@ export default function ParentMessagesPage() {
     if (currentUser) markConversationAsRead(currentUser.id, id);
   };
 
-  if (!mounted) {
+  if (!currentUser) {
     return <div className="h-[calc(100vh-8rem)]"><div className="flex h-full rounded-2xl border animate-pulse" style={{ backgroundColor: 'var(--background)', borderColor: 'var(--border)' }} /></div>;
   }
 
