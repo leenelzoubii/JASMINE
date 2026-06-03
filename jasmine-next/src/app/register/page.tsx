@@ -22,7 +22,17 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const validatePassword = (password: string) => {
+    if (password.length <= 12) {
+      return "Password must be more than 12 characters.";
+    }
 
+    if (!/[A-Z]/.test(password)) {
+      return "Password must contain at least one uppercase letter.";
+    }
+
+    return "";
+  };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -38,6 +48,12 @@ export default function RegisterPage() {
 
     if (!name || !email || !password) {
       setError("Please fill in all required fields");
+      return;
+    }
+
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      setError(passwordError);
       return;
     }
 
@@ -257,6 +273,9 @@ export default function RegisterPage() {
                           onChange={(e) => setPassword(e.target.value)}
                           placeholder="Create a strong password"
                           className="premium-input pl-11"
+                          minLength={13}
+                          pattern="(?=.*[A-Z]).{13,}"
+                          title="Password must be more than 12 characters and contain at least one uppercase letter."
                         />
                       </div>
                     </div>

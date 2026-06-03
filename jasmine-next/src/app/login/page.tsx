@@ -23,10 +23,25 @@ function LoginForm() {
       setLoggedOut(true);
     }
   }, [searchParams]);
+  const validatePassword = (password: string) => {
+    if (password.length <= 12) {
+      return 'Password must be more than 12 characters.';
+    }
 
+    if (!/[A-Z]/.test(password)) {
+      return 'Password must contain at least one uppercase letter.';
+    }
+
+    return '';
+  };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      setError(passwordError);
+      return;
+    }
     setLoading(true);
 
     try {
@@ -197,6 +212,9 @@ function LoginForm() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
                     className="premium-input pl-11 pr-11"
+                    minLength={13}
+                    pattern="(?=.*[A-Z]).{13,}"
+                    title="Password must be more than 12 characters and contain at least one uppercase letter."
                   />
                   <button
                     type="button"

@@ -84,8 +84,13 @@ export default function ProfessionalProfilePage() {
       return;
     }
 
-    if (newPassword.length < 8) {
-      setPasswordError('New password must be at least 8 characters.');
+    if (newPassword.length <= 12) {
+      setPasswordError('New password must be more than 12 characters.');
+      return;
+    }
+
+    if (!/[A-Z]/.test(newPassword)) {
+      setPasswordError('New password must contain at least one uppercase letter.');
       return;
     }
 
@@ -378,7 +383,11 @@ export default function ProfessionalProfilePage() {
                   type={showNewPassword ? 'text' : 'password'}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
+                  minLength={13}
+                  pattern="(?=.*[A-Z]).{13,}"
+                  title="Password must be more than 12 characters and contain at least one uppercase letter."
                   className="w-full pl-12 pr-12 py-3 bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-deep rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+
                 />
 
                 <button
@@ -395,7 +404,7 @@ export default function ProfessionalProfilePage() {
               </div>
 
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Must be at least 8 characters
+                Must be more than 12 characters and contain at least one uppercase letter
               </p>
             </div>
 
