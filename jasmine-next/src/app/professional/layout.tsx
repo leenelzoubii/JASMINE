@@ -6,6 +6,7 @@ import { ProfessionalSidebar } from '@/components/layout/professional-sidebar';
 import { getCurrentUser } from '@/lib/auth';
 import { NotificationBell } from '@/components/ui/notification-bell';
 import { ToastContainer } from '@/components/ui/toast';
+import { motion } from 'framer-motion';
 
 export default function ProfessionalLayout({
   children,
@@ -24,7 +25,6 @@ export default function ProfessionalLayout({
   useEffect(() => {
     if (!mounted || checked) return;
     setChecked(true);
-
     const user = getCurrentUser();
     if (!user) {
       router.push(`/login?returnUrl=${encodeURIComponent(pathname)}`);
@@ -33,8 +33,11 @@ export default function ProfessionalLayout({
 
   if (!mounted) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--background-alt)' }}>
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-2 rounded-full animate-spin" style={{ borderColor: 'var(--primary-light)', borderTopColor: 'var(--primary)' }} />
+          <p className="text-sm animate-pulse" style={{ color: 'var(--text-dim)' }}>Loading...</p>
+        </div>
       </div>
     );
   }
@@ -42,8 +45,11 @@ export default function ProfessionalLayout({
   const user = getCurrentUser();
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--background-alt)' }}>
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-2 rounded-full animate-spin" style={{ borderColor: 'var(--primary-light)', borderTopColor: 'var(--primary)' }} />
+          <p className="text-sm animate-pulse" style={{ color: 'var(--text-dim)' }}>Redirecting...</p>
+        </div>
       </div>
     );
   }
@@ -53,11 +59,24 @@ export default function ProfessionalLayout({
       <ToastContainer />
       <ProfessionalSidebar />
       <main className="lg:pl-64 min-h-screen">
-        {/* Top bar with notification bell */}
-        <div className="sticky top-0 z-30 flex items-center justify-end px-6 py-3" style={{ backgroundColor: 'var(--background)', borderBottom: '1px solid var(--border)' }}>
+        <div
+          className="sticky top-0 z-30 glass-card flex items-center justify-between px-6 py-3"
+          style={{ borderBottom: '1px solid var(--border-light)' }}
+        >
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: 'var(--risk-low)' }} />
+            <span className="text-xs font-medium" style={{ color: 'var(--text-dim)' }}>System Online</span>
+          </div>
           <NotificationBell />
         </div>
-        <div className="p-6 lg:p-8">{children}</div>
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="p-6 lg:p-8"
+        >
+          {children}
+        </motion.div>
       </main>
     </div>
   );

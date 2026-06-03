@@ -14,8 +14,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "JASMINE - Autism Screening",
-  description: "Privacy-preserving autism spectrum disorder screening using pose estimation",
+  title: "JASMINE — Autism Screening Platform",
+  description:
+    "A privacy-preserving AI platform for autism spectrum disorder screening using pose estimation. Trusted by healthcare professionals.",
+  keywords: ["autism screening", "pose estimation", "ASD", "AI healthcare", "JASMINE"],
 };
 
 export default function RootLayout({
@@ -25,9 +27,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} min-h-screen antialiased`}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} min-h-screen antialiased`}
+      >
         <ThemeProvider>
-          {children}
+          <div className="animate-fade-slide-up" style={{ animationDuration: "0.4s" }}>
+            {children}
+          </div>
         </ThemeProvider>
       </body>
     </html>

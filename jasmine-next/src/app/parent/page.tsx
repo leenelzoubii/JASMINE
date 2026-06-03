@@ -1,6 +1,6 @@
 'use client';
 
-import { Baby, FileText, MessageSquare, Phone, Mail, Calendar, AlertCircle, Send, Loader2 } from 'lucide-react';
+import { Baby, FileText, MessageSquare, Calendar, AlertCircle, Send, Heart, Activity } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
@@ -8,6 +8,16 @@ import { getCurrentUser } from '@/lib/auth';
 import { getPatientLinksByParent, PatientAccessLink } from '@/lib/patient-access';
 import { getAssessmentsByPatient, AssessmentResult } from '@/lib/assessments';
 import { isDemoUser, getDemoLinksByParent, getDemoAssessmentsByPatient } from '@/lib/demo-data';
+
+const container = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.08 } },
+};
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
+};
 
 const riskColors: Record<string, string> = {
   'High Risk': 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
@@ -24,18 +34,14 @@ export default function ParentDashboard() {
 
   useEffect(() => {
     const user = getCurrentUser();
-    if (!user) {
-      setLoading(false);
-      return;
-    }
+    if (!user) { setLoading(false); return; }
 
     const loadData = async () => {
       let linksData: PatientAccessLink[];
       if (isDemoUser(user.id)) {
         linksData = getDemoLinksByParent() as any;
         setLinks(linksData);
-        const all = getDemoAssessmentsByPatient();
-        setAssessments(all);
+        setAssessments(getDemoAssessmentsByPatient());
       } else {
         linksData = await getPatientLinksByParent(user.id);
         setLinks(linksData);
@@ -65,131 +71,146 @@ export default function ParentDashboard() {
 
   if (loading) {
     return (
-      <div className="max-w-2xl mx-auto space-y-6">
-        <div className="flex items-center justify-center h-64">
-          <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+      <div className="space-y-6">
+        <div className="h-8 w-48 skeleton" />
+        <div className="grid grid-cols-3 gap-4">
+          {[1, 2, 3].map(i => <div key={i} className="h-28 skeleton" />)}
         </div>
+        <div className="h-48 skeleton" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Welcome Back</h1>
-        <p className="text-gray-500 dark:text-gray-400">Here&apos;s an overview of your child&apos;s progress</p>
-      </div>
-
-      {/* Quick Stats */}
-      <div className="grid grid-cols-3 gap-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="p-4 bg-white dark:bg-dark-surface rounded-2xl border border-gray-200 dark:border-dark-deep"
-        >
-          <Baby className="w-8 h-8 text-primary dark:text-primary-light mb-2" />
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{links.length}</p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Children</p>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="p-4 bg-white dark:bg-dark-surface rounded-2xl border border-gray-200 dark:border-dark-deep"
-        >
-          <FileText className="w-8 h-8 text-primary dark:text-primary-light mb-2" />
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{(latestScore * 100).toFixed(0)}%</p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Latest Score</p>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="p-4 bg-white dark:bg-dark-surface rounded-2xl border border-gray-200 dark:border-dark-deep"
-        >
-          <Calendar className="w-8 h-8 text-primary dark:text-primary-light mb-2" />
-          <p className="text-lg font-bold text-gray-900 dark:text-white">{latestDate}</p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Last Check</p>
-        </motion.div>
-      </div>
-
-      {/* My Child Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="p-6 bg-white dark:bg-dark-surface rounded-2xl border border-gray-200 dark:border-dark-deep"
-      >
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">My Child</h2>
-          <span className={`px-3 py-1 rounded-full text-sm font-medium ${riskColors[latestRisk] || riskColors.Unknown}`}>
-            {latestRisk}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-4 mb-4">
-          <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-white text-2xl font-bold">
-            {childName.charAt(0)}
-          </div>
-          <div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white">{childName}</h3>
-            <p className="text-gray-500 dark:text-gray-400">{assessments.length} assessment{assessments.length !== 1 ? 's' : ''}</p>
-          </div>
-        </div>
-
-        {links[0] && (
-          <div className="border-t border-gray-100 dark:border-dark-deep pt-4">
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Assigned Specialist</p>
-            <div className="flex items-center justify-between">
-              <p className="text-gray-900 dark:text-white">{links[0].professionalName || 'Specialist'}</p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setShowContact(!showContact)}
-                  className="px-3 py-1.5 bg-primary hover:bg-primary-dark text-white text-sm rounded-lg"
-                >
-                  Contact
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Contact Options */}
-        {showContact && links[0] && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            className="mt-4 pt-4 border-t border-gray-100 dark:border-dark-deep space-y-2"
-          >
-        <Link href="/parent/messages" className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-dark-bg rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-deep">
-          <Send className="w-5 h-5 text-primary dark:text-primary-light" />
-          Send Message to {links[0].professionalName || 'Specialist'}
-        </Link>
-          </motion.div>
-        )}
+    <motion.div variants={container} initial="hidden" animate="show" className="max-w-2xl mx-auto space-y-6">
+      <motion.div variants={fadeUp}>
+        <h1 className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>Welcome Back</h1>
+        <p style={{ color: 'var(--text-muted)' }}>Here&apos;s an overview of your child&apos;s progress</p>
       </motion.div>
 
-      {/* Disclaimer */}
-      <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl flex items-start gap-3">
-        <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
-        <p className="text-sm text-yellow-800 dark:text-yellow-200">
-          <strong>Important:</strong> This is a research demo and NOT a diagnostic tool. Results should not be used for clinical decision-making.
-          Consult a qualified healthcare professional for professional medical advice.
-        </p>
-      </div>
+      <motion.div variants={fadeUp} className="grid grid-cols-3 gap-4">
+        {[
+          { icon: Baby, value: links.length, label: 'Children', delay: 0 },
+          { icon: Activity, value: `${(latestScore * 100).toFixed(0)}%`, label: 'Latest Score', delay: 0.1 },
+          { icon: Calendar, value: latestDate, label: 'Last Check', delay: 0.2 },
+        ].map((item, i) => (
+          <motion.div
+            key={i}
+            whileHover={{ y: -2 }}
+            className="premium-card p-4 text-center"
+            style={{ animationDelay: `${item.delay}s` }}
+          >
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center mx-auto mb-2"
+              style={{ background: 'var(--gradient-primary-subtle)' }}
+            >
+              <item.icon className="w-5 h-5" style={{ color: 'var(--primary)' }} />
+            </div>
+            <p className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>{item.value}</p>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{item.label}</p>
+          </motion.div>
+        ))}
+      </motion.div>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-2 gap-4">
-        <a href="/parent/results" className="flex items-center gap-3 p-4 bg-white dark:bg-dark-surface rounded-xl border border-gray-200 dark:border-dark-deep hover:border-primary transition-colors">
-          <FileText className="w-6 h-6 text-primary dark:text-primary-light" />
-          <span className="font-medium text-gray-900 dark:text-white">View Results</span>
-        </a>
-        <a href="/parent/messages" className="flex items-center gap-3 p-4 bg-white dark:bg-dark-surface rounded-xl border border-gray-200 dark:border-dark-deep hover:border-primary transition-colors">
-          <MessageSquare className="w-6 h-6 text-primary dark:text-primary-light" />
-          <span className="font-medium text-gray-900 dark:text-white">Message Specialist</span>
-        </a>
-      </div>
-    </div>
+      <motion.div variants={fadeUp}>
+        <div className="premium-card p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold" style={{ color: 'var(--foreground)' }}>
+              <Heart className="w-5 h-5 inline mr-2" style={{ color: 'var(--primary)' }} />
+              My Child
+            </h2>
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${riskColors[latestRisk] || riskColors.Unknown}`}>
+              {latestRisk}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-4 mb-4">
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold"
+              style={{ background: 'var(--gradient-primary)' }}
+            >
+              {childName.charAt(0)}
+            </div>
+            <div>
+              <h3 className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>{childName}</h3>
+              <p style={{ color: 'var(--text-dim)' }}>{assessments.length} assessment{assessments.length !== 1 ? 's' : ''}</p>
+            </div>
+          </div>
+
+          {links[0] && (
+            <div className="pt-4 border-t" style={{ borderColor: 'var(--border-light)' }}>
+              <p className="text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>Assigned Specialist</p>
+              <div className="flex items-center justify-between">
+                <p style={{ color: 'var(--foreground)' }}>{links[0].professionalName || 'Specialist'}</p>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setShowContact(!showContact)}
+                  className="px-4 py-2 rounded-xl text-sm font-medium text-white"
+                  style={{ background: 'var(--gradient-primary)' }}
+                >
+                  Contact
+                </motion.button>
+              </div>
+            </div>
+          )}
+
+          {showContact && links[0] && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              className="mt-4 pt-4 border-t space-y-2" style={{ borderColor: 'var(--border-light)' }}>
+              <Link
+                href="/parent/messages"
+                className="flex items-center gap-3 p-3 rounded-xl transition-colors"
+                style={{ backgroundColor: 'var(--background-alt)' }}
+              >
+                <Send className="w-5 h-5" style={{ color: 'var(--primary)' }} />
+                <span className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
+                  Send Message to {links[0].professionalName || 'Specialist'}
+                </span>
+              </Link>
+            </motion.div>
+          )}
+        </div>
+      </motion.div>
+
+      <motion.div
+        variants={fadeUp}
+        className="p-4 rounded-xl flex items-start gap-3"
+        style={{
+          backgroundColor: 'rgba(184, 134, 11, 0.08)',
+          border: '1px solid rgba(184, 134, 11, 0.2)',
+        }}
+      >
+        <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: 'var(--risk-moderate)' }} />
+        <p className="text-sm" style={{ color: 'var(--risk-moderate)' }}>
+          <strong>Important:</strong> This is a research demo and NOT a diagnostic tool.
+          Consult a qualified healthcare professional for medical advice.
+        </p>
+      </motion.div>
+
+      <motion.div variants={fadeUp} className="grid grid-cols-2 gap-4">
+        {[
+          { href: '/parent/results', icon: FileText, label: 'View Results' },
+          { href: '/parent/messages', icon: MessageSquare, label: 'Message Specialist' },
+        ].map((action, i) => (
+          <Link key={i} href={action.href}>
+            <motion.div
+              whileHover={{ y: -2 }}
+              className="premium-card p-5 flex items-center gap-4 transition-all cursor-pointer"
+            >
+              <div
+                className="w-12 h-12 rounded-xl flex items-center justify-center"
+                style={{ background: 'var(--gradient-primary-subtle)' }}
+              >
+                <action.icon className="w-6 h-6" style={{ color: 'var(--primary)' }} />
+              </div>
+              <span className="font-medium text-sm" style={{ color: 'var(--foreground)' }}>{action.label}</span>
+            </motion.div>
+          </Link>
+        ))}
+      </motion.div>
+    </motion.div>
   );
 }

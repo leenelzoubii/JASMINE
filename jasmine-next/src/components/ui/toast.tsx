@@ -40,13 +40,17 @@ export function ToastContainer() {
         {toasts.map((toast) => (
           <motion.div
             key={toast.id}
-            initial={{ opacity: 0, x: 100, scale: 0.9 }}
+            initial={{ opacity: 0, x: 60, scale: 0.92 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: 100, scale: 0.9 }}
-            className="pointer-events-auto flex items-start gap-3 px-5 py-4 rounded-2xl shadow-lg max-w-sm"
+            exit={{ opacity: 0, x: 60, scale: 0.92 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="pointer-events-auto flex items-start gap-3 px-5 py-4 rounded-2xl shadow-lg max-w-sm backdrop-blur-md"
             style={{
-              backgroundColor: toast.type === "success" ? "#16a34a" : "#dc2626",
+              backgroundColor: toast.type === "success"
+                ? "rgba(26, 138, 74, 0.95)"
+                : "rgba(192, 58, 43, 0.95)",
               color: "white",
+              border: `1px solid ${toast.type === "success" ? "rgba(26, 138, 74, 0.3)" : "rgba(192, 58, 43, 0.3)"}`,
             }}
           >
             {toast.type === "success" ? (
@@ -60,7 +64,7 @@ export function ToastContainer() {
             </div>
             <button
               onClick={() => setToasts((prev) => prev.filter((t) => t.id !== toast.id))}
-              className="p-0.5 hover:opacity-70"
+              className="p-0.5 hover:opacity-70 transition-opacity flex-shrink-0"
             >
               <X className="w-4 h-4" />
             </button>
