@@ -3,8 +3,12 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { Brain, LayoutDashboard, Baby, FileText, MessageSquare, User, LogOut, Menu, X, UserPlus } from 'lucide-react';
+import {
+  Brain, LayoutDashboard, Baby, FileText, MessageSquare,
+  User, LogOut, Menu, X, UserPlus, Heart
+} from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { logoutUser, getCurrentUser } from '@/lib/auth';
 import { useUnreadMessages } from '@/lib/use-unread-messages';
 
@@ -17,14 +21,17 @@ const parentLinks = [
   { href: '/parent/profile', label: 'Profile', icon: User },
 ];
 
+const sidebarVariants = {
+  open: { x: 0, transition: { type: 'spring', stiffness: 300, damping: 30 } },
+  closed: { x: '-100%', transition: { type: 'spring', stiffness: 300, damping: 30 } },
+};
+
 export function ParentSidebar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  useEffect(() => { setMounted(true); }, []);
 
   const user = mounted ? getCurrentUser() : null;
   const unreadMessages = useUnreadMessages(user?.id || null);
@@ -34,91 +41,168 @@ export function ParentSidebar() {
     window.location.href = '/login?loggedout=true';
   };
 
-  return (
-    <>
-      <button
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg"
-        style={{ backgroundColor: 'var(--background)', border: '1px solid var(--border)' }}
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-      </button>
-
-      <aside className={`fixed top-0 left-0 h-full w-64 flex flex-col z-40 ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`} style={{ backgroundColor: 'var(--background)', borderRight: '1px solid var(--border)' }}>
-        <div className="flex flex-col h-full">
-          {/* Logo */}
-          <div className="p-6" style={{ borderBottom: '1px solid var(--border)' }}>
-            <Link href="/parent" className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'var(--primary)' }}>
-                <Brain className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-lg font-bold" style={{ color: 'var(--primary)' }}>JASMINE</span>
+  const sidebarContent = (
+    <div className="flex flex-col h-full">
+      <div className="p-5 border-b" style={{ borderColor: 'var(--border-light)' }}>
+        <div className="flex items-center gap-3">
+          <motion.div
+            whileHover={{ scale: 1.05, rotate: -3 }}
+            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ background: 'var(--gradient-primary)' }}
+          >
+            <Brain className="w-6 h-6 text-white" />
+          </motion.div>
+          <div>
+            <Link href="/parent" className="text-lg font-bold block" style={{ color: 'var(--foreground)' }}>
+              JASMINE
             </Link>
-            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Parent Portal</p>
-          </div>
-
-          {/* Nav Links */}
-          <nav className="flex-1 p-4 space-y-1">
-            {parentLinks.map((link) => {
-              const isActive = pathname === link.href;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all"
-                  style={{
-                    backgroundColor: isActive ? 'var(--primary-light)' : 'transparent',
-                    color: isActive ? 'var(--primary)' : 'var(--foreground)'
-                  }}
-                >
-                  <link.icon className="w-5 h-5" />
-                  <span className="font-medium flex-1">{link.label}</span>
-                  {link.href.includes('/messages') && unreadMessages > 0 && (
-                    <span className="px-2 py-0.5 rounded-full text-xs font-bold text-white" style={{ backgroundColor: '#dc2626' }}>
-                      {unreadMessages > 99 ? '99+' : unreadMessages}
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
-          </nav>
-
-          {/* Bottom Section */}
-          <div className="p-4" style={{ borderTop: '1px solid var(--border)' }}>
-            <div className="flex items-center justify-between mb-4">
-              <ThemeToggle />
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg"
-                style={{ color: '#dc2626' }}
-              >
-                <LogOut className="w-4 h-4" />
-                Logout
-              </button>
-            </div>
-            <div className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: 'var(--background-alt)' }}>
-              {user ? (
-                <>
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold" style={{ backgroundColor: 'var(--primary)' }}>
-                    {user.name.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>{user.name}</p>
-                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Parent</p>
-                  </div>
-                </>
-              ) : (
-                <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-dark-deep animate-pulse" />
-              )}
-            </div>
+            <p className="text-xs font-medium" style={{ color: 'var(--text-dim)' }}>
+              <Heart className="w-3 h-3 inline mr-1" />
+              Parent Portal
+            </p>
           </div>
         </div>
+      </div>
+
+      <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
+        {parentLinks.map((link) => {
+          const isActive = pathname === link.href;
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={() => setIsOpen(false)}
+              className="relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200"
+              style={{
+                backgroundColor: isActive ? 'var(--primary-light)' : 'transparent',
+                color: isActive ? 'var(--primary)' : 'var(--text-secondary)',
+              }}
+            >
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                className="flex items-center gap-3 flex-1"
+              >
+                <link.icon className="w-5 h-5 flex-shrink-0" />
+                <span className="font-medium text-sm">{link.label}</span>
+              </motion.div>
+              {link.href.includes('/messages') && unreadMessages > 0 && (
+                <span
+                  className="px-2 py-0.5 rounded-full text-[11px] font-bold text-white flex-shrink-0"
+                  style={{ backgroundColor: 'var(--risk-high)' }}
+                >
+                  {unreadMessages > 99 ? '99+' : unreadMessages}
+                </span>
+              )}
+              {isActive && (
+                <motion.div
+                  layoutId="parent-sidebar-active"
+                  className="absolute left-0 w-1 h-8 rounded-r-full"
+                  style={{ background: 'var(--gradient-primary)' }}
+                />
+              )}
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="p-4 border-t" style={{ borderColor: 'var(--border-light)' }}>
+        <div className="flex items-center justify-between mb-3 px-1">
+          <ThemeToggle />
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors"
+            style={{ color: 'var(--risk-high)' }}
+          >
+            <LogOut className="w-4 h-4" />
+            Logout
+          </motion.button>
+        </div>
+        <div
+          className="flex items-center gap-3 p-3 rounded-xl"
+          style={{ backgroundColor: 'var(--background-alt)' }}
+        >
+          {user ? (
+            <>
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0"
+                style={{ background: 'var(--gradient-primary)' }}
+              >
+                {user.name.charAt(0).toUpperCase()}
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-medium truncate" style={{ color: 'var(--foreground)' }}>
+                  {user.name}
+                </p>
+                <p className="text-xs truncate" style={{ color: 'var(--text-dim)' }}>
+                  Parent
+                </p>
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center gap-3 w-full">
+              <div className="w-10 h-10 rounded-full skeleton" />
+              <div className="flex-1 space-y-2">
+                <div className="h-3 w-24 skeleton" />
+                <div className="h-2.5 w-16 skeleton" />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="lg:hidden fixed top-3 left-3 z-50 p-2.5 rounded-xl glass-card shadow-md"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-label="Toggle sidebar"
+      >
+        {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+      </motion.button>
+
+      <aside
+        className="hidden lg:flex fixed top-0 left-0 h-full w-64 flex-col z-40"
+        style={{
+          backgroundColor: 'var(--background)',
+          borderRight: '1px solid var(--border-light)',
+        }}
+      >
+        {sidebarContent}
       </aside>
 
-      {isOpen && (
-        <div className="lg:hidden fixed inset-0 bg-black/50 z-30" onClick={() => setIsOpen(false)} />
-      )}
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="lg:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+              onClick={() => setIsOpen(false)}
+            />
+            <motion.aside
+              variants={sidebarVariants}
+              initial="closed"
+              animate="open"
+              exit="closed"
+              className="lg:hidden fixed top-0 left-0 h-full w-72 z-50"
+              style={{
+                backgroundColor: 'var(--background)',
+                borderRight: '1px solid var(--border-light)',
+                boxShadow: 'var(--shadow-lg)',
+              }}
+            >
+              {sidebarContent}
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
     </>
   );
 }

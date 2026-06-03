@@ -2,36 +2,38 @@
 
 import { useTheme } from 'next-themes';
 import { Sun, Moon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 
 export function ThemeToggle() {
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  useEffect(() => setMounted(true), []);
 
-  if (!mounted) {
-    return (
-      <div className="w-10 h-10 rounded-lg bg-primary-light/30 animate-pulse" />
-    );
-  }
-
-  const isDark = resolvedTheme === 'dark';
-  const nextTheme = isDark ? 'light' : 'dark';
+  if (!mounted) return <div className="w-9 h-9 rounded-xl skeleton" />;
 
   return (
-    <button
-      onClick={() => setTheme(nextTheme)}
-      className="p-2.5 rounded-xl bg-primary-light/50 dark:bg-dark-surface hover:bg-primary-light dark:hover:bg-dark-deep transition-all duration-200 group"
-      aria-label={`Switch to ${nextTheme} mode`}
+    <motion.button
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.9 }}
+      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+      className="p-2 rounded-xl transition-all"
+      style={{ backgroundColor: 'var(--background-alt)' }}
+      aria-label="Toggle theme"
     >
-      {isDark ? (
-        <Sun className="w-5 h-5 text-primary-light group-hover:rotate-45 transition-transform duration-300" />
-      ) : (
-        <Moon className="w-5 h-5 text-primary-dark group-hover:-rotate-12 transition-transform duration-300" />
-      )}
-    </button>
+      <motion.div
+        key={theme}
+        initial={{ rotate: -90, opacity: 0 }}
+        animate={{ rotate: 0, opacity: 1 }}
+        transition={{ duration: 0.2 }}
+      >
+        {theme === 'dark' ? (
+          <Sun className="w-5 h-5" style={{ color: 'var(--primary)' }} />
+        ) : (
+          <Moon className="w-5 h-5" style={{ color: 'var(--primary)' }} />
+        )}
+      </motion.div>
+    </motion.button>
   );
 }

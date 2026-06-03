@@ -1,6 +1,6 @@
 'use client';
 
-import { Users, FileText, MessageSquare, Clock, TrendingUp, ArrowRight } from 'lucide-react';
+import { Users, FileText, MessageSquare, TrendingUp, ArrowRight, Activity, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
@@ -10,12 +10,12 @@ import { Patient } from '@/lib/patients';
 
 const container = {
   hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.1 } },
+  show: { opacity: 1, transition: { staggerChildren: 0.08 } },
 };
 
-const item = {
+const fadeUp = {
   hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
 };
 
 const riskColors: Record<string, string> = {
@@ -30,9 +30,7 @@ function calculateAge(dob: string): number {
   const today = new Date();
   let age = today.getFullYear() - birth.getFullYear();
   const m = today.getMonth() - birth.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
-    age--;
-  }
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
   return age;
 }
 
@@ -41,7 +39,6 @@ export default function ProfessionalDashboard() {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [userName, setUserName] = useState('');
 
-  // Placeholder demo patients
   const demoPatients: Patient[] = [
     { id: 'demo-1', name: 'Emma Thompson', dob: '2019-03-15', parentName: 'John Thompson', email: 'john@email.com', phone: '+1 555-0123', lastVisit: '2026-05-01', risk: 'High' },
     { id: 'demo-2', name: 'Liam Johnson', dob: '2020-07-22', parentName: 'Sarah Johnson', email: 'sarah@email.com', phone: '+1 555-0124', lastVisit: '2026-04-25', risk: 'Moderate' },
@@ -56,130 +53,133 @@ export default function ProfessionalDashboard() {
     if (user) {
       setUserName(user.name);
       getPatients(user.id)
-        .then((realPatients) => {
-          if (realPatients.length === 0) {
-            setPatients(demoPatients);
-          } else {
-            setPatients(realPatients);
-          }
-        })
-        .catch(() => {
-          setPatients(demoPatients);
-        });
+        .then((realPatients) => setPatients(realPatients.length === 0 ? demoPatients : realPatients))
+        .catch(() => setPatients(demoPatients));
     }
   }, []);
 
   const stats = [
-    { label: 'Total Patients', value: patients.length, icon: Users, color: 'bg-blue-500' },
-    { label: 'Pending Assessments', value: Math.floor(patients.length * 0.3), icon: FileText, color: 'bg-orange-500' },
-    { label: 'Unread Messages', value: Math.floor(patients.length * 0.4), icon: MessageSquare, color: 'bg-purple-500' },
-    { label: 'This Month', value: Math.floor(patients.length * 0.2), icon: TrendingUp, color: 'bg-green-500' },
+    { label: 'Total Patients', value: patients.length, icon: Users, gradient: 'from-blue-500 to-cyan-500' },
+    { label: 'Pending Assessments', value: Math.floor(patients.length * 0.3), icon: FileText, gradient: 'from-amber-500 to-orange-500' },
+    { label: 'Unread Messages', value: Math.floor(patients.length * 0.4), icon: MessageSquare, gradient: 'from-purple-500 to-pink-500' },
+    { label: 'This Month', value: Math.floor(patients.length * 0.2), icon: TrendingUp, gradient: 'from-green-500 to-emerald-500' },
   ];
 
   const recentPatients = patients.slice(0, 3);
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-        <p className="text-gray-500 dark:text-gray-400">
+    <motion.div variants={container} initial="hidden" animate={mounted ? 'show' : 'hidden'} className="space-y-8">
+      <motion.div variants={fadeUp}>
+        <h1 className="text-3xl font-bold" style={{ color: 'var(--foreground)' }}>Dashboard</h1>
+        <p style={{ color: 'var(--text-muted)' }}>
           {userName ? `Welcome back, ${userName}` : 'Welcome back'}
         </p>
-      </div>
+      </motion.div>
 
-      {/* Stats Grid */}
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate={mounted ? 'show' : 'hidden'}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
-      >
+      <motion.div variants={fadeUp} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, index) => (
           <motion.div
             key={index}
-            variants={item}
-            className="p-6 bg-white dark:bg-dark-surface rounded-2xl border border-primary-light/30 dark:border-dark-deep hover:shadow-lg transition-shadow"
+            whileHover={{ y: -2 }}
+            className="premium-card p-5 relative overflow-hidden"
           >
-            <div className="flex items-center justify-between mb-4">
-              <div className={`w-12 h-12 rounded-xl ${stat.color} flex items-center justify-center`}>
-                <stat.icon className="w-6 h-6 text-white" />
-              </div>
+            <div className="absolute top-0 right-0 w-24 h-24 opacity-5 rounded-full -translate-y-1/2 translate-x-1/2" style={{ background: `linear-gradient(135deg, var(--primary), var(--primary-muted))` }} />
+            <div
+              className="w-11 h-11 rounded-xl flex items-center justify-center mb-3"
+              style={{ background: `linear-gradient(135deg, var(--primary), var(--primary-muted))` }}
+            >
+              <stat.icon className="w-5 h-5 text-white" />
             </div>
-            <p className="text-3xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</p>
+            <p className="text-3xl font-bold" style={{ color: 'var(--foreground)' }}>{stat.value}</p>
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{stat.label}</p>
           </motion.div>
         ))}
       </motion.div>
 
-      {/* Recent Patients & Activity */}
       <div className="grid lg:grid-cols-2 gap-6">
-        {/* Recent Patients */}
-        <div className="p-6 bg-white dark:bg-dark-surface rounded-2xl border border-primary-light/30 dark:border-dark-deep">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Patients</h2>
-            <Link href="/professional/patients" className="text-sm text-primary dark:text-primary-light hover:text-primary-dark flex items-center gap-1">
-              View all <ArrowRight className="w-4 h-4" />
-            </Link>
+        <motion.div variants={fadeUp}>
+          <div className="premium-card p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold" style={{ color: 'var(--foreground)' }}>Recent Patients</h2>
+              <Link
+                href="/professional/patients"
+                className="text-sm font-medium flex items-center gap-1 transition-colors"
+                style={{ color: 'var(--primary)' }}
+              >
+                View all <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+            {recentPatients.length === 0 ? (
+              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No patients yet. Add your first patient to get started.</p>
+            ) : (
+              <div className="space-y-3">
+                {recentPatients.map((patient) => (
+                  <motion.div
+                    key={patient.id}
+                    whileHover={{ x: 3 }}
+                    className="flex items-center justify-between p-4 rounded-xl"
+                    style={{ backgroundColor: 'var(--background-alt)' }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm"
+                        style={{ background: 'var(--gradient-primary)' }}
+                      >
+                        {patient.name.charAt(0)}
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm" style={{ color: 'var(--foreground)' }}>{patient.name}</p>
+                        <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--text-dim)' }}>
+                          <Calendar className="w-3 h-3" />
+                          Age: {patient.dob ? calculateAge(patient.dob) : 'N/A'}
+                          <Activity className="w-3 h-3 ml-1" />
+                          Last: {patient.lastVisit}
+                        </div>
+                      </div>
+                    </div>
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${riskColors[patient.risk] || ''}`}>
+                      {patient.risk}
+                    </span>
+                  </motion.div>
+                ))}
+              </div>
+            )}
           </div>
-          {recentPatients.length === 0 ? (
-            <p className="text-gray-500 dark:text-gray-400 text-sm">No patients yet. Add your first patient to get started.</p>
-          ) : (
-            <div className="space-y-4">
-              {recentPatients.map((patient) => (
-                <div key={patient.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-dark-bg rounded-xl">
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">{patient.name}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Age: {patient.dob ? calculateAge(patient.dob) : 'N/A'} &bull; Last: {patient.lastVisit}
-                    </p>
-                  </div>
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${riskColors[patient.risk] || ''}`}>
-                    {patient.risk}
-                  </span>
-                </div>
+        </motion.div>
+
+        <motion.div variants={fadeUp}>
+          <div className="premium-card p-6">
+            <h2 className="text-lg font-semibold mb-6" style={{ color: 'var(--foreground)' }}>Quick Actions</h2>
+            <div className="space-y-3">
+              {[
+                { href: '/professional/assessments', icon: FileText, title: 'New Assessment', desc: 'Run screening for a patient', gradient: true },
+                { href: '/professional/patients', icon: Users, title: 'Add Patient', desc: 'Register a new patient' },
+                { href: '/professional/messages', icon: MessageSquare, title: 'Message Parent', desc: 'Send update to guardians' },
+              ].map((action, i) => (
+                <Link key={i} href={action.href}>
+                  <motion.div
+                    whileHover={{ x: 4 }}
+                    className="flex items-center gap-4 p-4 rounded-xl transition-all cursor-pointer group"
+                    style={{
+                      backgroundColor: action.gradient ? 'var(--gradient-primary-subtle)' : 'var(--background-alt)',
+                    }}
+                  >
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={action.gradient ? { background: 'var(--gradient-primary)' } : { background: 'var(--primary-light)' }}>
+                      <action.icon className="w-5 h-5" style={{ color: action.gradient ? 'white' : 'var(--primary)' }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm" style={{ color: 'var(--foreground)' }}>{action.title}</p>
+                      <p className="text-xs" style={{ color: 'var(--text-dim)' }}>{action.desc}</p>
+                    </div>
+                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" style={{ color: 'var(--text-dim)' }} />
+                  </motion.div>
+                </Link>
               ))}
             </div>
-          )}
-        </div>
-
-        {/* Quick Actions */}
-        <div className="p-6 bg-white dark:bg-dark-surface rounded-2xl border border-primary-light/30 dark:border-dark-deep">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">Quick Actions</h2>
-          <div className="space-y-3">
-            <Link href="/professional/assessments" className="flex items-center gap-4 p-4 bg-primary-light/30 dark:bg-primary-dark/20 rounded-xl hover:bg-primary-light/50 transition-colors group">
-              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-                <FileText className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-gray-900 dark:text-white">New Assessment</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Run screening for a patient</p>
-              </div>
-              <ArrowRight className="w-5 h-5 text-gray-400 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link href="/professional/patients" className="flex items-center gap-4 p-4 bg-primary-light/30 dark:bg-primary-dark/20 rounded-xl hover:bg-primary-light/50 transition-colors group">
-              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-                <Users className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-gray-900 dark:text-white">Add Patient</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Register a new patient</p>
-              </div>
-              <ArrowRight className="w-5 h-5 text-gray-400 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link href="/professional/messages" className="flex items-center gap-4 p-4 bg-primary-light/30 dark:bg-primary-dark/20 rounded-xl hover:bg-primary-light/50 transition-colors group">
-              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-                <MessageSquare className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-gray-900 dark:text-white">Message Parent</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Send update to guardians</p>
-              </div>
-              <ArrowRight className="w-5 h-5 text-gray-400 group-hover:translate-x-1 transition-transform" />
-            </Link>
           </div>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }
