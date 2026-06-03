@@ -146,12 +146,9 @@ class TestPipelineEdgeCases:
         """Test with single frame (edge case)."""
         single_frame = np.random.rand(1, 25, 3).astype(np.float32)
         
-        # This might fail due to velocity/temporal features, but should be graceful
-        try:
+        # Single frame should raise ValueError due to velocity features requiring >= 2 frames
+        with pytest.raises(ValueError):
             features, _ = extract_all_features(single_frame, fps=30)
-            print("✓ Single frame processed")
-        except Exception as e:
-            print(f"⚠ Single frame not supported (expected): {e}")
 
     def test_missing_confidence(self):
         """Test keypoints with zero confidence (missing detections)."""
