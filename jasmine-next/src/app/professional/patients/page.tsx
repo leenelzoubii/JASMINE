@@ -1,6 +1,7 @@
 'use client';
 
 import { UserPlus, Search, Phone, Mail, X, Send, CheckCircle, Trash2, AlertTriangle } from 'lucide-react';
+import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { getPatients, addPatient, deletePatient, Patient } from '@/lib/patients';
@@ -206,12 +207,14 @@ export default function ProfessionalPatientsPage() {
                   <motion.tr key={patient.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                     className="transition-colors hover:bg-[var(--background-alt)]">
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm" style={{ background: 'var(--gradient-primary)' }}>
-                          {patient.name.charAt(0)}
+                      <Link href={`/professional/patients/${patient.id}`}>
+                        <div className="flex items-center gap-3 cursor-pointer group">
+                          <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm" style={{ background: 'var(--gradient-primary)' }}>
+                            {patient.name.charAt(0)}
+                          </div>
+                          <span className="font-medium group-hover:opacity-70 transition-opacity" style={{ color: 'var(--foreground)' }}>{patient.name}</span>
                         </div>
-                        <span className="font-medium" style={{ color: 'var(--foreground)' }}>{patient.name}</span>
-                      </div>
+                      </Link>
                     </td>
                     <td className="px-6 py-4" style={{ color: 'var(--text-secondary)' }}>{getAge(patient)}</td>
                     <td className="px-6 py-4" style={{ color: 'var(--text-secondary)' }}>{patient.parentName}</td>

@@ -4,6 +4,8 @@ import {
   addDoc,
   getDocs,
   deleteDoc,
+  updateDoc,
+  getDoc,
   serverTimestamp,
   query,
   orderBy,
@@ -33,6 +35,12 @@ export async function getPatients(userId: string): Promise<Patient[]> {
   return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Patient));
 }
 
+export async function getPatient(userId: string, patientId: string): Promise<Patient | null> {
+  const snap = await getDoc(doc(db, 'users', userId, 'patients', patientId));
+  if (!snap.exists()) return null;
+  return { id: snap.id, ...snap.data() } as Patient;
+}
+
 export async function addPatient(
   userId: string,
   data: Omit<Patient, 'id' | 'createdAt' | 'updatedAt'>
@@ -43,6 +51,17 @@ export async function addPatient(
     updatedAt: serverTimestamp(),
   });
   return { id: ref.id, ...data };
+}
+
+export async function updatePatient(
+  userId: string,
+  patientId: string,
+  data: Partial<Omit<Patient, 'id' | 'createdAt'>>
+): Promise<void> {
+  await updateDoc(doc(db, 'users', userId, 'patients', patientId), {
+    ...data,
+    updatedAt: serverTimestamp(),
+  });
 }
 
 export async function deletePatient(userId: string, patientId: string): Promise<void> {
