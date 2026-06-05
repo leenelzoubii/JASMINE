@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: jasmine-backend
+    runtime: python
+    buildCommand: pip install -r jasmine-next/backend/requirements.txt
+    startCommand: cd jasmine-next && uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
