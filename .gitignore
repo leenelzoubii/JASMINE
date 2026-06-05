@@ -21,3 +21,5 @@ jasmine-next/node_modules/
 jasmine-next/.next/
 
 json_to_csv.py
+
+jasmine-next/.env.production
