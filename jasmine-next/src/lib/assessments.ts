@@ -21,6 +21,7 @@ export interface AssessmentResult {
   date: string;
   ensemble_probability: number;
   risk_level: string;
+  confidence?: number;
   num_frames_processed?: number;
   source?: string;
   youtube_url?: string;

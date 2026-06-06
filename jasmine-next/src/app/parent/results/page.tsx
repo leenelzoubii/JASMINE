@@ -127,6 +127,11 @@ export default function ParentResultsPage() {
                   <div className="text-right">
                     <p className="text-3xl font-bold text-gray-900 dark:text-white">{(result.ensemble_probability * 100).toFixed(0)}%</p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">ASD Probability</p>
+                    {result.confidence !== undefined && (
+                      <p className="text-xs mt-1" style={{ color: result.confidence >= 0.8 ? '#16a34a' : result.confidence >= 0.5 ? '#d97706' : '#dc2626' }}>
+                        {(result.confidence * 100).toFixed(0)}% confidence
+                      </p>
+                    )}
                   </div>
                   <span className={`px-4 py-2 rounded-full text-lg font-semibold ${riskColors[result.risk_level] || riskColors.Unknown}`}>
                     {result.risk_level}

@@ -313,6 +313,14 @@ def compute_weighted_ensemble(predictions: Dict[str, float]) -> float:
     return weighted_sum / total_weight if total_weight > 0 else 0.0
 
 
+def compute_confidence(ensemble_prob: float, predictions: Dict[str, float]) -> float:
+    probs = np.array(list(predictions.values()))
+    std = float(np.std(probs))
+    agreement = 1.0 - min(1.0, std / 0.5)
+    boundary_dist = 2.0 * abs(ensemble_prob - 0.5)
+    return round(0.5 * agreement + 0.5 * boundary_dist, 4)
+
+
 def format_sse(event: str, data: dict) -> str:
     return f"event: {event}\ndata: {json.dumps(data)}\n\n"
 
@@ -361,10 +369,12 @@ def run_pipeline_from_file(video_path: str, fps: int = 15, max_frames: int = 300
 
         viz_keypoints = sample_keypoints_for_viz(keypoints)
 
+        confidence = compute_confidence(ensemble_prob, predictions)
         result = {
             "success": True,
             "ensemble_probability": ensemble_prob,
             "risk_level": risk_level,
+            "confidence": confidence,
             "num_frames_processed": int(keypoints.shape[0]),
             "model_predictions": {
                 k: {"probability": v, "risk_level": get_risk_level(v)}
@@ -483,10 +493,12 @@ async def predict_json(file: UploadFile = File(...)):
         ensemble_prob = compute_weighted_ensemble(predictions)
         risk_level = get_risk_level(ensemble_prob)
 
+        confidence = compute_confidence(ensemble_prob, predictions)
         return JSONResponse(content={
             "success": True,
             "ensemble_probability": ensemble_prob,
             "risk_level": risk_level,
+            "confidence": confidence,
             "ensemble_weights": load_ensemble_weights(),
             "model_predictions": {
                 k: {"probability": v, "risk_level": get_risk_level(v)}

@@ -23,6 +23,7 @@ interface PredictionResult {
   success: boolean;
   ensemble_probability: number;
   risk_level: string;
+  confidence?: number;
   num_frames_processed?: number;
   source?: string;
   youtube_url?: string;
@@ -186,6 +187,7 @@ export default function ProfessionalAssessmentsPage() {
         date: new Date().toISOString().split('T')[0],
         ensemble_probability: data.ensemble_probability,
         risk_level: data.risk_level,
+        confidence: data.confidence,
         num_frames_processed: data.num_frames_processed,
         source: data.source || inputMode,
         youtube_url: data.youtube_url,
@@ -552,6 +554,24 @@ export default function ProfessionalAssessmentsPage() {
             </motion.span>
             {result.num_frames_processed && (
               <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>{result.num_frames_processed} frames processed</p>
+            )}
+            {result.confidence !== undefined && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+                className="flex items-center justify-center gap-2 mt-3"
+              >
+                <div className="w-2 h-2 rounded-full" style={{
+                  backgroundColor: result.confidence >= 0.8 ? '#16a34a' : result.confidence >= 0.5 ? '#d97706' : '#dc2626'
+                }} />
+                <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                  Confidence: {(result.confidence * 100).toFixed(0)}%
+                  <span className="ml-1 text-xs" style={{ color: result.confidence >= 0.8 ? '#16a34a' : result.confidence >= 0.5 ? '#d97706' : '#dc2626' }}>
+                    ({result.confidence >= 0.8 ? 'High' : result.confidence >= 0.5 ? 'Moderate' : 'Low'})
+                  </span>
+                </span>
+              </motion.div>
             )}
           </motion.div>
 

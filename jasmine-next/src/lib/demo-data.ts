@@ -30,6 +30,7 @@ const DEMO_ASSESSMENTS: AssessmentResult[] = [
     date: '2026-05-25',
     ensemble_probability: 0.72,
     risk_level: 'Moderate Risk',
+    confidence: 0.74,
     num_frames_processed: 145,
     source: 'youtube',
     model_predictions: {
