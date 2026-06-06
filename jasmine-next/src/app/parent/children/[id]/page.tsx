@@ -186,7 +186,13 @@ export default function ChildDetailPage() {
                   <div className="flex items-center gap-3">
                     <FileText className="w-5 h-5" style={{ color: 'var(--primary)' }} />
                     <div>
-                      <p className="font-medium" style={{ color: 'var(--foreground)' }}>{(a.ensemble_probability * 100).toFixed(1)}% — {a.risk_level}</p>
+                      <p className="font-medium" style={{ color: 'var(--foreground)' }}>{(a.ensemble_probability * 100).toFixed(1)}% — {a.risk_level}
+                        {a.confidence !== undefined && (
+                          <span className="ml-2 text-xs font-normal" style={{ color: 'var(--text-muted)' }}>
+                            ({(a.confidence * 100).toFixed(0)}% confidence)
+                          </span>
+                        )}
+                      </p>
                       <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--text-muted)' }}>
                         <Calendar className="w-3 h-3" />
                         {a.date}

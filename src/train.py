@@ -28,7 +28,7 @@ from src.models.training import run_full_comparison, save_results
 def train_with_data(data_dir: str, output_dir: str = 'results',
                     cv_folds: int = 5, dl_epochs: int = 100,
                     enable_feature_selection: bool = True,
-                    target_length: int = 50) -> None:
+                    target_length: int = 150) -> None:
     print(f"Loading dataset from {data_dir}...")
     subjects, labels = load_dataset_from_csv(data_dir)
 
@@ -64,6 +64,7 @@ def train_with_data(data_dir: str, output_dir: str = 'results',
         cv_folds=cv_folds,
         dl_epochs=dl_epochs,
         enable_feature_selection=enable_feature_selection,
+        output_dir=output_dir,
     )
 
     save_results(cv_results, output_dir)

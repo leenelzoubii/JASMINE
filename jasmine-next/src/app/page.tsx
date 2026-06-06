@@ -12,7 +12,7 @@ import { AnimatedTitle } from '@/components/animated-title';
 
 const features = [
   { icon: Brain, title: 'Pose Estimation', description: 'Advanced 2D pose detection using 25 BODY-25 keypoints per frame' },
-  { icon: Layers, title: 'Multi-Model Ensemble', description: 'RF, SVM, LSTM & Transformer weighted for 92.1% accuracy' },
+  { icon: Layers, title: 'Multi-Model Ensemble', description: 'RF, SVM, TCN & Transformer weighted for 97.1% accuracy' },
   { icon: Shield, title: 'Privacy First', description: 'Only skeletal keypoints processed — no images or video stored' },
   { icon: BarChart3, title: 'AI Explainability', description: 'Feature importance, per-model contributions & plain-language reasoning' },
 ];
@@ -25,8 +25,8 @@ const steps = [
 ];
 
 const stats = [
-  { value: '92.1%', label: 'Accuracy' },
-  { value: '0.98', label: 'ROC-AUC' },
+  { value: '97.1%', label: 'Accuracy' },
+  { value: '0.997', label: 'ROC-AUC' },
   { value: '1,374', label: 'Subjects' },
   { value: '4', label: 'Ensemble Models' },
 ];
@@ -181,7 +181,7 @@ export default function HomePage() {
             </span>
             <span className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4" style={{ color: 'var(--primary)' }} />
-              92.1% Accuracy
+              97.1% Accuracy
             </span>
             <span className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4" style={{ color: 'var(--primary)' }} />

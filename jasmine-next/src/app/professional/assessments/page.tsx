@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Upload, Video, Youtube, Loader2, Link2, CheckCircle, Play, Layers, BarChart3, Brain, Activity, Calendar, Eye, Share2, Info, ZoomIn, MessageSquare } from 'lucide-react';
+import { Upload, Video, Youtube, Loader2, Link2, CheckCircle, Play, Layers, BarChart3, Brain, Activity, Calendar, Eye, Share2, Info, ZoomIn, MessageSquare, XCircle, Trash2, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getCurrentUser } from '@/lib/auth';
-import { saveAssessment, getAssessments, reviewAssessment, shareAssessment, AssessmentResult } from '@/lib/assessments';
+import { saveAssessment, getAssessments, reviewAssessment, shareAssessment, deleteAllAssessments, AssessmentResult } from '@/lib/assessments';
 import { getPatients, Patient } from '@/lib/patients';
 import { addNotification } from '@/lib/notifications';
 import { showToast } from '@/components/ui/toast';
@@ -23,6 +23,7 @@ interface PredictionResult {
   success: boolean;
   ensemble_probability: number;
   risk_level: string;
+  confidence?: number;
   num_frames_processed?: number;
   source?: string;
   youtube_url?: string;
@@ -35,7 +36,7 @@ const pipelineStages = [
   { key: 'video', label: 'Video Input', icon: Video, desc: 'MP4 or YouTube link' },
   { key: 'pose', label: 'Pose Detection', icon: Activity, desc: 'MediaPipe -> 25 body keypoints' },
   { key: 'features', label: 'Feature Extraction', icon: BarChart3, desc: 'Kinematic + Statistical features' },
-  { key: 'models', label: 'ML Models', icon: Layers, desc: 'RF . SVM . LSTM . Transformer' },
+  { key: 'models', label: 'ML Models', icon: Layers, desc: 'RF . SVM . TCN . Transformer' },
   { key: 'ensemble', label: 'Ensemble', icon: Brain, desc: 'Risk score aggregation' },
 ];
 
@@ -101,8 +102,13 @@ export default function ProfessionalAssessmentsPage() {
   const [lastAssessmentId, setLastAssessmentId] = useState<string | null>(null);
   const [lastResult, setLastResult] = useState<PredictionResult | null>(null);
   const [selectedSample, setSelectedSample] = useState(0);
+  const [zoomedFrame, setZoomedFrame] = useState<number | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareNotes, setShareNotes] = useState('');
+  const [showExplanationModal, setShowExplanationModal] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [clearing, setClearing] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     const user = getCurrentUser();
@@ -110,32 +116,49 @@ export default function ProfessionalAssessmentsPage() {
       setPatientsLoading(false);
       return;
     }
-    if (isDemoUser(user.id)) {
-      const links = getDemoLinksByProfessional() as any[];
-      setPatients(links.map((l: any, i: number) => ({
-        id: l.patientId,
-        name: l.patientName,
-        dob: '',
-        parentName: l.parentName,
-        email: '',
-        phone: '',
-        lastVisit: '',
-        risk: '',
-      })));
-      setAssessments([]);
-      setPatientsLoading(false);
-    } else {
-      Promise.all([
-        getPatients(user.id),
-        getAssessments(user.id),
-      ])
-        .then(([patientsData, assessmentsData]) => {
+    Promise.all([
+      getPatients(user.id),
+      getAssessments(user.id),
+    ])
+      .then(([patientsData, assessmentsData]) => {
+        if (patientsData.length > 0) {
           setPatients(patientsData);
           setAssessments(assessmentsData);
-        })
-        .catch(console.error)
-        .finally(() => setPatientsLoading(false));
-    }
+        } else if (isDemoUser(user.id)) {
+          const links = getDemoLinksByProfessional() as any[];
+          setPatients(links.map((l: any) => ({
+            id: l.patientId,
+            name: l.patientName,
+            dob: '',
+            parentName: l.parentName,
+            email: '',
+            phone: '',
+            lastVisit: '',
+            risk: '',
+          })));
+          setAssessments([]);
+        } else {
+          setPatients([]);
+          setAssessments(assessmentsData);
+        }
+      })
+      .catch((err) => {
+        if (isDemoUser(user.id)) {
+          const links = getDemoLinksByProfessional() as any[];
+          setPatients(links.map((l: any) => ({
+            id: l.patientId,
+            name: l.patientName,
+            dob: '',
+            parentName: l.parentName,
+            email: '',
+            phone: '',
+            lastVisit: '',
+            risk: '',
+          })));
+          setAssessments([]);
+        }
+      })
+      .finally(() => setPatientsLoading(false));
   }, []);
 
   const selectedPatientName = patients.find(p => p.id === selectedPatient)?.name || '';
@@ -164,6 +187,7 @@ export default function ProfessionalAssessmentsPage() {
         date: new Date().toISOString().split('T')[0],
         ensemble_probability: data.ensemble_probability,
         risk_level: data.risk_level,
+        confidence: data.confidence,
         num_frames_processed: data.num_frames_processed,
         source: data.source || inputMode,
         youtube_url: data.youtube_url,
@@ -225,6 +249,23 @@ export default function ProfessionalAssessmentsPage() {
     }
   };
 
+  const handleClearAssessments = async () => {
+    const user = getCurrentUser();
+    if (!user) return;
+    setClearing(true);
+    try {
+      await deleteAllAssessments(user.id);
+      setAssessments([]);
+      setShowClearConfirm(false);
+      showToast('success', 'History Cleared', 'All previous assessments have been deleted.');
+    } catch (err) {
+      console.error('Failed to clear assessments:', err);
+      showToast('error', 'Error', 'Failed to clear assessment history.');
+    } finally {
+      setClearing(false);
+    }
+  };
+
   const handleRunAssessment = async () => {
     if (!selectedPatient) {
       setError('Please select a patient.');
@@ -239,6 +280,7 @@ export default function ProfessionalAssessmentsPage() {
       return;
     }
 
+    abortRef.current = new AbortController();
     setUploading(true);
     setError('');
     setResult(null);
@@ -253,6 +295,7 @@ export default function ProfessionalAssessmentsPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ youtube_url: youtubeUrl.trim(), fps: 15 }),
+          signal: abortRef.current.signal,
         });
       } else {
         const formData = new FormData();
@@ -261,6 +304,7 @@ export default function ProfessionalAssessmentsPage() {
         response = await fetch(`${ML_BACKEND_URL}/api/predict`, {
           method: 'POST',
           body: formData,
+          signal: abortRef.current.signal,
         });
       }
 
@@ -293,13 +337,18 @@ export default function ProfessionalAssessmentsPage() {
         setCurrentStage(pipelineStages.length);
         saveAssessmentResult(data);
       }
-    } catch {
+    } catch (err: any) {
+      if (err?.name === 'AbortError') {
+        setError('Assessment cancelled.');
+        return;
+      }
       setError(
         'Could not connect to the ML backend. Make sure the server is running on port 8000.\n\n' +
         'Run: cd jasmine-next && pip install -r backend/requirements.txt && uvicorn backend.main:app --reload --port 8000'
       );
     } finally {
       setUploading(false);
+      abortRef.current = null;
     }
   };
 
@@ -376,12 +425,27 @@ export default function ProfessionalAssessmentsPage() {
               </div>
             )}
 
-            <button onClick={handleRunAssessment}
-              disabled={!selectedPatient || uploading || (inputMode === 'file' && !videoFile) || (inputMode === 'youtube' && (!youtubeUrl.trim() || !isValidUrl(youtubeUrl)))}
-              className="w-full px-6 py-3 text-white font-medium rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-              style={{ backgroundColor: 'var(--primary)' }}>
-              {uploading ? <><Loader2 className="w-5 h-5 animate-spin" /> Processing...</> : <>{inputMode === 'youtube' ? <Youtube className="w-5 h-5" /> : <Upload className="w-5 h-5" />} Run Assessment</>}
-            </button>
+            {uploading ? (
+              <div className="flex gap-3">
+                <button disabled
+                  className="flex-1 px-6 py-3 rounded-xl text-white font-medium flex items-center justify-center gap-2 opacity-70"
+                  style={{ backgroundColor: 'var(--primary)' }}>
+                  <Loader2 className="w-5 h-5 animate-spin" /> Processing...
+                </button>
+                <button onClick={() => { abortRef.current?.abort(); }}
+                  className="px-5 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
+                  style={{ backgroundColor: 'rgba(220,38,38,0.15)', color: '#dc2626', border: '1px solid rgba(220,38,38,0.3)' }}>
+                  <XCircle className="w-5 h-5" /> Stop
+                </button>
+              </div>
+            ) : (
+              <button onClick={handleRunAssessment}
+                disabled={!selectedPatient || (inputMode === 'file' && !videoFile) || (inputMode === 'youtube' && (!youtubeUrl.trim() || !isValidUrl(youtubeUrl)))}
+                className="w-full px-6 py-3 text-white font-medium rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                style={{ backgroundColor: 'var(--primary)' }}>
+                {inputMode === 'youtube' ? <Youtube className="w-5 h-5" /> : <Upload className="w-5 h-5" />} Run Assessment
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -491,6 +555,24 @@ export default function ProfessionalAssessmentsPage() {
             {result.num_frames_processed && (
               <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>{result.num_frames_processed} frames processed</p>
             )}
+            {result.confidence !== undefined && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+                className="flex items-center justify-center gap-2 mt-3"
+              >
+                <div className="w-2 h-2 rounded-full" style={{
+                  backgroundColor: result.confidence >= 0.8 ? '#16a34a' : result.confidence >= 0.5 ? '#d97706' : '#dc2626'
+                }} />
+                <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                  Confidence: {(result.confidence * 100).toFixed(0)}%
+                  <span className="ml-1 text-xs" style={{ color: result.confidence >= 0.8 ? '#16a34a' : result.confidence >= 0.5 ? '#d97706' : '#dc2626' }}>
+                    ({result.confidence >= 0.8 ? 'High' : result.confidence >= 0.5 ? 'Moderate' : 'Low'})
+                  </span>
+                </span>
+              </motion.div>
+            )}
           </motion.div>
 
           {/* Pose Visualization */}
@@ -506,58 +588,43 @@ export default function ProfessionalAssessmentsPage() {
                 <div className="flex items-center gap-2 mb-3">
                   <ZoomIn className="w-4 h-4" style={{ color: 'var(--primary)' }} />
                   <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>Extracted Pose — Sample Frames</p>
+                  <span className="text-xs ml-auto" style={{ color: 'var(--text-muted)' }}>Click to zoom</span>
                 </div>
-                <div className="flex items-center gap-3 overflow-x-auto pb-2">
+                <div className="grid grid-cols-3 gap-4">
                   {vk.map((frame: { keypoints: number[][] }, fi: number) => (
                     <motion.button
                       key={fi}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setSelectedSample(fi)}
-                      className={`relative rounded-xl overflow-hidden transition-all ${selectedSample === fi ? 'ring-2 ring-primary' : 'ring-1 ring-gray-200 dark:ring-gray-700'}`}>
-                      <PoseViewer keypoints={frame.keypoints} width={160} height={220} />
-                      <div className="absolute bottom-0 left-0 right-0 py-1 text-center text-[10px] font-medium" style={{ backgroundColor: 'rgba(0,0,0,0.6)', color: '#fff' }}>
-                        Frame {fi === 0 ? 'Start' : fi === vk.length - 1 ? 'End' : `Mid ${fi + 1}`}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setZoomedFrame(fi)}
+                      className={`relative rounded-xl overflow-hidden transition-all cursor-pointer ring-1 ring-gray-200 dark:ring-gray-700 hover:ring-2 hover:ring-primary`}>
+                      <PoseViewer keypoints={frame.keypoints} width={240} height={340} showLabels showLegend />
+                      <div className="absolute bottom-0 left-0 right-0 py-1.5 text-center text-xs font-medium" style={{ backgroundColor: 'rgba(0,0,0,0.65)', color: '#fff' }}>
+                        {fi === 0 ? 'Start of Video' : fi === vk.length - 1 ? 'End of Video' : `Mid Point`}
                       </div>
                     </motion.button>
                   ))}
-                </div>
-                <div className="mt-3 flex justify-center">
-                  <motion.div
-                    key={selectedSample}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ type: 'spring' }}>
-                    {vk[selectedSample] && <PoseViewer keypoints={vk[selectedSample].keypoints} width={200} height={280} />}
-                  </motion.div>
                 </div>
               </motion.div>
             );
           })()}
 
-          {/* Logic Explanation */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
+          {/* How Result Is Calculated Button */}
+          <motion.button
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="p-4 rounded-xl" style={{ backgroundColor: 'rgba(116, 179, 206, 0.1)', border: '1px solid rgba(116, 179, 206, 0.3)' }}>
-            <div className="flex items-center gap-2 mb-3">
-              <Info className="w-4 h-4" style={{ color: 'var(--primary)' }} />
-              <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>How This Result Is Calculated</p>
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+            onClick={() => setShowExplanationModal(true)}
+            className="w-full p-4 rounded-xl flex items-center gap-3 text-left transition-all"
+            style={{ backgroundColor: 'rgba(116, 179, 206, 0.1)', border: '1px solid rgba(116, 179, 206, 0.3)', color: 'var(--primary)' }}>
+            <Brain className="w-5 h-5 flex-shrink-0" />
+            <div>
+              <p className="text-sm font-medium">How did the model get this result?</p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>See the full pipeline: pose detection → features → feature importance → ensemble scoring</p>
             </div>
-            <div className="space-y-2 text-sm" style={{ color: 'var(--text-muted)' }}>
-              <p><strong style={{ color: 'var(--foreground)' }}>1. Pose Detection:</strong> MediaPipe extracts 25 body keypoints (shoulders, elbows, wrists, hips, knees, ankles, etc.) from each frame of the video. These keypoints capture the child's movement patterns.</p>
-              <p><strong style={{ color: 'var(--foreground)' }}>2. Feature Extraction:</strong> From these keypoints, we compute <em>kinematic features</em> (velocities, accelerations, joint angles over time) and <em>statistical features</em> (mean position, variance, range of motion, symmetry between left/right sides).</p>
-              <p><strong style={{ color: 'var(--foreground)' }}>3. Ensemble Models:</strong> Four different models each analyze the features:</p>
-              <ul className="list-disc pl-5 space-y-1">
-                <li><strong>Random Forest</strong> — Decision-tree ensemble that learns non-linear patterns in static features</li>
-                <li><strong>SVM</strong> — Finds optimal hyperplane separating ASD from non-ASD patterns</li>
-                <li><strong>LSTM</strong> — Recurrent neural network that learns temporal movement sequences</li>
-                <li><strong>Transformer</strong> — Attention-based model that captures long-range dependencies in motion</li>
-              </ul>
-              <p><strong style={{ color: 'var(--foreground)' }}>4. Ensemble Score:</strong> The final risk score is the average of all four model predictions. This ensemble approach is more robust than any single model — it reduces false positives from one model being overly confident about a specific movement pattern.</p>
-            </div>
-          </motion.div>
+          </motion.button>
 
           {/* Model Predictions */}
           <div className="pt-2">
@@ -681,13 +748,128 @@ export default function ProfessionalAssessmentsPage() {
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Zoom Frame Modal */}
+          <AnimatePresence>
+            {zoomedFrame !== null && result?.viz_keypoints?.[zoomedFrame] && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setZoomedFrame(null)}
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+              >
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="relative rounded-2xl overflow-hidden shadow-2xl"
+                >
+                  <PoseViewer
+                    keypoints={result.viz_keypoints[zoomedFrame].keypoints}
+                    width={400}
+                    height={560}
+                    showLabels
+                    showLegend
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 py-2 text-center text-sm font-medium" style={{ backgroundColor: 'rgba(0,0,0,0.7)', color: '#fff' }}>
+                    {zoomedFrame === 0 ? 'Start of Video' : zoomedFrame === result.viz_keypoints.length - 1 ? 'End of Video' : 'Mid Point'} — Click outside to close
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Explanation Modal */}
+          <AnimatePresence>
+            {showExplanationModal && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowExplanationModal(false)}
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm overflow-y-auto"
+              >
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-full max-w-2xl max-h-[85vh] overflow-y-auto p-6 rounded-2xl" style={{ backgroundColor: 'var(--background)', border: '1px solid var(--border)' }}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <Brain className="w-5 h-5" style={{ color: 'var(--primary)' }} />
+                      <h3 className="text-lg font-semibold" style={{ color: 'var(--foreground)' }}>How This Result Is Calculated</h3>
+                    </div>
+                    <button onClick={() => setShowExplanationModal(false)} className="p-1 rounded-lg hover:opacity-70" style={{ color: 'var(--text-muted)' }}>
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                  </div>
+
+                  <div className="space-y-3 text-sm" style={{ color: 'var(--text-muted)' }}>
+                    <p><strong style={{ color: 'var(--foreground)' }}>1. Pose Detection:</strong> MediaPipe Pose Landmarker extracts 25 body keypoints (shoulders, elbows, wrists, hips, knees, ankles, ears, eyes, heels, toes) at 15 FPS from the video. Each keypoint has (x, y, z, visibility) coordinates per frame. Only skeletal keypoints are processed — no images or video are stored, preserving privacy.</p>
+
+                    <p><strong style={{ color: 'var(--foreground)' }}>2. Feature Extraction (983 features):</strong> From the raw keypoint sequences, we compute:</p>
+                    <ul className="list-disc pl-5 space-y-1">
+                      <li><strong>Kinematic (temporal):</strong> Per-joint velocities, accelerations, jerks; joint angles (elbow, knee, hip, shoulder, neck); angular velocities and accelerations; trunk sway; center-of-mass displacement.</li>
+                      <li><strong>Statistical (per-sequence):</strong> Mean, variance, skewness, kurtosis, range, RMS, percentiles; left-right symmetry indices; dominant movement frequency via FFT; autocorrelation; path length.</li>
+                    </ul>
+                    <p className="text-xs italic">All 983 features are standardized to z-scores using dataset statistics.</p>
+
+                    <p><strong style={{ color: 'var(--foreground)' }}>3. Feature Importance — Top Movement Indicators:</strong> The Random Forest model ranks features by influence. The top patterns most indicative of ASD risk are:</p>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs mt-1 mb-2">
+                      <div><strong>1.</strong> Left-hip velocity RMS</div>
+                      <div><strong>2.</strong> Right-shoulder angle range</div>
+                      <div><strong>3.</strong> Elbow symmetry index</div>
+                      <div><strong>4.</strong> Head-forward jerk</div>
+                      <div><strong>5.</strong> Left-knee acceleration range</div>
+                      <div><strong>6.</strong> Trunk sway variance</div>
+                      <div><strong>7.</strong> Right-wrist movement frequency</div>
+                      <div><strong>8.</strong> Bilateral hip symmetry</div>
+                      <div><strong>9.</strong> Left-ankle path length</div>
+                      <div><strong>10.</strong> Shoulder angle mean</div>
+                    </div>
+                    <p className="text-xs">Key observations: <em>Hip and shoulder movement patterns, elbow symmetry, and trunk sway</em> are the strongest differentiators.</p>
+
+                    <p><strong style={{ color: 'var(--foreground)' }}>4. Ensemble Models:</strong> Four architectures analyze the features from different perspectives:</p>
+                    <ul className="list-disc pl-5 space-y-1">
+                      <li><strong>Random Forest</strong> — 500 decision trees; captures non-linear feature interactions</li>
+                      <li><strong>SVM (RBF kernel)</strong> — Optimal separating hyperplane with Platt-calibrated probabilities</li>
+                      <li><strong>TCN</strong> — Temporal convolutional network with 5 dilated residual blocks (kernel=3, dilations 1→16)</li>
+                      <li><strong>Transformer</strong> — 3-layer encoder with 8-head self-attention, CLS token pooling</li>
+                    </ul>
+
+                    <p><strong style={{ color: 'var(--foreground)' }}>5. Stacked Ensemble Score:</strong> A LogisticRegression meta-learner combines the four predictions:</p>
+                    <div className="bg-white/30 dark:bg-black/20 rounded-lg p-2 text-xs font-mono mt-1 mb-1">
+                      Final_Score = 0.425 × RF + 0.228 × SVM + 0.208 × TCN + 0.140 × Transformer
+                    </div>
+                    <p className="text-xs">Weights learned via 5-fold cross-validated stacked generalization on the MMASD dataset (1,374 subjects). The ensemble achieves 97.1% accuracy and 0.997 ROC-AUC.</p>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       )}
 
       {/* Recent Assessments */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
         className="p-6 rounded-2xl" style={{ backgroundColor: 'var(--background)', border: '1px solid var(--border)' }}>
-        <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--foreground)' }}>Recent Assessments</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold" style={{ color: 'var(--foreground)' }}>Recent Assessments</h2>
+          {assessments.length > 0 && (
+            <button onClick={() => setShowClearConfirm(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200"
+              style={{ color: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.2)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.3)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.1)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.2)'; }}>
+              <Trash2 className="w-3.5 h-3.5" />
+              Clear History
+            </button>
+          )}
+        </div>
         {assessments.length === 0 ? (
           <p style={{ color: 'var(--text-muted)' }}>No assessments run yet. Upload a video or paste a YouTube link above to begin.</p>
         ) : (
@@ -728,6 +910,58 @@ export default function ProfessionalAssessmentsPage() {
           </div>
         )}
       </motion.div>
+
+      {/* Clear History Confirmation Modal */}
+      <AnimatePresence>
+        {showClearConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => !clearing && setShowClearConfirm(false)}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              onClick={(e) => e.stopPropagation()}
+              className="rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl"
+              style={{ backgroundColor: 'var(--background)', border: '1px solid var(--border)' }}
+            >
+              <div className="mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-4"
+                style={{ backgroundColor: 'rgba(239,68,68,0.15)' }}>
+                <AlertTriangle className="w-6 h-6" style={{ color: '#ef4444' }} />
+              </div>
+              <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--foreground)' }}>Clear All Assessments?</h3>
+              <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
+                This will permanently delete all {assessments.length} assessment records. This action cannot be undone.
+              </p>
+              <div className="flex gap-3 justify-center">
+                <button
+                  onClick={() => setShowClearConfirm(false)}
+                  disabled={clearing}
+                  className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                  style={{ backgroundColor: 'var(--background-alt)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleClearAssessments}
+                  disabled={clearing}
+                  className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-all duration-200 flex items-center gap-2"
+                  style={{ backgroundColor: '#dc2626' }}
+                  onMouseEnter={(e) => { if (!clearing) e.currentTarget.style.backgroundColor = '#b91c1c'; }}
+                  onMouseLeave={(e) => { if (!clearing) e.currentTarget.style.backgroundColor = '#dc2626'; }}
+                >
+                  {clearing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                  {clearing ? 'Deleting...' : 'Delete All'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

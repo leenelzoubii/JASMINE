@@ -25,7 +25,7 @@ const creators = [
     name: 'Leen El Zoubii',
     role: 'Lead Developer & ML Engineer',
     description:
-      'Architected the end-to-end ML pipeline: feature extraction (983 kinematic/statistical features), model training (RF, SVM, LSTM, Transformer), and the weighted ensemble system. Built the FastAPI backend with SSE streaming for real-time inference.',
+      'Architected the end-to-end ML pipeline: feature extraction (983 kinematic/statistical features), model training (RF, SVM, TCN, Transformer), and the weighted ensemble system. Built the FastAPI backend with SSE streaming for real-time inference.',
     initials: 'LZ',
     gradient: 'from-[#2a7f9e] to-[#3a9b8a]',
     github: 'https://github.com/leenelzoubii',

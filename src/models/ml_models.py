@@ -20,6 +20,7 @@ class MLModelTrainer:
         self.model_type = model_type
         self.feature_selection = feature_selection
         self.model = None
+        self.calibrated_model = None
         self.scaler = StandardScaler()
         self.selector = None
         self.is_fitted = False
@@ -114,14 +115,16 @@ class MLModelTrainer:
             raise RuntimeError("Model not fitted. Call train() first.")
         X_scaled = self.scaler.transform(X)
         X_selected = X_scaled[:, self.selected_features_mask] if self.selected_features_mask is not None else X_scaled
-        return self.model.predict(X_selected)
+        m = self.calibrated_model if self.calibrated_model is not None else self.model
+        return m.predict(X_selected)
 
     def predict_proba(self, X: np.ndarray) -> np.ndarray:
         if not self.is_fitted:
             raise RuntimeError("Model not fitted. Call train() first.")
         X_scaled = self.scaler.transform(X)
         X_selected = X_scaled[:, self.selected_features_mask] if self.selected_features_mask is not None else X_scaled
-        return self.model.predict_proba(X_selected)
+        m = self.calibrated_model if self.calibrated_model is not None else self.model
+        return m.predict_proba(X_selected)
 
     def get_feature_importance(self, feature_names: List[str]) -> Dict[str, float]:
         if not self.is_fitted:
@@ -149,6 +152,7 @@ class MLModelTrainer:
             raise RuntimeError("Cannot save unfitted model.")
         data = {
             'model': self.model,
+            'calibrated_model': self.calibrated_model,
             'scaler': self.scaler,
             'selector': self.selector,
             'selected_features_mask': self.selected_features_mask,
@@ -162,6 +166,7 @@ class MLModelTrainer:
         with open(path, 'rb') as f:
             data = pickle.load(f)
         self.model = data['model']
+        self.calibrated_model = data.get('calibrated_model')
         self.scaler = data['scaler']
         self.selector = data.get('selector')
         self.selected_features_mask = data.get('selected_features_mask')
