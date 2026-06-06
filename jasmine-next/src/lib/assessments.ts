@@ -7,6 +7,7 @@ import {
   query,
   where,
   updateDoc,
+  deleteDoc,
   serverTimestamp,
   Timestamp,
 } from 'firebase/firestore';
@@ -70,6 +71,13 @@ export async function getAssessments(userId: string): Promise<AssessmentResult[]
     return tB - tA;
   });
   return results;
+}
+
+export async function deleteAllAssessments(userId: string): Promise<void> {
+  const q = query(collection(db, 'users', userId, 'assessments'));
+  const snap = await getDocs(q);
+  const promises = snap.docs.map((d) => deleteDoc(doc(db, 'users', userId, 'assessments', d.id)));
+  await Promise.all(promises);
 }
 
 export async function getAssessmentsByPatient(userId: string, patientId: string): Promise<AssessmentResult[]> {

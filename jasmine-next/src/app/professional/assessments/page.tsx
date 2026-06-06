@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Upload, Video, Youtube, Loader2, Link2, CheckCircle, Play, Layers, BarChart3, Brain, Activity, Calendar, Eye, Share2, Info, ZoomIn, MessageSquare, XCircle } from 'lucide-react';
+import { Upload, Video, Youtube, Loader2, Link2, CheckCircle, Play, Layers, BarChart3, Brain, Activity, Calendar, Eye, Share2, Info, ZoomIn, MessageSquare, XCircle, Trash2, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getCurrentUser } from '@/lib/auth';
-import { saveAssessment, getAssessments, reviewAssessment, shareAssessment, AssessmentResult } from '@/lib/assessments';
+import { saveAssessment, getAssessments, reviewAssessment, shareAssessment, deleteAllAssessments, AssessmentResult } from '@/lib/assessments';
 import { getPatients, Patient } from '@/lib/patients';
 import { addNotification } from '@/lib/notifications';
 import { showToast } from '@/components/ui/toast';
@@ -105,6 +105,8 @@ export default function ProfessionalAssessmentsPage() {
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareNotes, setShareNotes] = useState('');
   const [showExplanationModal, setShowExplanationModal] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [clearing, setClearing] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -242,6 +244,23 @@ export default function ProfessionalAssessmentsPage() {
       setShareNotes('');
     } catch (err) {
       console.error('Failed to share:', err);
+    }
+  };
+
+  const handleClearAssessments = async () => {
+    const user = getCurrentUser();
+    if (!user) return;
+    setClearing(true);
+    try {
+      await deleteAllAssessments(user.id);
+      setAssessments([]);
+      setShowClearConfirm(false);
+      showToast('success', 'History Cleared', 'All previous assessments have been deleted.');
+    } catch (err) {
+      console.error('Failed to clear assessments:', err);
+      showToast('error', 'Error', 'Failed to clear assessment history.');
+    } finally {
+      setClearing(false);
     }
   };
 
@@ -818,7 +837,19 @@ export default function ProfessionalAssessmentsPage() {
       {/* Recent Assessments */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
         className="p-6 rounded-2xl" style={{ backgroundColor: 'var(--background)', border: '1px solid var(--border)' }}>
-        <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--foreground)' }}>Recent Assessments</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold" style={{ color: 'var(--foreground)' }}>Recent Assessments</h2>
+          {assessments.length > 0 && (
+            <button onClick={() => setShowClearConfirm(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200"
+              style={{ color: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.2)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.3)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.1)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.2)'; }}>
+              <Trash2 className="w-3.5 h-3.5" />
+              Clear History
+            </button>
+          )}
+        </div>
         {assessments.length === 0 ? (
           <p style={{ color: 'var(--text-muted)' }}>No assessments run yet. Upload a video or paste a YouTube link above to begin.</p>
         ) : (
@@ -859,6 +890,58 @@ export default function ProfessionalAssessmentsPage() {
           </div>
         )}
       </motion.div>
+
+      {/* Clear History Confirmation Modal */}
+      <AnimatePresence>
+        {showClearConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => !clearing && setShowClearConfirm(false)}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              onClick={(e) => e.stopPropagation()}
+              className="rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl"
+              style={{ backgroundColor: 'var(--background)', border: '1px solid var(--border)' }}
+            >
+              <div className="mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-4"
+                style={{ backgroundColor: 'rgba(239,68,68,0.15)' }}>
+                <AlertTriangle className="w-6 h-6" style={{ color: '#ef4444' }} />
+              </div>
+              <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--foreground)' }}>Clear All Assessments?</h3>
+              <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
+                This will permanently delete all {assessments.length} assessment records. This action cannot be undone.
+              </p>
+              <div className="flex gap-3 justify-center">
+                <button
+                  onClick={() => setShowClearConfirm(false)}
+                  disabled={clearing}
+                  className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                  style={{ backgroundColor: 'var(--background-alt)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleClearAssessments}
+                  disabled={clearing}
+                  className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-all duration-200 flex items-center gap-2"
+                  style={{ backgroundColor: '#dc2626' }}
+                  onMouseEnter={(e) => { if (!clearing) e.currentTarget.style.backgroundColor = '#b91c1c'; }}
+                  onMouseLeave={(e) => { if (!clearing) e.currentTarget.style.backgroundColor = '#dc2626'; }}
+                >
+                  {clearing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                  {clearing ? 'Deleting...' : 'Delete All'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
