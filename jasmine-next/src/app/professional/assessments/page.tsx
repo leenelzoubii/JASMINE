@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Upload, Video, Youtube, Loader2, Link2, CheckCircle, Play, Layers, BarChart3, Brain, Activity, Calendar, Eye, Share2, Info, ZoomIn, MessageSquare } from 'lucide-react';
+import { Upload, Video, Youtube, Loader2, Link2, CheckCircle, Play, Layers, BarChart3, Brain, Activity, Calendar, Eye, Share2, Info, ZoomIn, MessageSquare, XCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getCurrentUser } from '@/lib/auth';
 import { saveAssessment, getAssessments, reviewAssessment, shareAssessment, AssessmentResult } from '@/lib/assessments';
@@ -105,6 +105,7 @@ export default function ProfessionalAssessmentsPage() {
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareNotes, setShareNotes] = useState('');
   const [showExplanationModal, setShowExplanationModal] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     const user = getCurrentUser();
@@ -241,6 +242,7 @@ export default function ProfessionalAssessmentsPage() {
       return;
     }
 
+    abortRef.current = new AbortController();
     setUploading(true);
     setError('');
     setResult(null);
@@ -255,6 +257,7 @@ export default function ProfessionalAssessmentsPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ youtube_url: youtubeUrl.trim(), fps: 15 }),
+          signal: abortRef.current.signal,
         });
       } else {
         const formData = new FormData();
@@ -263,6 +266,7 @@ export default function ProfessionalAssessmentsPage() {
         response = await fetch(`${ML_BACKEND_URL}/api/predict`, {
           method: 'POST',
           body: formData,
+          signal: abortRef.current.signal,
         });
       }
 
@@ -295,13 +299,18 @@ export default function ProfessionalAssessmentsPage() {
         setCurrentStage(pipelineStages.length);
         saveAssessmentResult(data);
       }
-    } catch {
+    } catch (err: any) {
+      if (err?.name === 'AbortError') {
+        setError('Assessment cancelled.');
+        return;
+      }
       setError(
         'Could not connect to the ML backend. Make sure the server is running on port 8000.\n\n' +
         'Run: cd jasmine-next && pip install -r backend/requirements.txt && uvicorn backend.main:app --reload --port 8000'
       );
     } finally {
       setUploading(false);
+      abortRef.current = null;
     }
   };
 
@@ -378,12 +387,27 @@ export default function ProfessionalAssessmentsPage() {
               </div>
             )}
 
-            <button onClick={handleRunAssessment}
-              disabled={!selectedPatient || uploading || (inputMode === 'file' && !videoFile) || (inputMode === 'youtube' && (!youtubeUrl.trim() || !isValidUrl(youtubeUrl)))}
-              className="w-full px-6 py-3 text-white font-medium rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-              style={{ backgroundColor: 'var(--primary)' }}>
-              {uploading ? <><Loader2 className="w-5 h-5 animate-spin" /> Processing...</> : <>{inputMode === 'youtube' ? <Youtube className="w-5 h-5" /> : <Upload className="w-5 h-5" />} Run Assessment</>}
-            </button>
+            {uploading ? (
+              <div className="flex gap-3">
+                <button disabled
+                  className="flex-1 px-6 py-3 rounded-xl text-white font-medium flex items-center justify-center gap-2 opacity-70"
+                  style={{ backgroundColor: 'var(--primary)' }}>
+                  <Loader2 className="w-5 h-5 animate-spin" /> Processing...
+                </button>
+                <button onClick={() => { abortRef.current?.abort(); }}
+                  className="px-5 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
+                  style={{ backgroundColor: 'rgba(220,38,38,0.15)', color: '#dc2626', border: '1px solid rgba(220,38,38,0.3)' }}>
+                  <XCircle className="w-5 h-5" /> Stop
+                </button>
+              </div>
+            ) : (
+              <button onClick={handleRunAssessment}
+                disabled={!selectedPatient || (inputMode === 'file' && !videoFile) || (inputMode === 'youtube' && (!youtubeUrl.trim() || !isValidUrl(youtubeUrl)))}
+                className="w-full px-6 py-3 text-white font-medium rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                style={{ backgroundColor: 'var(--primary)' }}>
+                {inputMode === 'youtube' ? <Youtube className="w-5 h-5" /> : <Upload className="w-5 h-5" />} Run Assessment
+              </button>
+            )}
           </div>
         </div>
       </div>
