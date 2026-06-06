@@ -113,32 +113,49 @@ export default function ProfessionalAssessmentsPage() {
       setPatientsLoading(false);
       return;
     }
-    if (isDemoUser(user.id)) {
-      const links = getDemoLinksByProfessional() as any[];
-      setPatients(links.map((l: any, i: number) => ({
-        id: l.patientId,
-        name: l.patientName,
-        dob: '',
-        parentName: l.parentName,
-        email: '',
-        phone: '',
-        lastVisit: '',
-        risk: '',
-      })));
-      setAssessments([]);
-      setPatientsLoading(false);
-    } else {
-      Promise.all([
-        getPatients(user.id),
-        getAssessments(user.id),
-      ])
-        .then(([patientsData, assessmentsData]) => {
+    Promise.all([
+      getPatients(user.id),
+      getAssessments(user.id),
+    ])
+      .then(([patientsData, assessmentsData]) => {
+        if (patientsData.length > 0) {
           setPatients(patientsData);
           setAssessments(assessmentsData);
-        })
-        .catch(console.error)
-        .finally(() => setPatientsLoading(false));
-    }
+        } else if (isDemoUser(user.id)) {
+          const links = getDemoLinksByProfessional() as any[];
+          setPatients(links.map((l: any) => ({
+            id: l.patientId,
+            name: l.patientName,
+            dob: '',
+            parentName: l.parentName,
+            email: '',
+            phone: '',
+            lastVisit: '',
+            risk: '',
+          })));
+          setAssessments([]);
+        } else {
+          setPatients([]);
+          setAssessments(assessmentsData);
+        }
+      })
+      .catch((err) => {
+        if (isDemoUser(user.id)) {
+          const links = getDemoLinksByProfessional() as any[];
+          setPatients(links.map((l: any) => ({
+            id: l.patientId,
+            name: l.patientName,
+            dob: '',
+            parentName: l.parentName,
+            email: '',
+            phone: '',
+            lastVisit: '',
+            risk: '',
+          })));
+          setAssessments([]);
+        }
+      })
+      .finally(() => setPatientsLoading(false));
   }, []);
 
   const selectedPatientName = patients.find(p => p.id === selectedPatient)?.name || '';
