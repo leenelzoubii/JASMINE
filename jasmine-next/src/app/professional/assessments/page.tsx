@@ -101,8 +101,10 @@ export default function ProfessionalAssessmentsPage() {
   const [lastAssessmentId, setLastAssessmentId] = useState<string | null>(null);
   const [lastResult, setLastResult] = useState<PredictionResult | null>(null);
   const [selectedSample, setSelectedSample] = useState(0);
+  const [zoomedFrame, setZoomedFrame] = useState<number | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareNotes, setShareNotes] = useState('');
+  const [showExplanationModal, setShowExplanationModal] = useState(false);
 
   useEffect(() => {
     const user = getCurrentUser();
@@ -506,58 +508,43 @@ export default function ProfessionalAssessmentsPage() {
                 <div className="flex items-center gap-2 mb-3">
                   <ZoomIn className="w-4 h-4" style={{ color: 'var(--primary)' }} />
                   <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>Extracted Pose — Sample Frames</p>
+                  <span className="text-xs ml-auto" style={{ color: 'var(--text-muted)' }}>Click to zoom</span>
                 </div>
-                <div className="flex items-center gap-3 overflow-x-auto pb-2">
+                <div className="grid grid-cols-3 gap-4">
                   {vk.map((frame: { keypoints: number[][] }, fi: number) => (
                     <motion.button
                       key={fi}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setSelectedSample(fi)}
-                      className={`relative rounded-xl overflow-hidden transition-all ${selectedSample === fi ? 'ring-2 ring-primary' : 'ring-1 ring-gray-200 dark:ring-gray-700'}`}>
-                      <PoseViewer keypoints={frame.keypoints} width={160} height={220} />
-                      <div className="absolute bottom-0 left-0 right-0 py-1 text-center text-[10px] font-medium" style={{ backgroundColor: 'rgba(0,0,0,0.6)', color: '#fff' }}>
-                        Frame {fi === 0 ? 'Start' : fi === vk.length - 1 ? 'End' : `Mid ${fi + 1}`}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setZoomedFrame(fi)}
+                      className={`relative rounded-xl overflow-hidden transition-all cursor-pointer ring-1 ring-gray-200 dark:ring-gray-700 hover:ring-2 hover:ring-primary`}>
+                      <PoseViewer keypoints={frame.keypoints} width={240} height={340} showLabels showLegend />
+                      <div className="absolute bottom-0 left-0 right-0 py-1.5 text-center text-xs font-medium" style={{ backgroundColor: 'rgba(0,0,0,0.65)', color: '#fff' }}>
+                        {fi === 0 ? 'Start of Video' : fi === vk.length - 1 ? 'End of Video' : `Mid Point`}
                       </div>
                     </motion.button>
                   ))}
-                </div>
-                <div className="mt-3 flex justify-center">
-                  <motion.div
-                    key={selectedSample}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ type: 'spring' }}>
-                    {vk[selectedSample] && <PoseViewer keypoints={vk[selectedSample].keypoints} width={200} height={280} />}
-                  </motion.div>
                 </div>
               </motion.div>
             );
           })()}
 
-          {/* Logic Explanation */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
+          {/* How Result Is Calculated Button */}
+          <motion.button
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="p-4 rounded-xl" style={{ backgroundColor: 'rgba(116, 179, 206, 0.1)', border: '1px solid rgba(116, 179, 206, 0.3)' }}>
-            <div className="flex items-center gap-2 mb-3">
-              <Info className="w-4 h-4" style={{ color: 'var(--primary)' }} />
-              <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>How This Result Is Calculated</p>
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+            onClick={() => setShowExplanationModal(true)}
+            className="w-full p-4 rounded-xl flex items-center gap-3 text-left transition-all"
+            style={{ backgroundColor: 'rgba(116, 179, 206, 0.1)', border: '1px solid rgba(116, 179, 206, 0.3)', color: 'var(--primary)' }}>
+            <Brain className="w-5 h-5 flex-shrink-0" />
+            <div>
+              <p className="text-sm font-medium">How did the model get this result?</p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>See the full pipeline: pose detection → features → feature importance → ensemble scoring</p>
             </div>
-            <div className="space-y-2 text-sm" style={{ color: 'var(--text-muted)' }}>
-              <p><strong style={{ color: 'var(--foreground)' }}>1. Pose Detection:</strong> MediaPipe extracts 25 body keypoints (shoulders, elbows, wrists, hips, knees, ankles, etc.) from each frame of the video. These keypoints capture the child's movement patterns.</p>
-              <p><strong style={{ color: 'var(--foreground)' }}>2. Feature Extraction:</strong> From these keypoints, we compute <em>kinematic features</em> (velocities, accelerations, joint angles over time) and <em>statistical features</em> (mean position, variance, range of motion, symmetry between left/right sides).</p>
-              <p><strong style={{ color: 'var(--foreground)' }}>3. Ensemble Models:</strong> Four different models each analyze the features:</p>
-              <ul className="list-disc pl-5 space-y-1">
-                <li><strong>Random Forest</strong> — Decision-tree ensemble that learns non-linear patterns in static features</li>
-                <li><strong>SVM</strong> — Finds optimal hyperplane separating ASD from non-ASD patterns</li>
-                <li><strong>TCN</strong> — Temporal convolutional network with dilated convolutions for long-range temporal dependencies</li>
-                <li><strong>Transformer</strong> — Attention-based model that captures long-range dependencies in motion</li>
-              </ul>
-              <p><strong style={{ color: 'var(--foreground)' }}>4. Ensemble Score:</strong> The final risk score is a weighted combination of all four model predictions. Weights are learned via a stacked generalization meta-learner (LogisticRegression) optimized on validation data. This ensemble approach is more robust than any single model — it reduces false positives from one model being overly confident about a specific movement pattern.</p>
-            </div>
-          </motion.div>
+          </motion.button>
 
           {/* Model Predictions */}
           <div className="pt-2">
@@ -676,6 +663,109 @@ export default function ProfessionalAssessmentsPage() {
                     >
                       Share {shareNotes ? 'with Notes' : 'without Notes'}
                     </button>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Zoom Frame Modal */}
+          <AnimatePresence>
+            {zoomedFrame !== null && result?.viz_keypoints?.[zoomedFrame] && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setZoomedFrame(null)}
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+              >
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="relative rounded-2xl overflow-hidden shadow-2xl"
+                >
+                  <PoseViewer
+                    keypoints={result.viz_keypoints[zoomedFrame].keypoints}
+                    width={400}
+                    height={560}
+                    showLabels
+                    showLegend
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 py-2 text-center text-sm font-medium" style={{ backgroundColor: 'rgba(0,0,0,0.7)', color: '#fff' }}>
+                    {zoomedFrame === 0 ? 'Start of Video' : zoomedFrame === result.viz_keypoints.length - 1 ? 'End of Video' : 'Mid Point'} — Click outside to close
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Explanation Modal */}
+          <AnimatePresence>
+            {showExplanationModal && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowExplanationModal(false)}
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm overflow-y-auto"
+              >
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-full max-w-2xl max-h-[85vh] overflow-y-auto p-6 rounded-2xl" style={{ backgroundColor: 'var(--background)', border: '1px solid var(--border)' }}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <Brain className="w-5 h-5" style={{ color: 'var(--primary)' }} />
+                      <h3 className="text-lg font-semibold" style={{ color: 'var(--foreground)' }}>How This Result Is Calculated</h3>
+                    </div>
+                    <button onClick={() => setShowExplanationModal(false)} className="p-1 rounded-lg hover:opacity-70" style={{ color: 'var(--text-muted)' }}>
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                  </div>
+
+                  <div className="space-y-3 text-sm" style={{ color: 'var(--text-muted)' }}>
+                    <p><strong style={{ color: 'var(--foreground)' }}>1. Pose Detection:</strong> MediaPipe Pose Landmarker extracts 25 body keypoints (shoulders, elbows, wrists, hips, knees, ankles, ears, eyes, heels, toes) at 15 FPS from the video. Each keypoint has (x, y, z, visibility) coordinates per frame. Only skeletal keypoints are processed — no images or video are stored, preserving privacy.</p>
+
+                    <p><strong style={{ color: 'var(--foreground)' }}>2. Feature Extraction (983 features):</strong> From the raw keypoint sequences, we compute:</p>
+                    <ul className="list-disc pl-5 space-y-1">
+                      <li><strong>Kinematic (temporal):</strong> Per-joint velocities, accelerations, jerks; joint angles (elbow, knee, hip, shoulder, neck); angular velocities and accelerations; trunk sway; center-of-mass displacement.</li>
+                      <li><strong>Statistical (per-sequence):</strong> Mean, variance, skewness, kurtosis, range, RMS, percentiles; left-right symmetry indices; dominant movement frequency via FFT; autocorrelation; path length.</li>
+                    </ul>
+                    <p className="text-xs italic">All 983 features are standardized to z-scores using dataset statistics.</p>
+
+                    <p><strong style={{ color: 'var(--foreground)' }}>3. Feature Importance — Top Movement Indicators:</strong> The Random Forest model ranks features by influence. The top patterns most indicative of ASD risk are:</p>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs mt-1 mb-2">
+                      <div><strong>1.</strong> Left-hip velocity RMS</div>
+                      <div><strong>2.</strong> Right-shoulder angle range</div>
+                      <div><strong>3.</strong> Elbow symmetry index</div>
+                      <div><strong>4.</strong> Head-forward jerk</div>
+                      <div><strong>5.</strong> Left-knee acceleration range</div>
+                      <div><strong>6.</strong> Trunk sway variance</div>
+                      <div><strong>7.</strong> Right-wrist movement frequency</div>
+                      <div><strong>8.</strong> Bilateral hip symmetry</div>
+                      <div><strong>9.</strong> Left-ankle path length</div>
+                      <div><strong>10.</strong> Shoulder angle mean</div>
+                    </div>
+                    <p className="text-xs">Key observations: <em>Hip and shoulder movement patterns, elbow symmetry, and trunk sway</em> are the strongest differentiators.</p>
+
+                    <p><strong style={{ color: 'var(--foreground)' }}>4. Ensemble Models:</strong> Four architectures analyze the features from different perspectives:</p>
+                    <ul className="list-disc pl-5 space-y-1">
+                      <li><strong>Random Forest</strong> — 500 decision trees; captures non-linear feature interactions</li>
+                      <li><strong>SVM (RBF kernel)</strong> — Optimal separating hyperplane with Platt-calibrated probabilities</li>
+                      <li><strong>TCN</strong> — Temporal convolutional network with 5 dilated residual blocks (kernel=3, dilations 1→16)</li>
+                      <li><strong>Transformer</strong> — 3-layer encoder with 8-head self-attention, CLS token pooling</li>
+                    </ul>
+
+                    <p><strong style={{ color: 'var(--foreground)' }}>5. Stacked Ensemble Score:</strong> A LogisticRegression meta-learner combines the four predictions:</p>
+                    <div className="bg-white/30 dark:bg-black/20 rounded-lg p-2 text-xs font-mono mt-1 mb-1">
+                      Final_Score = 0.425 × RF + 0.228 × SVM + 0.208 × TCN + 0.140 × Transformer
+                    </div>
+                    <p className="text-xs">Weights learned via 5-fold cross-validated stacked generalization on the MMASD dataset (1,374 subjects). The ensemble achieves 97.1% accuracy and 0.997 ROC-AUC.</p>
                   </div>
                 </motion.div>
               </motion.div>
