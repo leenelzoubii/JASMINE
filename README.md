@@ -12,10 +12,10 @@ JASMINE (Joint Assessment and Screening for Movement Indicators in Neurodevelopm
 
 1. **Extracts 25 body keypoints** per frame using MediaPipe PoseLandmarker
 2. **Computes 983 kinematic and statistical features** from the pose sequence
-3. **Runs 4 ML/DL models** (Random Forest, SVM, LSTM, Transformer) in a weighted ensemble
+3. **Runs 4 ML/DL models** (Random Forest, SVM, TCN, Transformer) in a stacked ensemble
 4. **Returns an ASD likelihood score** with full explainability — feature importance, per-model contributions, and plain-language reasoning
 
-The weighted ensemble achieves **92.1% accuracy** with a **0.98 ROC-AUC** on the MMASD dataset (1,374 subjects).
+The stacked ensemble achieves **97.1% accuracy** with a **0.997 ROC-AUC** on the MMASD dataset (1,374 subjects).
 
 ### Architecture
 
@@ -24,8 +24,8 @@ Video Input (MP4 / YouTube)
     → MediaPipe PoseLandmarker
     → BODY-25 Keypoints (25 joints × x,y)
     → Feature Extraction (983 features: kinematic + statistical)
-    → 4 Models (RF, SVM, LSTM, Transformer)
-    → Weighted Ensemble → Risk Score + Explainability
+    → 4 Models (RF, SVM, TCN, Transformer)
+    → Stacked Ensemble → Risk Score + Explainability
 
 Frontend (Next.js 16, localhost:3000)
     ↔ SSE Streaming
@@ -100,7 +100,7 @@ autism-screening-pose/
 │   └── backend/                   # FastAPI backend
 ├── src/                           # Active development — ML training code
 │   ├── features/                  # Kinematic + statistical feature extraction
-│   ├── models/                    # RF, SVM, LSTM, Transformer
+│   ├── models/                    # RF, SVM, TCN, Transformer
 │   └── visualization/             # Plot generation
 ├── models/                        # Trained model artifacts (.pkl, .pth)
 ├── data/                          # MMASD dataset CSVs
@@ -271,7 +271,7 @@ data: {"ensemble_probability": 0.72, "risk_level": "Moderate Risk", "feature_imp
 | Temporal dynamics | Frame differences, autocorrelation at lag 1 | 200 |
 | Frequency analysis | FFT power spectrum, dominant frequency, band ratios | 250 |
 
-**Total**: 983 features → reduced to ~101 via RFECV during training.
+**Total**: 983 features → reduced per model via RFECV during training.
 
 ---
 
@@ -279,11 +279,11 @@ data: {"ensemble_probability": 0.72, "risk_level": "Moderate Risk", "feature_imp
 
 | Model | Accuracy | Precision | Recall | F1 | ROC-AUC | Ensemble Weight |
 |-------|----------|-----------|--------|-----|---------|-----------------|
-| Random Forest | 0.746 | 0.711 | 0.782 | 0.745 | 0.79 | 33.7% |
-| SVM | 0.686 | 0.640 | 0.718 | 0.677 | 0.74 | 27.7% |
-| LSTM | 0.626 | 0.595 | 0.614 | 0.604 | 0.67 | 19.1% |
-| Transformer | 0.614 | 0.582 | 0.602 | 0.592 | 0.67 | 19.5% |
-| **Ensemble (weighted)** | **0.921** | **0.903** | **0.935** | **0.919** | **0.98** | **100%** |
+| Random Forest | 0.953 | 0.972 | 0.907 | 0.938 | 0.995 | 42.5% |
+| SVM | 0.700 | 0.686 | 0.424 | 0.524 | 0.765 | 22.8% |
+| TCN | 0.689 | 0.593 | 0.641 | 0.616 | 0.741 | 20.8% |
+| Transformer | 0.606 | 0.496 | 0.656 | 0.565 | 0.662 | 14.0% |
+| **Ensemble (stacked)** | **0.971** | **0.975** | **0.950** | **0.962** | **0.997** | **100%** |
 
 ---
 
