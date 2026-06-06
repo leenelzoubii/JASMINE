@@ -35,7 +35,7 @@ const pipelineStages = [
   { key: 'video', label: 'Video Input', icon: Video, desc: 'MP4 or YouTube link' },
   { key: 'pose', label: 'Pose Detection', icon: Activity, desc: 'MediaPipe -> 25 body keypoints' },
   { key: 'features', label: 'Feature Extraction', icon: BarChart3, desc: 'Kinematic + Statistical features' },
-  { key: 'models', label: 'ML Models', icon: Layers, desc: 'RF . SVM . LSTM . Transformer' },
+  { key: 'models', label: 'ML Models', icon: Layers, desc: 'RF . SVM . TCN . Transformer' },
   { key: 'ensemble', label: 'Ensemble', icon: Brain, desc: 'Risk score aggregation' },
 ];
 
@@ -552,10 +552,10 @@ export default function ProfessionalAssessmentsPage() {
               <ul className="list-disc pl-5 space-y-1">
                 <li><strong>Random Forest</strong> — Decision-tree ensemble that learns non-linear patterns in static features</li>
                 <li><strong>SVM</strong> — Finds optimal hyperplane separating ASD from non-ASD patterns</li>
-                <li><strong>LSTM</strong> — Recurrent neural network that learns temporal movement sequences</li>
+                <li><strong>TCN</strong> — Temporal convolutional network with dilated convolutions for long-range temporal dependencies</li>
                 <li><strong>Transformer</strong> — Attention-based model that captures long-range dependencies in motion</li>
               </ul>
-              <p><strong style={{ color: 'var(--foreground)' }}>4. Ensemble Score:</strong> The final risk score is the average of all four model predictions. This ensemble approach is more robust than any single model — it reduces false positives from one model being overly confident about a specific movement pattern.</p>
+              <p><strong style={{ color: 'var(--foreground)' }}>4. Ensemble Score:</strong> The final risk score is a weighted combination of all four model predictions. Weights are learned via a stacked generalization meta-learner (LogisticRegression) optimized on validation data. This ensemble approach is more robust than any single model — it reduces false positives from one model being overly confident about a specific movement pattern.</p>
             </div>
           </motion.div>
 

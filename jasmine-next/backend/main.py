@@ -97,7 +97,7 @@ def get_risk_level(probability: float) -> str:
 # ---------------------------------------------------------------------------
 _models_cache: Optional[dict] = None
 _models_mtime: Dict[str, float] = {}
-_MODEL_FILES = ["rf_model.pkl", "svm_model.pkl", "lstm_model.pth", "transformer_model.pth"]
+_MODEL_FILES = ["rf_model.pkl", "svm_model.pkl", "tcn_model.pth", "transformer_model.pth"]
 
 def _check_model_files_changed() -> bool:
     for check_dir in [PROJECT_ROOT / "models", PARENT_ROOT / "models"]:
@@ -147,7 +147,7 @@ def load_models():
                 except Exception as e:
                     logger.error(f"Failed to load {model_type}: {e}")
 
-    for model_type in ['lstm', 'transformer']:
+    for model_type in ['tcn', 'transformer']:
         for check_dir in [models_dir_1, models_dir_2]:
             model_path = check_dir / f'{model_type}_model.pth'
             if model_path.exists():
@@ -200,7 +200,7 @@ def _auto_train_synthetic_models():
         except Exception as e:
             logger.error(f"Auto-train failed for {model_type}: {e}")
 
-    for model_type in ['lstm', 'transformer']:
+    for model_type in ['tcn', 'transformer']:
         try:
             trainer = DLModelTrainer(model_type=model_type, input_size=n_joints * coord_dim)
             trainer.train(sequences, y, epochs=5, batch_size=16, lr=0.001)
@@ -261,7 +261,7 @@ def load_ensemble_weights() -> Dict[str, float]:
     global _ENSEMBLE_WEIGHTS
     if _ENSEMBLE_WEIGHTS is not None:
         return _ENSEMBLE_WEIGHTS
-    default_weights = {'rf': 0.34, 'svm': 0.28, 'lstm': 0.19, 'transformer': 0.19}
+    default_weights = {'rf': 0.4254, 'svm': 0.2275, 'tcn': 0.2075, 'transformer': 0.1395}
     for check_dir in [PROJECT_ROOT / "models", PARENT_ROOT / "models"]:
         results_path = check_dir / "comparison_results.json"
         if results_path.exists():
@@ -290,7 +290,7 @@ def get_ensemble_prediction(models: Dict, features: np.ndarray, sequence: np.nda
                 logger.error(f"{model_type} prediction failed: {e}")
                 predictions[model_type] = 0.0
 
-    for model_type in ['lstm', 'transformer']:
+    for model_type in ['tcn', 'transformer']:
         if model_type in models:
             try:
                 proba = models[model_type].predict_proba([sequence])[0]

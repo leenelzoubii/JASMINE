@@ -50,7 +50,7 @@ export default function AboutPage() {
             },
             {
               icon: Activity, title: 'Clinical Accuracy',
-              desc: 'A weighted ensemble of 4 ML models achieves 92.1% accuracy and 0.98 ROC-AUC, validated on the MMASD dataset of 1,374 subjects.'
+              desc: 'A weighted ensemble of 4 ML models achieves 97.1% accuracy and 0.997 ROC-AUC, validated on the MMASD dataset of 1,374 subjects.'
             },
             {
               icon: Users, title: 'Collaborative Care',
@@ -73,7 +73,7 @@ export default function AboutPage() {
             {[
               { step: '01', title: 'Upload Video', desc: 'Record a child\'s natural movement on video (MP4) or provide a YouTube link.' },
               { step: '02', title: 'Pose Extraction', desc: 'MediaPipe extracts 25 body keypoints from each frame — no special hardware needed.' },
-              { step: '03', title: 'ML Analysis', desc: 'Four models (RF, SVM, LSTM, Transformer) analyze 983 kinematic and statistical features.' },
+              { step: '03', title: 'ML Analysis', desc: 'Four models (RF, SVM, TCN, Transformer) analyze 983 kinematic and statistical features.' },
               { step: '04', title: 'Risk Assessment', desc: 'Weighted ensemble prediction provides ASD likelihood with full model-level breakdown.' },
             ].map((item) => (
               <div key={item.step} className="text-center">

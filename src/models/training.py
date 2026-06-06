@@ -13,6 +13,8 @@ from sklearn.metrics import (
     roc_auc_score, confusion_matrix,
 )
 from sklearn.preprocessing import StandardScaler
+from sklearn.calibration import CalibratedClassifierCV
+from sklearn.linear_model import LogisticRegression
 
 from src.models.ml_models import MLModelTrainer
 from src.models.dl_models import DLModelTrainer
@@ -49,10 +51,20 @@ def run_ml_cv(X: np.ndarray, y: np.ndarray, feature_names: List[str],
         y_train, y_val = y[train_idx], y[val_idx]
 
         trainer = MLModelTrainer(model_type=model_type, feature_selection=feature_selection)
-        metrics = trainer.train(X_train, y_train, X_val, y_val)
+        trainer.train(X_train, y_train, X_val, y_val)
+        # Calibrate on the combined train+val data via internal CV of the final model
+        X_cal = np.vstack([X_train, X_val])
+        y_cal = np.concatenate([y_train, y_val])
+        X_cal_scaled = trainer.scaler.transform(X_cal)
+        X_cal_selected = X_cal_scaled[:, trainer.selected_features_mask] if trainer.selected_features_mask is not None else X_cal_scaled
+        calibrated = CalibratedClassifierCV(trainer.model, cv=2, method='sigmoid')
+        calibrated.fit(X_cal_selected, y_cal)
+        trainer.calibrated_model = calibrated
 
-        y_pred = trainer.predict(X_val)
-        y_proba = trainer.predict_proba(X_val)[:, 1]
+        X_val_scaled = trainer.scaler.transform(X_val)
+        X_val_selected = X_val_scaled[:, trainer.selected_features_mask] if trainer.selected_features_mask is not None else X_val_scaled
+        y_pred = calibrated.predict(X_val_selected)
+        y_proba = calibrated.predict_proba(X_val_selected)[:, 1]
 
         fold_result = compute_metrics(y_val, y_pred, y_proba)
         fold_metrics.append(fold_result)
@@ -68,20 +80,27 @@ def run_ml_cv(X: np.ndarray, y: np.ndarray, feature_names: List[str],
     agg_metrics['model_type'] = model_type
     agg_metrics['fold_metrics'] = fold_metrics
 
-    # Train final model on all data
+    # Train final model on all data with calibration
     final_trainer = MLModelTrainer(model_type=model_type, feature_selection=feature_selection)
     final_trainer.train(X, y)
+    calibrated_final = CalibratedClassifierCV(final_trainer.model, cv=3, method='sigmoid')
+    X_full_scaled = final_trainer.scaler.transform(X)
+    X_full_selected = X_full_scaled[:, final_trainer.selected_features_mask] if final_trainer.selected_features_mask is not None else X_full_scaled
+    calibrated_final.fit(X_full_selected, y)
+    final_trainer.calibrated_model = calibrated_final
 
     importance = final_trainer.get_feature_importance(feature_names)
     top_features = dict(sorted(importance.items(), key=lambda x: x[1], reverse=True)[:30])
     agg_metrics['top_features'] = top_features
 
-    return {'metrics': agg_metrics, 'trainer': final_trainer}
+    oof = np.array(all_y_proba)
+    return {'metrics': agg_metrics, 'trainer': final_trainer, 'oof': oof, 'oof_true': np.array(all_y_true)}
 
 
 def run_dl_cv(X_sequences: List[np.ndarray], y: np.ndarray,
               model_type: str = 'lstm', cv_folds: int = 5,
-              epochs: int = 100, batch_size: int = 32) -> Dict:
+              epochs: int = 100, batch_size: int = 32,
+              output_dir: str = 'results') -> Dict:
     """Run cross-validation for a DL model with tuned architecture."""
     input_size = X_sequences[0].shape[1] if len(X_sequences[0].shape) > 1 else 1
 
@@ -100,13 +119,19 @@ def run_dl_cv(X_sequences: List[np.ndarray], y: np.ndarray,
         if model_type == 'lstm':
             trainer = DLModelTrainer(model_type=model_type, input_size=input_size,
                                      hidden_size=128, num_layers=2, dropout=0.3)
-        else:
+        elif model_type == 'transformer':
             trainer = DLModelTrainer(model_type=model_type, input_size=input_size,
-                                     d_model=64, nhead=4, transformer_layers=2, dropout=0.2)
+                                     d_model=128, nhead=8, transformer_layers=3, dropout=0.2)
+        elif model_type == 'tcn':
+            trainer = DLModelTrainer(model_type=model_type, input_size=input_size,
+                                     dropout=0.2)
+        else:
+            raise ValueError(f"Unknown DL model type: {model_type}")
 
+        history_path = os.path.join(output_dir, f'history_{model_type}_fold{fold_idx+1}.csv')
         metrics = trainer.train(X_train, y_train, X_val, y_val,
                                 epochs=epochs, batch_size=batch_size, lr=0.001,
-                                patience=15)
+                                patience=15, history_path=history_path)
 
         y_pred = trainer.predict(X_val)
         y_proba = trainer.predict_proba(X_val)[:, 1]
@@ -129,19 +154,25 @@ def run_dl_cv(X_sequences: List[np.ndarray], y: np.ndarray,
     if model_type == 'lstm':
         final_trainer = DLModelTrainer(model_type=model_type, input_size=input_size,
                                        hidden_size=128, num_layers=2, dropout=0.3)
-    else:
+    elif model_type == 'transformer':
         final_trainer = DLModelTrainer(model_type=model_type, input_size=input_size,
-                                       d_model=64, nhead=4, transformer_layers=2, dropout=0.2)
-    final_trainer.train(X_sequences, y, epochs=epochs, batch_size=batch_size)
+                                       d_model=128, nhead=8, transformer_layers=3, dropout=0.2)
+    elif model_type == 'tcn':
+        final_trainer = DLModelTrainer(model_type=model_type, input_size=input_size,
+                                       dropout=0.2)
+    final_history_path = os.path.join(output_dir, f'history_{model_type}_final.csv')
+    final_trainer.train(X_sequences, y, epochs=epochs, batch_size=batch_size,
+                        history_path=final_history_path)
 
-    return {'metrics': agg_metrics, 'trainer': final_trainer}
+    oof = np.array(all_y_proba)
+    return {'metrics': agg_metrics, 'trainer': final_trainer, 'oof': oof, 'oof_true': np.array(all_y_true)}
 
 
 def compute_ensemble_weights(results: Dict) -> Dict[str, float]:
     """Compute weights for ensemble based on CV ROC-AUC scores."""
     weights = {}
     total = 0.0
-    for model_type in ['rf', 'svm', 'lstm', 'transformer']:
+    for model_type in ['rf', 'svm', 'tcn', 'transformer']:
         roc_auc = results[model_type]['metrics'].get('roc_auc', 0.5)
         w = max(roc_auc - 0.5, 0.05)  # floor at 0.05
         weights[model_type] = w
@@ -156,8 +187,9 @@ def compute_ensemble_weights(results: Dict) -> Dict[str, float]:
 
 def run_full_comparison(X: np.ndarray, y: np.ndarray, X_sequences: List[np.ndarray],
                         feature_names: List[str], cv_folds: int = 5,
-                        dl_epochs: int = 100, enable_feature_selection: bool = True) -> Dict:
-    """Run full comparison of all 4 models with weighted ensemble."""
+                        dl_epochs: int = 100, enable_feature_selection: bool = True,
+                        output_dir: str = 'results') -> Dict:
+    """Run full comparison of all 4 models with stacked ensemble."""
     results = {}
 
     print("=" * 60)
@@ -171,17 +203,18 @@ def run_full_comparison(X: np.ndarray, y: np.ndarray, X_sequences: List[np.ndarr
         results[model_type] = result
 
     # DL Models
-    for model_type in ['lstm', 'transformer']:
+    for model_type in ['tcn', 'transformer']:
         print(f"\nTraining {model_type.upper()}...")
-        result = run_dl_cv(X_sequences, y, model_type, cv_folds, epochs=dl_epochs)
+        result = run_dl_cv(X_sequences, y, model_type, cv_folds, epochs=dl_epochs,
+                           output_dir=output_dir)
         results[model_type] = result
 
     # Compute ensemble weights
     weights = compute_ensemble_weights(results)
 
-    # Build comparison table with weighted ensemble
+    # Build comparison table
     comparison = []
-    for model_type in ['rf', 'svm', 'lstm', 'transformer']:
+    for model_type in ['rf', 'svm', 'tcn', 'transformer']:
         m = results[model_type]['metrics']
         comparison.append({
             'Model': model_type.upper(),
@@ -193,20 +226,23 @@ def run_full_comparison(X: np.ndarray, y: np.ndarray, X_sequences: List[np.ndarr
             'Ensemble_Weight': f"{weights[model_type]:.4f}",
         })
 
-    # Compute weighted ensemble metrics
-    ensemble_probas = np.zeros(len(y))
-    for model_type in ['rf', 'svm', 'lstm', 'transformer']:
-        trainer = results[model_type]['trainer']
-        if model_type in ['rf', 'svm']:
-            proba = trainer.predict_proba(X)[:, 1]
-        else:
-            proba = trainer.predict_proba(X_sequences)[:, 1]
-        ensemble_probas += weights[model_type] * proba
+    # Stacked ensemble via logistic regression meta-learner
+    model_order = ['rf', 'svm', 'tcn', 'transformer']
+    oof_stack = np.column_stack([results[mt]['oof'] for mt in model_order])
+    oof_true = results['rf']['oof_true']
+    meta = LogisticRegression(penalty='l2', C=1.0, max_iter=1000, random_state=42)
+    meta.fit(oof_stack, oof_true)
 
-    ensemble_preds = (ensemble_probas >= 0.5).astype(int)
+    # Full-data predictions for ensemble
+    full_stack = np.column_stack([
+        results[mt]['trainer'].predict_proba(X_sequences if mt in ('tcn', 'transformer') else X)[:, 1]
+        for mt in model_order
+    ])
+    ensemble_probas = meta.predict_proba(full_stack)[:, 1]
+    ensemble_preds = meta.predict(full_stack)
     ensemble_metrics = compute_metrics(y, ensemble_preds, ensemble_probas)
     comparison.append({
-        'Model': 'ENSEMBLE (weighted)',
+        'Model': 'ENSEMBLE (stacked)',
         'Accuracy': f"{ensemble_metrics['accuracy']:.4f}",
         'Precision': f"{ensemble_metrics['precision']:.4f}",
         'Recall': f"{ensemble_metrics['recall']:.4f}",
@@ -227,7 +263,7 @@ def run_full_comparison(X: np.ndarray, y: np.ndarray, X_sequences: List[np.ndarr
     # Save results
     results_dict = {'comparison': comparison, 'models': {}, 'ensemble_weights': weights}
 
-    for model_type in ['rf', 'svm', 'lstm', 'transformer']:
+    for model_type in ['rf', 'svm', 'tcn', 'transformer']:
         m = results[model_type]['metrics']
         results_dict['models'][model_type] = {
             'accuracy': m['accuracy'],
@@ -240,7 +276,8 @@ def run_full_comparison(X: np.ndarray, y: np.ndarray, X_sequences: List[np.ndarr
         }
 
     results_dict['ensemble'] = ensemble_metrics
-    results_dict['_trainers'] = {mt: results[mt]['trainer'] for mt in ['rf', 'svm', 'lstm', 'transformer']}
+    results_dict['_trainers'] = {mt: results[mt]['trainer'] for mt in model_order}
+    results_dict['_meta_learner'] = meta
     return results_dict
 
 
@@ -257,7 +294,7 @@ def save_results(results: Dict, output_dir: str) -> str:
     print(f"\nResults saved to {json_path}")
 
     trainers = results.get('_trainers', {})
-    for model_type in ['rf', 'svm', 'lstm', 'transformer']:
+    for model_type in ['rf', 'svm', 'tcn', 'transformer']:
         if model_type in trainers:
             trainer = trainers[model_type]
             if model_type in ['rf', 'svm']:

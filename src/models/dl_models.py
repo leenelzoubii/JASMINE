@@ -8,20 +8,33 @@ from typing import Dict, List, Optional
 import numpy as np
 import torch
 import torch.nn as nn
+from torch.nn.utils import weight_norm
 from torch.utils.data import DataLoader, Dataset
 
 
 class SequenceDataset(Dataset):
     """Dataset for variable-length keypoint sequences."""
-    def __init__(self, sequences: List[np.ndarray], labels: np.ndarray):
+    def __init__(self, sequences: List[np.ndarray], labels: np.ndarray,
+                 transform=None):
         self.sequences = [torch.tensor(s, dtype=torch.float32) for s in sequences]
         self.labels = torch.tensor(labels, dtype=torch.long)
+        self.transform = transform
 
     def __len__(self):
         return len(self.sequences)
 
     def __getitem__(self, idx):
-        return self.sequences[idx], self.labels[idx]
+        seq = self.sequences[idx]
+        if self.transform and np.random.rand() > 0.3:
+            seq_np = seq.numpy()
+            T, D = seq_np.shape
+            n_joints = 25
+            n_coords = D // n_joints
+            seq_3d = seq_np.reshape(T, n_joints, n_coords)[:, :, :2]  # drop confidence if present
+            seq_3d = self.transform(seq_3d)
+            seq_np = seq_3d.reshape(seq_3d.shape[0], -1)
+            seq = torch.tensor(seq_np, dtype=torch.float32)
+        return seq, self.labels[idx]
 
 
 def collate_fn(batch):
@@ -83,15 +96,16 @@ class LSTMClassifier(nn.Module):
 
 
 class TransformerClassifier(nn.Module):
-    """Transformer-based sequence classifier with configurable architecture."""
+    """Transformer-based sequence classifier with CLS token."""
     def __init__(self, input_size: int, d_model: int = 128, nhead: int = 8,
-                 num_layers: int = 4, num_classes: int = 2, dropout: float = 0.2,
+                 num_layers: int = 3, num_classes: int = 2, dropout: float = 0.2,
                  max_seq_len: int = 500):
         super().__init__()
         self.input_proj = nn.Linear(input_size, d_model)
-        self.pos_encoder = PositionalEncoding(d_model, max_seq_len, dropout)
+        self.cls_token = nn.Parameter(torch.randn(1, 1, d_model) * 0.02)
+        self.pos_encoder = PositionalEncoding(d_model, max_seq_len + 1, dropout)
         encoder_layer = nn.TransformerEncoderLayer(
-            d_model=d_model, nhead=nhead, dim_feedforward=d_model * 4,
+            d_model=d_model, nhead=nhead, dim_feedforward=512,
             dropout=dropout, batch_first=True, activation='gelu',
         )
         self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
@@ -101,21 +115,67 @@ class TransformerClassifier(nn.Module):
 
     def forward(self, x, lengths=None):
         x = self.input_proj(x)
+        cls_tokens = self.cls_token.expand(x.size(0), -1, -1)
+        x = torch.cat([cls_tokens, x], dim=1)
         x = self.pos_encoder(x)
-        src_key_padding_mask = None
-        if lengths is not None:
-            max_len = x.size(1)
-            src_key_padding_mask = torch.arange(max_len, device=x.device)[None, :] >= lengths[:, None]
-        output = self.transformer_encoder(x, src_key_padding_mask=src_key_padding_mask)
+        output = self.transformer_encoder(x)
         output = self.layer_norm(output)
-        if src_key_padding_mask is not None:
-            mask = (~src_key_padding_mask).float().unsqueeze(-1)
-            output = (output * mask).sum(dim=1) / mask.sum(dim=1).clamp(min=1)
-        else:
-            output = output.mean(dim=1)
+        output = output[:, 0]
         output = self.dropout(output)
         logits = self.fc(output)
         return logits
+
+
+class TemporalBlock(nn.Module):
+    def __init__(self, in_ch: int, out_ch: int, kernel_size: int = 3,
+                 dilation: int = 1, dropout: float = 0.2):
+        super().__init__()
+        pad = (kernel_size - 1) * dilation
+        self.conv1 = weight_norm(nn.Conv1d(in_ch, out_ch, kernel_size,
+                                           padding=pad, dilation=dilation))
+        self.conv2 = weight_norm(nn.Conv1d(out_ch, out_ch, kernel_size,
+                                           padding=pad, dilation=dilation))
+        self.act = nn.GELU()
+        self.drop = nn.Dropout(dropout)
+        self.trim = pad
+        self.downsample = nn.Conv1d(in_ch, out_ch, 1) if in_ch != out_ch else None
+
+    def forward(self, x):
+        o = self.conv1(x)[:, :, :-self.trim]
+        o = self.act(self.drop(o))
+        o = self.conv2(o)[:, :, :-self.trim]
+        o = self.act(self.drop(o))
+        res = x if self.downsample is None else self.downsample(x)
+        return self.act(o + res)
+
+
+class TCNClassifier(nn.Module):
+    """Temporal Convolutional Network for skeleton sequences."""
+    def __init__(self, input_size: int = 75,
+                 num_channels: list = None,
+                 kernel_size: int = 3, dropout: float = 0.2):
+        super().__init__()
+        if num_channels is None:
+            num_channels = [64, 128, 256]
+        layers = []
+        for i, out_ch in enumerate(num_channels):
+            in_ch = input_size if i == 0 else num_channels[i - 1]
+            dilation = 2 ** i
+            layers.append(TemporalBlock(in_ch, out_ch, kernel_size,
+                                        dilation, dropout))
+        self.tcn = nn.Sequential(*layers)
+        self.head = nn.Sequential(
+            nn.AdaptiveAvgPool1d(1),
+            nn.Flatten(),
+            nn.LayerNorm(num_channels[-1]),
+            nn.Dropout(dropout),
+            nn.Linear(num_channels[-1], 2),
+        )
+
+    def forward(self, x, lengths=None):
+        x = x.transpose(1, 2)
+        x = self.tcn(x)
+        return self.head(x)
 
 
 class DLModelTrainer:
@@ -145,6 +205,10 @@ class DLModelTrainer:
                 num_layers=transformer_layers, num_classes=num_classes,
                 dropout=dropout,
             ).to(self.device)
+        elif model_type == 'tcn':
+            self.model = TCNClassifier(
+                input_size=input_size, dropout=dropout,
+            ).to(self.device)
         else:
             raise ValueError(f"Unknown model_type: {model_type}")
         self.is_fitted = False
@@ -152,8 +216,10 @@ class DLModelTrainer:
     def train(self, X_train: List[np.ndarray], y_train: np.ndarray,
               X_val: Optional[List[np.ndarray]] = None, y_val: Optional[List[np.ndarray]] = None,
               epochs: int = 100, batch_size: int = 32, lr: float = 0.001,
-              weight_decay: float = 1e-4, patience: int = 15) -> Dict:
-        train_dataset = SequenceDataset(X_train, y_train)
+              weight_decay: float = 1e-4, patience: int = 15,
+              history_path: Optional[str] = None) -> Dict:
+        from src.data.augmentation import augment_sequence
+        train_dataset = SequenceDataset(X_train, y_train, transform=augment_sequence)
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, collate_fn=collate_fn, num_workers=0)
 
         val_loader = None
@@ -253,12 +319,28 @@ class DLModelTrainer:
             print(f"  Restored best model (val_loss: {best_val_loss:.4f}, val_acc: {best_val_acc:.4f})")
 
         self.is_fitted = True
+        epochs_trained = len(history['train_loss'])
+
+        if history_path is not None:
+            import csv, os
+            os.makedirs(os.path.dirname(history_path), exist_ok=True)
+            with open(history_path, 'w', newline='') as f:
+                writer = csv.writer(f)
+                writer.writerow(['epoch', 'train_loss', 'train_acc', 'val_loss', 'val_acc', 'lr'])
+                for e in range(epochs_trained):
+                    row = [e + 1,
+                           history['train_loss'][e], history['train_acc'][e],
+                           history['val_loss'][e] if e < len(history['val_loss']) else '',
+                           history['val_acc'][e] if e < len(history['val_acc']) else '',
+                           history['lr'][e] if e < len(history['lr']) else '']
+                    writer.writerow(row)
+            print(f"  History saved to {history_path}")
 
         metrics = {
             'model_type': self.model_type,
             'final_train_loss': avg_train_loss,
             'final_train_acc': avg_train_acc,
-            'epochs_trained': epoch + 1,
+            'epochs_trained': epochs_trained,
         }
         if val_loader is not None:
             metrics['best_val_loss'] = best_val_loss
@@ -317,11 +399,14 @@ class DLModelTrainer:
         if self.model_type == 'lstm':
             state['hidden_size'] = self.model.hidden_size
             state['num_layers'] = self.model.num_layers
+            state['dropout'] = self.model.dropout.p
         elif self.model_type == 'transformer':
             state['d_model'] = self.model.input_proj.out_features
             state['nhead'] = self.model.transformer_encoder.layers[0].self_attn.num_heads
             state['num_layers'] = len(self.model.transformer_encoder.layers)
             state['dropout'] = self.model.dropout.p
+        elif self.model_type == 'tcn':
+            state['dropout'] = self.model.head[3].p
         torch.save(state, path)
 
     def load(self, path: str) -> None:
@@ -344,6 +429,9 @@ class DLModelTrainer:
             nl = checkpoint.get('num_layers', 4)
             dp = checkpoint.get('dropout', 0.2)
             self.model = TransformerClassifier(input_size, dm, nh, nl, num_classes, dp).to(self.device)
+        elif model_type == 'tcn':
+            dp = checkpoint.get('dropout', 0.2)
+            self.model = TCNClassifier(input_size=input_size, dropout=dp).to(self.device)
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.model.eval()
         self.is_fitted = True

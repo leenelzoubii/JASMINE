@@ -35,7 +35,7 @@ const DEMO_ASSESSMENTS: AssessmentResult[] = [
     model_predictions: {
       rf: { probability: 0.68, risk_level: 'Moderate Risk' },
       svm: { probability: 0.75, risk_level: 'Moderate Risk' },
-      lstm: { probability: 0.71, risk_level: 'Moderate Risk' },
+      tcn: { probability: 0.71, risk_level: 'Moderate Risk' },
       transformer: { probability: 0.74, risk_level: 'Moderate Risk' },
     },
     reviewed: true,
