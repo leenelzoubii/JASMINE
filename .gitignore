@@ -1,5 +1,5 @@
 # model binaries (tracked manually via git add -f)
-/models/
+
 
 # python cache
 __pycache__/
@@ -23,3 +23,5 @@ jasmine-next/.next/
 json_to_csv.py
 
 jasmine-next/.env.production
+
+render.yaml
