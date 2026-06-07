@@ -20,6 +20,9 @@ COPY models/ /app/models/
 # Install backend Python dependencies
 RUN pip install --no-cache-dir -r /app/jasmine-next/backend/requirements.txt
 
+# Explicitly tell Python where the root is so imports work
+ENV PYTHONPATH="/app"
+
 # Hugging Face Spaces expects port 7860
 ENV PORT=7860
 EXPOSE 7860
