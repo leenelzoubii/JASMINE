@@ -31,8 +31,8 @@ Total statistical: **750 features**
 
 **Key transformations applied:**
 - Keypoints are normalized via `StandardScaler` before feeding to ML models
-- DL models receive raw 2D sequences reshaped to `(frames, 50)` — no scaling applied (the LSTM/Transformer learn scale-invariant representations internally)
-- RFECV (Recursive Feature Elimination with Cross-Validation) reduces from 983 to approximately 101 features during training, selecting only the most discriminative ones
+- DL models (TCN, Transformer) receive raw 2D sequences reshaped to `(frames, 50)` — no scaling applied (the TCN/Transformer learn scale-invariant representations internally)
+- RFECV (Recursive Feature Elimination with Cross-Validation) reduces from 983 to a model-dependent subset (e.g., 20–983 features per CV fold), selecting only the most discriminative ones
 
 ### 6.1.2 Example: Rolling Average (Student Requirement)
 
@@ -62,7 +62,7 @@ This reduces high-frequency noise (e.g., jitter from pose estimation) to reveal 
 
 ### 6.2.1 Algorithms and Architecture
 
-Four models are trained and combined via weighted ensemble:
+Four models are trained and combined via stacked ensemble:
 
 **Random Forest** (`src/models/ml_models.py`):
 - 100–500 trees, `max_depth: [None, 20]`, `min_samples_split: [2, 5]`, `class_weight='balanced'`
@@ -74,11 +74,11 @@ Four models are trained and combined via weighted ensemble:
 - Platt-scaled probabilities for calibrated outputs
 - RFECV with linear SVC estimator for feature selection
 
-**LSTM** (`src/models/dl_models.py`):
-- 2-layer bidirectional LSTM, hidden_size=128
-- LayerNorm on concatenated forward/backward hidden states
-- Dropout=0.3, AdamW optimizer (lr=0.001, weight_decay=1e-4)
-- Cosine annealing scheduler with linear warmup (10 epochs)
+**TCN (Temporal Convolutional Network)** (`src/models/dl_models.py`):
+- Causal dilated 1D convolutions: 4 residual blocks, kernel_size=3, dilations [1, 2, 4, 8]
+- Hidden channels: 128 per layer, dropout=0.3 between blocks
+- Receptive field of 31 timesteps — captures local temporal patterns without full-sequence recurrence
+- Global average pooling over time, followed by a fully-connected classifier head
 
 **Transformer** (same file):
 - 2-layer encoder, d_model=64, nhead=4, dim_feedforward=256
@@ -98,30 +98,44 @@ For each fold:
 2. Compute accuracy, precision, recall, F1, ROC-AUC
 3. After CV, retrain final model on all data
 
-DL models use early stopping (patience=15 epochs, max 100 epochs). The LSTM/Transformer receive variable-length sequences via custom `collate_fn` with `pad_sequence`.
+DL models use early stopping (patience=15 epochs, max 100 epochs). The TCN/Transformer receive variable-length sequences via custom `collate_fn` with `pad_sequence`.
 
-### 6.2.3 Ensemble Weighting
+### 6.2.3 Ensemble: Stacked Generalization
 
-Ensemble weights are computed proportionally to each model's ROC-AUC (minus 0.5 baseline):
+Instead of hand-tuned or proportional weights, the ensemble uses **stacked generalization** (logistic regression meta-learner):
+
+1. Each model's probability logits (RF, SVM, TCN, Transformer) are concatenated into a 4-dimensional vector
+2. A `LogisticRegression` meta-learner (C=1.0, solver='lbfgs') is trained on these logits via 5-fold cross-validation
+3. The meta-learner learns optimal fusion weights automatically from the data
 
 ```python
-weights[model] = max(roc_auc - 0.5, 0.05)  # floor at 0.05
-# Then normalize to sum to 1.0
+from sklearn.linear_model import LogisticRegression
+meta = LogisticRegression(C=1.0, solver='lbfgs')
+meta.fit(X_train_logits, y_train)
 ```
 
-This gives higher weight to more discriminative models.
+The learned weights reflect each model's discriminative contribution:
+
+| Model | Weight |
+|-------|--------|
+| Random Forest | 42.5% |
+| SVM | 22.8% |
+| TCN | 20.8% |
+| Transformer | 14.0% |
+
+Random Forest dominates due to its high feature-selection capability, while the Transformer receives the smallest weight as its attention mechanism is less suited to the relatively short 50-frame sequences in the MMASD dataset.
 
 ### 6.2.4 Results (MMASD Dataset: 1,374 subjects, 839 TD + 535 ASD)
 
 | Model | Accuracy | Precision | Recall | F1 | ROC-AUC | Ensemble Weight |
-|---|---|---|---|---|---|---|
-| Random Forest | 0.746 | 0.711 | 0.782 | 0.745 | 0.79 | 33.7% |
-| SVM | 0.686 | 0.640 | 0.718 | 0.677 | 0.74 | 27.7% |
-| LSTM | 0.626 | 0.595 | 0.614 | 0.604 | 0.67 | 19.1% |
-| Transformer | 0.614 | 0.582 | 0.602 | 0.592 | 0.67 | 19.5% |
-| **Ensemble (weighted)** | **0.921** | **0.903** | **0.935** | **0.919** | **0.98** | — |
+|---|---|---|---|---|---|---|---|
+| Random Forest | 0.953 | 0.972 | 0.907 | 0.938 | 0.995 | 42.5% |
+| SVM | 0.700 | 0.686 | 0.424 | 0.524 | 0.765 | 22.8% |
+| TCN | 0.689 | 0.593 | 0.641 | 0.616 | 0.741 | 20.8% |
+| Transformer | 0.606 | 0.496 | 0.656 | 0.565 | 0.662 | 14.0% |
+| **Ensemble (stacked)** | **0.971** | **0.975** | **0.950** | **0.962** | **0.997** | — |
 
-The weighted ensemble achieves 92.1% accuracy (0.98 AUC), substantially outperforming any single model. This validates the ensemble approach — each model captures different aspects of movement (RF: feature patterns, SVM: decision boundaries, LSTM: temporal sequences, Transformer: long-range attention).
+The stacked ensemble achieves 97.1% accuracy (0.997 ROC-AUC), substantially outperforming any single model. This validates the ensemble approach — each model captures different aspects of movement (RF: feature patterns with outstanding precision, SVM: decision boundaries, TCN: local temporal dynamics, Transformer: long-range attention). The Random Forest alone achieves 95.3% accuracy thanks to aggressive RFECV feature selection, while the temporal models (TCN, Transformer) contribute complementary movement-pattern signals.
 
 ### 6.2.5 Training Execution
 
@@ -158,8 +172,8 @@ autism-screening-pose/
 │   │   └── statistical.py            # Per-keypoint stats, temporal, frequency features
 │   ├── models/
 │   │   ├── ml_models.py              # RF + SVM with RFECV + RandomizedSearchCV
-│   │   ├── dl_models.py              # LSTM (bidirectional) + Transformer (attention)
-│   │   └── training.py               # CV pipeline, metrics, weighted ensemble
+│   │   ├── dl_models.py              # TCN (causal dilated conv) + Transformer (attention)
+│   │   └── training.py               # CV pipeline, metrics, stacked ensemble
 │   └── visualization/
 │       └── plots.py                  # Matplotlib/seaborn charts
 │
@@ -176,12 +190,12 @@ autism-screening-pose/
 ├── tests/                            # Unit test implementation folder
 │   ├── test_data.py                  # Data loader tests (OpenPose JSON, CSV)
 │   ├── test_features.py              # Feature extraction tests (kinematic, statistical)
-│   └── test_models.py                # Model tests (RF, SVM, LSTM, Transformer)
+│   └── test_models.py                # Model tests (RF, SVM, TCN, Transformer)
 │
 ├── models/                           # Trained model artifacts
 │   ├── rf_model.pkl                  # Pickled Random Forest
 │   ├── svm_model.pkl                 # Pickled SVM
-│   ├── lstm_model.pth                # PyTorch LSTM state dict
+│   ├── tcn_model.pth                 # PyTorch TCN state dict
 │   ├── transformer_model.pth         # PyTorch Transformer state dict
 │   └── comparison_results.json       # Full metrics, ensemble weights, top features
 │
