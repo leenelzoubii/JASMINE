@@ -1,22 +1,39 @@
-# .github/workflows/sync.yml
-name: Sync to Hugging Face Space
+name: Deploy Backend to Hugging Face
 
 on:
   push:
     branches: [main]
-  workflow_dispatch:
+    paths:
+      - 'backend/**' # Only trigger this action if a file inside backend/ changes!
 
 jobs:
-  sync-to-hub:
+  deploy-backend:
     runs-on: ubuntu-latest
     steps:
+      # 1. Checkout the code (we do NOT need to fetch LFS history here)
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          lfs: true
 
-      - name: Push to Hugging Face
+      - name: Package and Push Backend Subdirectory
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          git push --force https://siba04:$HF_TOKEN@huggingface.co/spaces/siba04/jasmine-backend main
+          # 2. Walk inside the backend folder (leaving frontend and PDFs behind)
+          cd backend
+          
+          # 3. Create a fresh, temporary Git repository just for this folder
+          git init
+          git config user.email "action@github.com"
+          git config user.name "GitHub Action"
+          
+          # 4. Tell this temporary repo to use LFS for your AI models
+          git lfs install
+          git lfs track "*.pkl"
+          git lfs track "*.pth"
+          git lfs track "*.task"
+          
+          # 5. Save the isolated backend files
+          git add .
+          git commit -m "Automated backend deployment from monorepo"
+          
+          # 6. Force push ONLY this isolated folder to Hugging Face
+          git push --force https://siba04:$HF_TOKEN@huggingface.co/spaces/siba04/jasmine-backend master:main
