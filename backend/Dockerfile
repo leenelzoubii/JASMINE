@@ -26,4 +26,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 ENV PORT=7860
 EXPOSE 7860
 
+# Force the system to find the graphics libraries
+ENV LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
+
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7860"]
