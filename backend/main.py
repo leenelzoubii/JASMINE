@@ -528,10 +528,10 @@ async def predict_youtube(data: PredictYoutubeRequest):
             logger.info(f"Downloading YouTube video: {youtube_url}")
             result = subprocess.run(
     [
-        sys.executable, "-m", "yt_dlp", 
-        "--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "-f", "worst[ext=mp4]", 
-        "-o", output_template, 
+        "yt-dlp",
+        "--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "--format", "best[ext=mp4]",
+        "--output", output_template,
         youtube_url
     ],
     capture_output=True, text=True, timeout=300,
