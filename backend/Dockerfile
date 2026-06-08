@@ -11,6 +11,9 @@ RUN apt-get update && apt-get install -y \
     libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
+# Fix specific MediaPipe link issues
+RUN ln -s /usr/lib/x86_64-linux-gnu/libGLESv2.so.2 /usr/lib/x86_64-linux-gnu/libGLESv2.so || true
+
 # Copy ML pipeline source
 COPY src/ /app/src/
 COPY models/ /app/models/
