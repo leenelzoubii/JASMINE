@@ -28,8 +28,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger("jasmine-backend")
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent  # jasmine-next/
-PARENT_ROOT = PROJECT_ROOT.parent  # autism-screening-pose/
+PROJECT_ROOT = Path(__file__).resolve().parent  # backend/
+PARENT_ROOT = PROJECT_ROOT.parent  # project root
 sys.path.insert(0, str(PROJECT_ROOT))
 sys.path.insert(0, str(PARENT_ROOT))
 
