@@ -351,7 +351,7 @@ def run_pipeline_from_file(video_path: str, fps: int = 15, max_frames: int = 300
                            use_gpu: bool = False, extra_result_fields: dict = None):
     try:
         yield format_sse("progress", {"stage": 1, "message": "Extracting pose keypoints from video..."})
-        from backend.pose_extractor import extract_keypoints_from_mp4
+        from pose_extractor import extract_keypoints_from_mp4
         keypoints = extract_keypoints_from_mp4(video_path, fps_target=fps,
                                                 max_frames=max_frames, use_gpu=use_gpu)
 
@@ -575,7 +575,7 @@ _pose_landmarker_instance = None
 @app.on_event("startup")
 async def startup_event():
     logger.info("Starting JASMINE ML backend...")
-    from backend.pose_extractor import get_model_path
+    from pose_extractor import get_model_path
     model_path = get_model_path()
     logger.info(f"Pose landmarker model at: {model_path}")
     # Pre-warm model cache
