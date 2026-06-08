@@ -5,6 +5,7 @@ WORKDIR /app
 # 1. Install system dependencies (Slow but rarely changes)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1 libegl1 libgles2 libglib2.0-0 libgomp1 \
+    nodejs \
     && rm -rf /var/lib/apt/lists/*
 
 # 2. Copy ONLY the requirements first
