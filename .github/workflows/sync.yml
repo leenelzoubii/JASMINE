@@ -1,3 +1,4 @@
+# .github/workflows/sync.yml
 name: Sync to Hugging Face Space
 
 on:
@@ -13,9 +14,9 @@ jobs:
         with:
           fetch-depth: 0
           lfs: true
-      
+
       - name: Push to Hugging Face
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        
-        run: git push --force https://siba04:$HF_TOKEN@huggingface.co/spaces/siba04/jasmine-backend main
+        run: |
+          git push --force https://siba04:$HF_TOKEN@huggingface.co/spaces/siba04/jasmine-backend main
