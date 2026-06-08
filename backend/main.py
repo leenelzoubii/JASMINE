@@ -527,9 +527,15 @@ async def predict_youtube(data: PredictYoutubeRequest):
             yield format_sse("progress", {"stage": 0, "message": "Downloading video from YouTube (this may take a few minutes)..."})
             logger.info(f"Downloading YouTube video: {youtube_url}")
             result = subprocess.run(
-                [sys.executable, "-m", "yt_dlp", "-f", "worst[ext=mp4]", "-o", output_template, youtube_url],
-                capture_output=True, text=True, timeout=300,
-            )
+    [
+        sys.executable, "-m", "yt_dlp", 
+        "--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "-f", "worst[ext=mp4]", 
+        "-o", output_template, 
+        youtube_url
+    ],
+    capture_output=True, text=True, timeout=300,
+)
             if result.returncode != 0:
                 stderr = (result.stderr or "").strip()
                 if "timed out" in stderr.lower() or "timeout" in stderr.lower():
