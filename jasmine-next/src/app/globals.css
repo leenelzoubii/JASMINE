@@ -149,6 +149,7 @@ body {
   color: white;
 }
 
+@layer components {
 /* Glass card utility */
 .glass-card {
   background: var(--surface-glass);
@@ -311,6 +312,7 @@ body {
   font-size: 0.75rem;
   font-weight: 600;
   line-height: 1.4;
+}
 }
 
 /* Skeleton loading */
