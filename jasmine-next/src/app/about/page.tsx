@@ -25,9 +25,9 @@ export default function AboutPage() {
             About the Platform
           </div>
           <h1 className="text-4xl md:text-5xl font-bold leading-tight" style={{ color: 'var(--foreground)' }}>
-            Joint Assessment & Screening for{' '}
+            Jordanian Autism Screening using{' '}
             <span className="bg-clip-text text-transparent" style={{ backgroundImage: 'var(--gradient-primary)' }}>
-              Movement Intelligence
+              Multimodal Intelligent Neurodevelopmental
             </span>{' '}
             Evaluation
           </h1>
@@ -111,7 +111,7 @@ export default function AboutPage() {
       </main>
 
       <footer className="py-8 text-center text-sm" style={{ color: 'var(--text-dim)', borderTop: '1px solid var(--border-light)' }}>
-        <p>JASMINE — Joint Assessment & Screening for Movement INtelligence Evaluation</p>
+        <p>JASMINE — Jordanian Autism Screening using Multimodal Intelligent Neurodevelopmental Evaluation</p>
         <p className="mt-1">Research prototype — not for clinical use</p>
       </footer>
     </div>
