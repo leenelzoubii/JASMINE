@@ -22,34 +22,34 @@ const cardReveal = {
 
 const creators = [
   {
-    name: 'Leen El Zoubii',
-    role: 'Frontend Development and Machine Learning',
+    name: 'Leen El Zoubi',
+    role: 'Frontend Developer and AI Engineer',
     description:
-      'Leen was responsible for the design and implementation of the frontend components of the system, including user interfaces, navigation flows, dashboards, and user experience enhancements. In addition, she contributed to the machine learning pipeline by participating in model development, training, evaluation, and performance optimization of the AI models used in the project.',
+      'Responsible for the design and implementation of the frontend components of the system, including user interfaces, navigation flows, dashboards, and user experience enhancements. In addition, she contributed to the machine learning pipeline by participating in model development, training, evaluation, and performance optimization of the AI models used in the project.',
     initials: 'LZ',
     gradient: 'from-[#2a7f9e] to-[#3a9b8a]',
     github: 'https://github.com/leenelzoubii',
-    linkedin: '#',
+    linkedin: 'https://www.linkedin.com/in/leen-el-zoubi-425342255/',
   },
   {
     name: 'Siba Al Jarrah',
-    role: 'Backend Development and Deployment',
+    role: 'Backend Developer and Deployment Specialist',
     description:
-      'Siba was responsible for developing the backend infrastructure of the system, including API development, database integration, authentication mechanisms, and server-side functionality. She also managed system deployment, cloud integration, application hosting, and maintenance of the production environment to ensure reliable system performance.',
+      'Responsible for developing the backend infrastructure of the system, including API development, database integration, authentication mechanisms, and server-side functionality. She also managed system deployment, cloud integration, application hosting, and maintenance of the production environment to ensure reliable system performance.',
     initials: 'SJ',
     gradient: 'from-[#3a9b8a] to-[#2a7f9e]',
-    github: '#',
-    linkedin: '#',
+    github: 'https://github.com/sibaaljarrah',
+    linkedin: 'https://www.linkedin.com/in/siba-al-jarrah/',
   },
   {
     name: 'Shahd Abu Baker',
-    role: 'Data Collection, Exploratory Data Analysis, and Preprocessing',
+    role: 'Data Scientist',
     description:
-      'Shahd was responsible for gathering and organizing the datasets used throughout the project. She conducted exploratory data analysis (EDA) to identify data characteristics, trends, and potential issues. Additionally, she performed data cleaning, preprocessing, feature preparation, and dataset validation to ensure data quality and suitability for machine learning model training.',
+      'Responsible for gathering and organizing the datasets used throughout the project. She conducted exploratory data analysis (EDA) to identify data characteristics, trends, and potential issues. Additionally, she performed data cleaning, preprocessing, feature preparation, and dataset validation to ensure data quality and suitability for machine learning model training.',
     initials: 'SB',
     gradient: 'from-[#2a7f9e] to-[#4a9bb8]',
-    github: '#',
-    linkedin: '#',
+    github: 'https://github.com/Shahed04ml',
+    linkedin: 'https://www.linkedin.com/in/shahd-abu-baker-340255339/',
   },
 ];
 
