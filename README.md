@@ -8,7 +8,7 @@ A privacy-preserving web application for autism spectrum disorder (ASD) screenin
 
 ## Project Overview
 
-JASMINE (Joint Assessment and Screening for Movement Indicators in Neurodevelopmental Evaluation) uses computer vision and machine learning to analyze children's body movements from ordinary video recordings. The system:
+JASMINE (Jordanian Autism Screening using Multimodal Intelligent Neurodevelopmental Evaluation) uses computer vision and machine learning to analyze children's body movements from ordinary video recordings. The system:
 
 1. **Extracts 25 body keypoints** per frame using MediaPipe PoseLandmarker
 2. **Computes 983 kinematic and statistical features** from the pose sequence
