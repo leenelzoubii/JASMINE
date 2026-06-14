@@ -26,6 +26,7 @@ const creators = [
     role: 'Frontend Developer and AI Engineer',
     description:
       'Responsible for the design and implementation of the frontend components of the system, including user interfaces, navigation flows, dashboards, and user experience enhancements. In addition, she contributed to the machine learning pipeline by participating in model development, training, evaluation, and performance optimization of the AI models used in the project.',
+    image: '/images/leen.JPG',
     initials: 'LZ',
     gradient: 'from-[#2a7f9e] to-[#3a9b8a]',
     github: 'https://github.com/leenelzoubii',
@@ -36,6 +37,7 @@ const creators = [
     role: 'Backend Developer and Deployment Specialist',
     description:
       'Responsible for developing the backend infrastructure of the system, including API development, database integration, authentication mechanisms, and server-side functionality. She also managed system deployment, cloud integration, application hosting, and maintenance of the production environment to ensure reliable system performance.',
+    image: '/images/siba.jpeg',
     initials: 'SJ',
     gradient: 'from-[#3a9b8a] to-[#2a7f9e]',
     github: 'https://github.com/sibaaljarrah',
@@ -183,12 +185,20 @@ export default function AboutCreatorsPage() {
                   whileHover={{ scale: 1.05 }}
                   className="relative mb-5"
                 >
-                  <div
-                    className="w-24 h-24 md:w-28 md:h-28 rounded-2xl flex items-center justify-center text-white text-2xl md:text-3xl font-bold shadow-lg"
-                    style={{ background: `linear-gradient(135deg, ${creator.gradient})` }}
-                  >
-                    {creator.initials}
-                  </div>
+                  {creator.image ? (
+                    <img
+                      src={creator.image}
+                      alt={creator.name}
+                      className="w-24 h-24 md:w-28 md:h-28 rounded-2xl object-cover shadow-lg"
+                    />
+                  ) : (
+                    <div
+                      className="w-24 h-24 md:w-28 md:h-28 rounded-2xl flex items-center justify-center text-white text-2xl md:text-3xl font-bold shadow-lg"
+                      style={{ background: `linear-gradient(135deg, ${creator.gradient})` }}
+                    >
+                      {creator.initials}
+                    </div>
+                  )}
                   <div
                     className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center"
                     style={{ backgroundColor: 'var(--background)' }}
