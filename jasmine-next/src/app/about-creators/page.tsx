@@ -48,6 +48,7 @@ const creators = [
     role: 'Data Scientist',
     description:
       'Responsible for gathering and organizing the datasets used throughout the project. She conducted exploratory data analysis (EDA) to identify data characteristics, trends, and potential issues. Additionally, she performed data cleaning, preprocessing, feature preparation, and dataset validation to ensure data quality and suitability for machine learning model training.',
+    image: '/images/shahd.jpeg',
     initials: 'SB',
     gradient: 'from-[#2a7f9e] to-[#4a9bb8]',
     github: 'https://github.com/Shahed04ml',
