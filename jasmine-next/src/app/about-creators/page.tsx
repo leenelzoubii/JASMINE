@@ -23,9 +23,9 @@ const cardReveal = {
 const creators = [
   {
     name: 'Leen El Zoubii',
-    role: 'Lead Developer & ML Engineer',
+    role: 'Frontend Development and Machine Learning',
     description:
-      'Architected the end-to-end ML pipeline: feature extraction (983 kinematic/statistical features), model training (RF, SVM, TCN, Transformer), and the weighted ensemble system. Built the FastAPI backend with SSE streaming for real-time inference.',
+      'Leen was responsible for the design and implementation of the frontend components of the system, including user interfaces, navigation flows, dashboards, and user experience enhancements. In addition, she contributed to the machine learning pipeline by participating in model development, training, evaluation, and performance optimization of the AI models used in the project.',
     initials: 'LZ',
     gradient: 'from-[#2a7f9e] to-[#3a9b8a]',
     github: 'https://github.com/leenelzoubii',
@@ -33,9 +33,9 @@ const creators = [
   },
   {
     name: 'Siba Al Jarrah',
-    role: 'Frontend Engineer & UI/UX Designer',
+    role: 'Backend Development and Deployment',
     description:
-      'Designed and developed the Next.js frontend with role-based portals (professional/parent), interactive pose visualization canvas, explainability panels, and real-time messaging. Created the premium medical design system.',
+      'Siba was responsible for developing the backend infrastructure of the system, including API development, database integration, authentication mechanisms, and server-side functionality. She also managed system deployment, cloud integration, application hosting, and maintenance of the production environment to ensure reliable system performance.',
     initials: 'SJ',
     gradient: 'from-[#3a9b8a] to-[#2a7f9e]',
     github: '#',
@@ -43,9 +43,9 @@ const creators = [
   },
   {
     name: 'Shahd Abu Baker',
-    role: 'Data Scientist & Research Analyst',
+    role: 'Data Collection, Exploratory Data Analysis, and Preprocessing',
     description:
-      'Led dataset preprocessing and validation of the MMASD dataset (1,374 subjects). Performed statistical analysis of feature importance, model comparison, and clinical interpretation of results. Ensured research methodology rigor.',
+      'Shahd was responsible for gathering and organizing the datasets used throughout the project. She conducted exploratory data analysis (EDA) to identify data characteristics, trends, and potential issues. Additionally, she performed data cleaning, preprocessing, feature preparation, and dataset validation to ensure data quality and suitability for machine learning model training.',
     initials: 'SB',
     gradient: 'from-[#2a7f9e] to-[#4a9bb8]',
     github: '#',
