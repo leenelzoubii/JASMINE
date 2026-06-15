@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { getCurrentUser } from '@/lib/auth';
 import { getPatientLinksByParent, PatientAccessLink } from '@/lib/patient-access';
 import { getAssessmentsByPatient, AssessmentResult } from '@/lib/assessments';
+import { isDemoUser, getDemoLinksByParent, getDemoAssessmentsByPatient, DEMO_CHILD_ID } from '@/lib/demo-data';
 
 const riskColorValue: Record<string, string> = {
   'High Risk': '#dc2626',
@@ -32,22 +33,34 @@ export default function ChildDetailPage() {
     }
 
     const loadData = async () => {
-      const links = await getPatientLinksByParent(user.id);
-      const found = links.find((l) => l.patientId === childId);
-      if (!found) {
-        setLoading(false);
-        return;
-      }
-      setLink(found);
+      if (isDemoUser(user.id)) {
+        const demoLinks = getDemoLinksByParent() as any;
+        const found = demoLinks.find((l: any) => l.patientId === childId);
+        if (!found) {
+          setLoading(false);
+          return;
+        }
+        setLink(found);
+        const all = getDemoAssessmentsByPatient();
+        setAssessments(all.filter(a => a.shared));
+      } else {
+        const links = await getPatientLinksByParent(user.id);
+        const found = links.find((l) => l.patientId === childId);
+        if (!found) {
+          setLoading(false);
+          return;
+        }
+        setLink(found);
 
-      const childAssessments = await getAssessmentsByPatient(found.professionalId, childId);
-      const sharedAssessments = childAssessments.filter(a => a.shared);
-      sharedAssessments.sort((a, b) => {
-        const tA = (a.createdAt as any)?.toMillis?.() || 0;
-        const tB = (b.createdAt as any)?.toMillis?.() || 0;
-        return tB - tA;
-      });
-      setAssessments(sharedAssessments);
+        const childAssessments = await getAssessmentsByPatient(found.professionalId, childId);
+        const sharedAssessments = childAssessments.filter(a => a.shared);
+        sharedAssessments.sort((a, b) => {
+          const tA = (a.createdAt as any)?.toMillis?.() || 0;
+          const tB = (b.createdAt as any)?.toMillis?.() || 0;
+          return tB - tA;
+        });
+        setAssessments(sharedAssessments);
+      }
     };
     loadData().catch(console.error).finally(() => setLoading(false));
   }, [childId]);

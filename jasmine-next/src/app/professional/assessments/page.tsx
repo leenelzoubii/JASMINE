@@ -6,10 +6,11 @@ import { Upload, Video, Youtube, Loader2, Link2, CheckCircle, Play, Layers, BarC
 import { motion, AnimatePresence } from 'framer-motion';
 import { getCurrentUser } from '@/lib/auth';
 import { saveAssessment, getAssessments, reviewAssessment, shareAssessment, deleteAllAssessments, AssessmentResult } from '@/lib/assessments';
-import { getPatients, updatePatient, Patient } from '@/lib/patients';
+import { getPatients, Patient } from '@/lib/patients';
 import { addNotification } from '@/lib/notifications';
 import { showToast } from '@/components/ui/toast';
 import { PoseViewer } from '@/components/ui/pose-viewer';
+import { isDemoUser, getDemoLinksByProfessional } from '@/lib/demo-data';
 
 const ML_BACKEND_URL = process.env.NEXT_PUBLIC_ML_BACKEND_URL || 'http://localhost:8000';
 
@@ -120,11 +121,42 @@ export default function ProfessionalAssessmentsPage() {
       getAssessments(user.id),
     ])
       .then(([patientsData, assessmentsData]) => {
-        setPatients(patientsData);
-        setAssessments(assessmentsData);
+        if (patientsData.length > 0) {
+          setPatients(patientsData);
+          setAssessments(assessmentsData);
+        } else if (isDemoUser(user.id)) {
+          const links = getDemoLinksByProfessional() as any[];
+          setPatients(links.map((l: any) => ({
+            id: l.patientId,
+            name: l.patientName,
+            dob: '',
+            parentName: l.parentName,
+            email: '',
+            phone: '',
+            lastVisit: '',
+            risk: '',
+          })));
+          setAssessments([]);
+        } else {
+          setPatients([]);
+          setAssessments(assessmentsData);
+        }
       })
       .catch((err) => {
-        console.error(err);
+        if (isDemoUser(user.id)) {
+          const links = getDemoLinksByProfessional() as any[];
+          setPatients(links.map((l: any) => ({
+            id: l.patientId,
+            name: l.patientName,
+            dob: '',
+            parentName: l.parentName,
+            email: '',
+            phone: '',
+            lastVisit: '',
+            risk: '',
+          })));
+          setAssessments([]);
+        }
       })
       .finally(() => setPatientsLoading(false));
   }, []);
@@ -163,10 +195,6 @@ export default function ProfessionalAssessmentsPage() {
       });
       setLastAssessmentId(id);
       setLastResult(data);
-      await updatePatient(user.id, selectedPatient, {
-        lastVisit: new Date().toISOString().split('T')[0],
-        risk: data.risk_level,
-      });
       const updated = await getAssessments(user.id);
       setAssessments(updated);
       showToast('success', 'Assessment Saved', 'Result has been saved to the patient record.');

@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { getCurrentUser } from '@/lib/auth';
 import { getPatientLinksByParent, PatientAccessLink } from '@/lib/patient-access';
 import { getAssessmentsByPatient, AssessmentResult } from '@/lib/assessments';
+import { isDemoUser, getDemoLinksByParent, getDemoAssessmentsByPatient } from '@/lib/demo-data';
 
 const riskColors: Record<string, string> = {
   'High Risk': 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
@@ -34,20 +35,24 @@ export default function ParentResultsPage() {
     }
 
     const loadData = async () => {
-      const linksData = await getPatientLinksByParent(user.id);
-      setLinks(linksData);
+      if (isDemoUser(user.id)) {
+        setLinks(getDemoLinksByParent() as any);
+        setAssessments(getDemoAssessmentsByPatient());
+      } else {
+        const linksData = await getPatientLinksByParent(user.id);
+        setLinks(linksData);
 
-      const allAssessments: AssessmentResult[] = [];
-      for (const link of linksData) {
-        try {
-          const childAssessments = await getAssessmentsByPatient(link.professionalId, link.patientId);
-          allAssessments.push(...childAssessments.filter(a => a.shared));
-        } catch (err) {
-          console.warn(`Failed to fetch assessments for ${link.patientName}:`, err);
+        const allAssessments: AssessmentResult[] = [];
+        for (const link of linksData) {
+          try {
+            const childAssessments = await getAssessmentsByPatient(link.professionalId, link.patientId);
+            allAssessments.push(...childAssessments.filter(a => a.shared));
+          } catch (err) {
+            console.warn(`Failed to fetch assessments for ${link.patientName}:`, err);
+          }
         }
-      }
 
-      allAssessments.sort((a, b) => {
+        allAssessments.sort((a, b) => {
           const tA = (a.createdAt as any)?.toMillis?.() || 0;
           const tB = (b.createdAt as any)?.toMillis?.() || 0;
           return tB - tA;
