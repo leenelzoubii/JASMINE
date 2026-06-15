@@ -200,6 +200,7 @@ export async function resendParentCredentials(
 
     const parentRef = doc(db, 'parent_accounts', parentId);
     await updateDoc(parentRef, {
+      password: hashedTempPassword,
       tempPassword: hashedTempPassword,
       tempPasswordExpires: expiresAt,
       mustChangePassword: true,
