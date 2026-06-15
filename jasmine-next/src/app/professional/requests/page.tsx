@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { UserPlus, CheckCircle, XCircle, Clock, Mail, Send, X } from 'lucide-react';
+import { UserPlus, CheckCircle, XCircle, Clock, Mail, Send, X, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getCurrentUser } from '@/lib/auth';
 import { getProfessionalRequests, sendParentRequest, ParentRequest } from '@/lib/parent-requests';
 import { addPatient } from '@/lib/patients';
 import { createPatientAccess } from '@/lib/patient-access';
+import { getParentAccountByEmail, resendParentCredentials } from '@/lib/parent-accounts';
 import { showToast } from '@/components/ui/toast';
 
 export default function ProfessionalRequestsPage() {
@@ -16,6 +17,7 @@ export default function ProfessionalRequestsPage() {
   const [formData, setFormData] = useState({ parentName: '', parentEmail: '', childName: '' });
   const [formError, setFormError] = useState('');
   const [sending, setSending] = useState(false);
+  const [resending, setResending] = useState<string | null>(null);
 
   const loadRequests = () => {
     const user = getCurrentUser();
@@ -150,6 +152,28 @@ export default function ProfessionalRequestsPage() {
     declined: { icon: XCircle, label: 'Declined', bg: 'rgba(220, 38, 38, 0.1)', color: '#dc2626' },
   };
 
+  const handleResend = async (req: ParentRequest) => {
+    setResending(req.id);
+    try {
+      const parentAccount = await getParentAccountByEmail(req.parentEmail);
+      if (!parentAccount) {
+        showToast('error', 'Resend Failed', 'No parent account found for this email.');
+        return;
+      }
+      const result = await resendParentCredentials(parentAccount.id, req.patientName);
+      if (result.success) {
+        showToast('success', 'Credentials Sent', `New login credentials sent to ${req.parentEmail}.`);
+      } else {
+        showToast('error', 'Resend Failed', result.error || 'Could not resend credentials.');
+      }
+    } catch (err) {
+      console.error('Failed to resend credentials:', err);
+      showToast('error', 'Resend Failed', 'An unexpected error occurred.');
+    } finally {
+      setResending(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -207,10 +231,23 @@ export default function ProfessionalRequestsPage() {
                       </p>
                     </div>
                   </div>
-                  <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium" style={{ backgroundColor: config.bg, color: config.color }}>
-                    <config.icon className="w-4 h-4" />
-                    {config.label}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {req.status === 'pending' && (
+                      <button
+                        onClick={() => handleResend(req)}
+                        disabled={resending === req.id}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all hover:scale-[1.02]"
+                        style={{ backgroundColor: 'var(--primary-light)', color: 'var(--primary)' }}
+                      >
+                        <RefreshCw className={`w-3.5 h-3.5 ${resending === req.id ? 'animate-spin' : ''}`} />
+                        {resending === req.id ? 'Sending...' : 'Resend'}
+                      </button>
+                    )}
+                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium" style={{ backgroundColor: config.bg, color: config.color }}>
+                      <config.icon className="w-4 h-4" />
+                      {config.label}
+                    </span>
+                  </div>
                 </div>
               </motion.div>
             );
