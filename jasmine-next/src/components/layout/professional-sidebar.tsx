@@ -168,11 +168,11 @@ export function ProfessionalSidebar() {
 
       {/* Desktop Sidebar */}
       <aside
-        className="hidden lg:flex sticky top-0 self-start w-64 flex-col flex-shrink-0"
+        className="hidden lg:flex sticky top-0 w-64 flex-col flex-shrink-0"
         style={{
           backgroundColor: 'var(--background)',
           borderRight: '1px solid var(--border-light)',
-          maxHeight: '100vh',
+          height: '100vh',
         }}
       >
         {sidebarContent}
