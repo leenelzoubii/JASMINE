@@ -68,7 +68,7 @@ export default function ProfessionalPatientsPage() {
     setSaving(true);
     const isDemo = user.id === 'demo-doctor' || user.id === 'demo-parent';
     try {
-      let newPatient;
+      let newPatient: Patient;
       if (isDemo) {
         const key = 'demo_patients_' + user.id;
         const existing = JSON.parse(localStorage.getItem(key) || '[]');
@@ -95,9 +95,9 @@ export default function ProfessionalPatientsPage() {
         if (sendCredentials) {
           if (isDemo) {
             const linkKey = 'demo_accessLinks';
-            const links = JSON.parse(localStorage.getItem(linkKey) || '[]');
-            const newLink = { id: 'demo-link-' + Date.now(), patientId: newPatient.id, patientName: newPatient.name, professionalId: user.id, professionalName: user.name, parentId: 'demo-parent-' + Date.now(), parentEmail: formData.email.toLowerCase(), parentName: formData.parentName, accessGranted: true, accessGrantedAt: Date.now(), accessRevokedAt: null, sharedAssessments: [], createdAt: Date.now() };
-            localStorage.setItem(linkKey, JSON.stringify([newLink, ...links]));
+            const allLinks = JSON.parse(localStorage.getItem(linkKey) || '[]');
+            allLinks.push({ id: 'demo-link-' + Date.now(), patientId: newPatient.id, patientName: newPatient.name, professionalId: user.id, professionalName: user.name, parentId: 'demo-parent-' + Date.now(), parentEmail: formData.email.toLowerCase(), parentName: formData.parentName, accessGranted: true, accessGrantedAt: Date.now(), accessRevokedAt: null, sharedAssessments: [], createdAt: Date.now() });
+            localStorage.setItem(linkKey, JSON.stringify(allLinks));
             setSavedMessage('Patient added! (Demo mode)');
           } else {
             const accessResult = await createPatientAccess({ patientId: newPatient.id, patientName: newPatient.name, professionalId: user.id, professionalName: user.name, parentName: formData.parentName, parentEmail: formData.email });
