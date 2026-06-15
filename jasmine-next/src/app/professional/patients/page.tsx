@@ -66,21 +66,45 @@ export default function ProfessionalPatientsPage() {
     const user = getCurrentUser();
     if (!user) return;
     setSaving(true);
+    const isDemo = user.id === 'demo-doctor' || user.id === 'demo-parent';
     try {
-      const newPatient = await addPatient(user.id, {
-        name: formData.name, dob: formData.dob, parentName: formData.parentName,
-        email: formData.email, phone: formData.phone || '',
-        lastVisit: new Date().toISOString().split('T')[0], risk: 'Unknown',
-      });
+      let newPatient;
+      if (isDemo) {
+        const key = 'demo_patients_' + user.id;
+        const existing = JSON.parse(localStorage.getItem(key) || '[]');
+        newPatient = {
+          id: 'demo-' + Date.now(),
+          name: formData.name, dob: formData.dob, parentName: formData.parentName,
+          email: formData.email, phone: formData.phone || '',
+          lastVisit: new Date().toISOString().split('T')[0], risk: 'Unknown',
+        };
+        localStorage.setItem(key, JSON.stringify([newPatient, ...existing]));
+      } else {
+        newPatient = await addPatient(user.id, {
+          name: formData.name, dob: formData.dob, parentName: formData.parentName,
+          email: formData.email, phone: formData.phone || '',
+          lastVisit: new Date().toISOString().split('T')[0], risk: 'Unknown',
+        });
+      }
       setPatients(prev => [newPatient, ...prev]);
-      try { await sendParentRequest({ professionalId: user.id, professionalName: user.name, patientId: newPatient.id, patientName: newPatient.name, parentEmail: formData.email, parentName: formData.parentName }); } catch {}
-      try { await addNotification({ userId: user.id, type: 'patient_added', title: 'Patient Added', message: `${newPatient.name} has been added successfully.`, link: '/professional/patients' }); } catch {}
+      if (!isDemo) {
+        try { await sendParentRequest({ professionalId: user.id, professionalName: user.name, patientId: newPatient.id, patientName: newPatient.name, parentEmail: formData.email, parentName: formData.parentName }); } catch {}
+        try { await addNotification({ userId: user.id, type: 'patient_added', title: 'Patient Added', message: `${newPatient.name} has been added successfully.`, link: '/professional/patients' }); } catch {}
+      }
       try {
         if (sendCredentials) {
-          const accessResult = await createPatientAccess({ patientId: newPatient.id, patientName: newPatient.name, professionalId: user.id, professionalName: user.name, parentName: formData.parentName, parentEmail: formData.email });
-          if (accessResult.success && accessResult.parentTempPassword) setSavedMessage('Patient added! Account credentials sent to parent.');
-          else if (accessResult.success) setSavedMessage('Patient added! Parent already has access.');
-          else setSavedMessage('Patient added, but failed to send credentials.');
+          if (isDemo) {
+            const linkKey = 'demo_accessLinks';
+            const links = JSON.parse(localStorage.getItem(linkKey) || '[]');
+            const newLink = { id: 'demo-link-' + Date.now(), patientId: newPatient.id, patientName: newPatient.name, professionalId: user.id, professionalName: user.name, parentId: 'demo-parent-' + Date.now(), parentEmail: formData.email.toLowerCase(), parentName: formData.parentName, accessGranted: true, accessGrantedAt: Date.now(), accessRevokedAt: null, sharedAssessments: [], createdAt: Date.now() };
+            localStorage.setItem(linkKey, JSON.stringify([newLink, ...links]));
+            setSavedMessage('Patient added! (Demo mode)');
+          } else {
+            const accessResult = await createPatientAccess({ patientId: newPatient.id, patientName: newPatient.name, professionalId: user.id, professionalName: user.name, parentName: formData.parentName, parentEmail: formData.email });
+            if (accessResult.success && accessResult.parentTempPassword) setSavedMessage('Patient added! Account credentials sent to parent.');
+            else if (accessResult.success) setSavedMessage('Patient added! Parent already has access.');
+            else setSavedMessage('Patient added, but failed to send credentials.');
+          }
         } else { setSavedMessage('Patient added successfully.'); }
       } catch { setSavedMessage('Patient added, but failed to create access.'); }
       setSaved(true);
