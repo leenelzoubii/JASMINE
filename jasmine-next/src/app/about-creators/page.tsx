@@ -36,7 +36,7 @@ const creators = [
     name: 'Siba Al Jarrah',
     role: 'Backend Developer and Deployment Specialist',
     description:
-      'Responsible for developing the backend infrastructure of the system, including API development, database integration, authentication mechanisms, and server-side functionality. She also managed system deployment, cloud integration, application hosting, and maintenance of the production environment to ensure reliable system performance.',
+      'Responsible for developing the backend API endpoints, authentication mechanisms, and server-side logic of the system. She also managed system deployment, cloud infrastructure, application hosting, and maintenance of the production environment to ensure reliable system performance.',
     image: '/images/siba.jpeg',
     initials: 'SJ',
     gradient: 'from-[#3a9b8a] to-[#2a7f9e]',
@@ -45,9 +45,9 @@ const creators = [
   },
   {
     name: 'Shahd Abu Baker',
-    role: 'Data Scientist',
+    role: 'Data Scientist and Database Administrator',
     description:
-      'Responsible for gathering and organizing the datasets used throughout the project. She conducted exploratory data analysis (EDA) to identify data characteristics, trends, and potential issues. Additionally, she performed data cleaning, preprocessing, feature preparation, and dataset validation to ensure data quality and suitability for machine learning model training.',
+      'Responsible for designing and implementing the database architecture, managing data storage, and handling all database-related operations. She gathered and organized the datasets used throughout the project, conducted exploratory data analysis (EDA), performed data cleaning, preprocessing, feature preparation, and dataset validation to ensure data quality and suitability for machine learning model training.',
     image: '/images/shahd.jpeg',
     initials: 'SB',
     gradient: 'from-[#2a7f9e] to-[#4a9bb8]',
