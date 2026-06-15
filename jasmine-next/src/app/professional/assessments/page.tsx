@@ -6,7 +6,7 @@ import { Upload, Video, Youtube, Loader2, Link2, CheckCircle, Play, Layers, BarC
 import { motion, AnimatePresence } from 'framer-motion';
 import { getCurrentUser } from '@/lib/auth';
 import { saveAssessment, getAssessments, reviewAssessment, shareAssessment, deleteAllAssessments, AssessmentResult } from '@/lib/assessments';
-import { getPatients, Patient } from '@/lib/patients';
+import { getPatients, Patient, updatePatient } from '@/lib/patients';
 import { addNotification } from '@/lib/notifications';
 import { showToast } from '@/components/ui/toast';
 import { PoseViewer } from '@/components/ui/pose-viewer';
@@ -197,6 +197,13 @@ export default function ProfessionalAssessmentsPage() {
       setLastResult(data);
       const updated = await getAssessments(user.id);
       setAssessments(updated);
+
+      const riskShort = data.risk_level.replace(' Risk', '');
+      await updatePatient(user.id, selectedPatient, {
+        lastVisit: new Date().toISOString().split('T')[0],
+        risk: riskShort,
+      });
+
       showToast('success', 'Assessment Saved', 'Result has been saved to the patient record.');
     } catch (err) {
       console.error('Failed to save assessment:', err);
