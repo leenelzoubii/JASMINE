@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Brain, Mail, Lock, User, Building2, AlertCircle, Check, ArrowLeft, Sparkles, Shield, Activity } from 'lucide-react';
+import { Brain, Mail, Lock, User, Building2, AlertCircle, Check, ArrowLeft, Eye, EyeOff, Sparkles, Shield, Activity } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { registerUser } from "@/lib/auth";
 
@@ -18,6 +18,7 @@ export default function RegisterPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [specialty, setSpecialty] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -268,15 +269,23 @@ export default function RegisterPage() {
                       <div className="relative">
                         <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-dim)' }} />
                         <input
-                          type="password"
+                          type={showPassword ? 'text' : 'password'}
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           placeholder="Create a strong password"
-                          className="premium-input pl-11"
+                          className="premium-input pl-11 pr-12"
                           minLength={13}
                           pattern="(?=.*[A-Z]).{13,}"
                           title="Password must be more than 12 characters and contain at least one uppercase letter."
                         />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 transition-colors"
+                          style={{ color: 'var(--text-dim)' }}
+                        >
+                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
                       </div>
                     </div>
                   </form>

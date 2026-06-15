@@ -1,6 +1,6 @@
 'use client';
 
-import { Baby, FileText, MessageSquare, Calendar, AlertCircle, Send, Heart, Activity } from 'lucide-react';
+import { Baby, FileText, MessageSquare, Calendar, AlertCircle, Send, Heart, Activity, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
@@ -112,6 +112,38 @@ export default function ParentDashboard() {
         ))}
       </motion.div>
 
+      {links.length === 0 && (
+        <motion.div variants={fadeUp} className="premium-card p-6 text-center">
+          <UserPlus className="w-16 h-16 mx-auto mb-4" style={{ color: 'var(--primary)' }} />
+          <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>Connect with Your Doctor</h2>
+          <p className="text-sm mb-4 max-w-md mx-auto" style={{ color: 'var(--text-muted)' }}>
+            To get started, ask your doctor to add you as a parent on their Patients page.
+            Once they do, you&apos;ll see a connection request here.
+          </p>
+          <div className="flex flex-col items-center gap-2 mb-6">
+            <div className="flex items-center gap-2 text-sm p-3 rounded-xl" style={{ backgroundColor: 'var(--background-alt)' }}>
+              <span className="flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold text-white" style={{ background: 'var(--primary)' }}>1</span>
+              <span style={{ color: 'var(--foreground)' }}>Doctor adds your email to their patient list</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm p-3 rounded-xl" style={{ backgroundColor: 'var(--background-alt)' }}>
+              <span className="flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold text-white" style={{ background: 'var(--primary)' }}>2</span>
+              <span style={{ color: 'var(--foreground)' }}>You receive a connection request</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm p-3 rounded-xl" style={{ backgroundColor: 'var(--background-alt)' }}>
+              <span className="flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold text-white" style={{ background: 'var(--primary)' }}>3</span>
+              <span style={{ color: 'var(--foreground)' }}>Accept it here to view your child&apos;s results</span>
+            </div>
+          </div>
+          <Link href="/parent/requests">
+            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+              className="premium-btn premium-btn-primary">
+              <UserPlus className="w-4 h-4" /> View Pending Requests
+            </motion.button>
+          </Link>
+        </motion.div>
+      )}
+
+      {links.length > 0 && (
       <motion.div variants={fadeUp}>
         <div className="premium-card p-6">
           <div className="flex items-center justify-between mb-4">
@@ -174,6 +206,7 @@ export default function ParentDashboard() {
           )}
         </div>
       </motion.div>
+      )}
 
       <motion.div
         variants={fadeUp}
