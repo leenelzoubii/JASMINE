@@ -18,6 +18,19 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
+export interface ParentRequest {
+  id: string;
+  professionalId: string;
+  professionalName: string;
+  patientId: string;
+  patientName: string;
+  parentEmail: string;
+  parentId?: string;
+  parentName: string;
+  status: "pending" | "accepted" | "declined";
+  createdAt: Timestamp;
+}
+
 const DEMO_USER_IDS = ['demo-doctor', 'demo-parent'];
 
 function isDemoUser(userId: string): boolean {
@@ -28,28 +41,6 @@ function isDemoUser(userId: string): boolean {
  * Demo requests are stored under a single shared localStorage key
  * so both doctor and parent can read/write the same pool.
  */
-function getDemoAllRequestsKey(): string {
-  return 'demo_allRequests';
-}
-
-function getDemoAllRequests(): ParentRequest[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    return JSON.parse(localStorage.getItem(getDemoAllRequestsKey()) || '[]');
-  } catch { return []; }
-}
-
-function saveDemoAllRequests(requests: ParentRequest[]): void {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(getDemoAllRequestsKey(), JSON.stringify(requests));
-}
-
-const DEMO_USER_IDS = ['demo-doctor', 'demo-parent'];
-
-function isDemoUser(userId: string): boolean {
-  return DEMO_USER_IDS.includes(userId);
-}
-
 function getDemoAllRequestsKey(): string {
   return 'demo_allRequests';
 }
