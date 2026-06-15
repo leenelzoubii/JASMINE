@@ -25,6 +25,9 @@ export interface AssessmentResult {
   num_frames_processed?: number;
   source?: string;
   youtube_url?: string;
+  video_name?: string;
+  file_hash?: string;
+  notes?: string;
   model_predictions: Record<string, { probability: number; risk_level: string }>;
   reviewed: boolean;
   shared: boolean;
@@ -174,4 +177,27 @@ export async function getAssessmentsByPatient(userId: string, patientId: string)
     return tB - tA;
   });
   return results;
+}
+
+export async function updateAssessmentNotes(
+  userId: string,
+  assessmentId: string,
+  notes: string
+): Promise<void> {
+  await updateDoc(doc(db, 'users', userId, 'assessments', assessmentId), { notes });
+}
+
+export async function checkDuplicateVideo(
+  userId: string,
+  patientId: string,
+  videoName?: string,
+  youtubeUrl?: string
+): Promise<boolean> {
+  if (!videoName && !youtubeUrl) return false;
+  const assessments = await getAssessmentsByPatient(userId, patientId);
+  return assessments.some((a) => {
+    if (youtubeUrl && a.youtube_url && a.youtube_url === youtubeUrl) return true;
+    if (videoName && a.video_name && a.video_name === videoName) return true;
+    return false;
+  });
 }
