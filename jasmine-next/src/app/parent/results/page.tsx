@@ -36,7 +36,8 @@ export default function ParentResultsPage() {
 
     const loadData = async () => {
       if (isDemoUser(user.id)) {
-        setLinks(getDemoLinksByParent() as any);
+        const storedLinks = await getPatientLinksByParent(user.id);
+        setLinks(storedLinks.length > 0 ? storedLinks : getDemoLinksByParent() as any);
         setAssessments(getDemoAssessmentsByPatient());
       } else {
         const linksData = await getPatientLinksByParent(user.id);

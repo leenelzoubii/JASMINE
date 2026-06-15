@@ -40,7 +40,8 @@ export default function ParentChildrenPage() {
 
     try {
       if (isDemoUser(user.id)) {
-        setLinks(getDemoLinksByParent() as any);
+        const storedLinks = await getPatientLinksByParent(user.id);
+        setLinks(storedLinks.length > 0 ? storedLinks : getDemoLinksByParent() as any);
       } else {
         const linksData = await getPatientLinksByParent(user.id);
         setLinks(linksData);

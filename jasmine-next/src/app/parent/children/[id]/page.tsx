@@ -34,13 +34,19 @@ export default function ChildDetailPage() {
 
     const loadData = async () => {
       if (isDemoUser(user.id)) {
-        const demoLinks = getDemoLinksByParent() as any;
-        const found = demoLinks.find((l: any) => l.patientId === childId);
-        if (!found) {
-          setLoading(false);
-          return;
+        const links = await getPatientLinksByParent(user.id);
+        const found = links.find((l) => l.patientId === childId);
+        if (found) {
+          setLink(found);
+        } else {
+          const demoLinks = getDemoLinksByParent() as any;
+          const demoFound = demoLinks.find((l: any) => l.patientId === childId);
+          if (!demoFound) {
+            setLoading(false);
+            return;
+          }
+          setLink(demoFound);
         }
-        setLink(found);
         const all = getDemoAssessmentsByPatient();
         setAssessments(all.filter(a => a.shared));
       } else {

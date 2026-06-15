@@ -1,12 +1,13 @@
 'use client';
 
-import { Baby, FileText, MessageSquare, Calendar, AlertCircle, Send, Heart, Activity, UserPlus } from 'lucide-react';
+import { Baby, FileText, MessageSquare, Calendar, AlertCircle, Send, Heart, Activity, UserPlus, Bell } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { getCurrentUser } from '@/lib/auth';
 import { getPatientLinksByParent, PatientAccessLink } from '@/lib/patient-access';
 import { getAssessmentsByPatient, AssessmentResult } from '@/lib/assessments';
+import { getParentRequestsByEmail } from '@/lib/parent-requests';
 import { isDemoUser, getDemoLinksByParent, getDemoAssessmentsByPatient } from '@/lib/demo-data';
 
 const container = {
@@ -31,6 +32,7 @@ export default function ParentDashboard() {
   const [assessments, setAssessments] = useState<AssessmentResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [showContact, setShowContact] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
 
   useEffect(() => {
     const user = getCurrentUser();
@@ -39,7 +41,12 @@ export default function ParentDashboard() {
     const loadData = async () => {
       let linksData: PatientAccessLink[];
       if (isDemoUser(user.id)) {
-        linksData = getDemoLinksByParent() as any;
+        const storedLinks = await getPatientLinksByParent(user.id);
+        if (storedLinks.length === 0) {
+          linksData = getDemoLinksByParent() as any;
+        } else {
+          linksData = storedLinks;
+        }
         setLinks(linksData);
         setAssessments(getDemoAssessmentsByPatient());
       } else {
@@ -59,6 +66,11 @@ export default function ParentDashboard() {
         });
         setAssessments(all);
       }
+      // Check for pending connection requests
+      try {
+        const pending = await getParentRequestsByEmail(user.email);
+        setPendingCount(pending.length);
+      } catch { /* ignore */ }
     };
     loadData().catch(console.error).finally(() => setLoading(false));
   }, []);
@@ -87,6 +99,25 @@ export default function ParentDashboard() {
         <h1 className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>Welcome Back</h1>
         <p style={{ color: 'var(--text-muted)' }}>Here&apos;s an overview of your child&apos;s progress</p>
       </motion.div>
+
+      {pendingCount > 0 && (
+        <motion.div variants={fadeUp}>
+          <Link href="/parent/requests"
+            className="flex items-center gap-3 p-4 rounded-2xl transition-all hover:scale-[1.01]"
+            style={{ backgroundColor: 'rgba(217, 119, 6, 0.1)', border: '1px solid rgba(217, 119, 6, 0.3)' }}
+          >
+            <Bell className="w-5 h-5" style={{ color: '#d97706' }} />
+            <div>
+              <p className="text-sm font-medium" style={{ color: '#d97706' }}>
+                {pendingCount} pending request{pendingCount > 1 ? 's' : ''}
+              </p>
+              <p className="text-xs" style={{ color: 'rgba(217, 119, 6, 0.7)' }}>
+                A doctor wants to connect with you
+              </p>
+            </div>
+          </Link>
+        </motion.div>
+      )}
 
       <motion.div variants={fadeUp} className="grid grid-cols-3 gap-4">
         {[
