@@ -42,8 +42,8 @@ export function ProfessionalSidebar() {
   };
 
   const sidebarContent = (
-    <div className="flex flex-col h-full">
-      <div className="p-5 border-b" style={{ borderColor: 'var(--border-light)' }}>
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="p-5 border-b flex-shrink-0" style={{ borderColor: 'var(--border-light)' }}>
         <div className="flex items-center gap-3">
           <motion.div
             whileHover={{ scale: 1.05, rotate: -3 }}
@@ -64,7 +64,7 @@ export function ProfessionalSidebar() {
         </div>
       </div>
 
-      <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
+      <nav className="flex-1 min-h-0 p-3 space-y-0.5 overflow-y-auto">
         {professionalLinks.map((link) => {
           const isActive = pathname === link.href;
           return (
@@ -105,7 +105,7 @@ export function ProfessionalSidebar() {
         })}
       </nav>
 
-      <div className="p-4 border-t" style={{ borderColor: 'var(--border-light)' }}>
+      <div className="p-4 border-t flex-shrink-0" style={{ borderColor: 'var(--border-light)' }}>
         <div className="flex items-center justify-between mb-3 px-1">
           <ThemeToggle />
           <motion.button
@@ -168,10 +168,11 @@ export function ProfessionalSidebar() {
 
       {/* Desktop Sidebar */}
       <aside
-        className="hidden lg:flex fixed top-0 left-0 h-full w-64 flex-col z-40"
+        className="hidden lg:flex sticky top-0 self-start w-64 flex-col flex-shrink-0"
         style={{
           backgroundColor: 'var(--background)',
           borderRight: '1px solid var(--border-light)',
+          maxHeight: '100vh',
         }}
       >
         {sidebarContent}

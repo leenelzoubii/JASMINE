@@ -55,10 +55,10 @@ export default function ProfessionalLayout({
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--background-alt)' }}>
+    <div className="min-h-screen flex" style={{ backgroundColor: 'var(--background-alt)' }}>
       <ToastContainer />
       <ProfessionalSidebar />
-      <main className="lg:pl-64 min-h-screen">
+      <main className="flex-1 min-h-screen">
         <div
           className="sticky top-0 z-30 glass-card flex items-center justify-between px-6 py-3"
           style={{ borderBottom: '1px solid var(--border-light)' }}
