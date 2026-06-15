@@ -60,28 +60,10 @@ function LoginForm() {
     } catch (error: unknown) {
       const err = error as { code?: string; message?: string };
       if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
-        setError('Invalid email or password. Try the demo accounts below.');
+        setError('Invalid email or password.');
       } else {
         setError(err.message || 'Something went wrong.');
       }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const quickLogin = async (role: 'parent' | 'professional') => {
-    const creds = role === 'parent'
-      ? { email: 'parent@demo.com', password: 'demo123' }
-      : { email: 'doctor@demo.com', password: 'demo123' };
-    setEmail(creds.email);
-    setPassword(creds.password);
-    setError('');
-    setLoading(true);
-    try {
-      const user = await authenticateUser(creds.email, creds.password);
-      if (user) router.push(role === 'parent' ? '/parent' : '/professional');
-    } catch {
-      router.push(role === 'parent' ? '/parent' : '/professional');
     } finally {
       setLoading(false);
     }
@@ -242,32 +224,6 @@ function LoginForm() {
                 ) : 'Sign In'}
               </motion.button>
             </form>
-
-            <div className="mt-6 pt-6 border-t" style={{ borderColor: 'var(--border-light)' }}>
-              <p className="text-sm font-medium text-center mb-3" style={{ color: 'var(--text-muted)' }}>
-                Demo Quick Access
-              </p>
-              <div className="grid grid-cols-2 gap-3">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => quickLogin('parent')}
-                  className="py-2.5 px-4 rounded-xl text-sm font-medium transition-all"
-                  style={{ backgroundColor: 'var(--primary-light)', color: 'var(--primary)' }}
-                >
-                  Parent Demo
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => quickLogin('professional')}
-                  className="py-2.5 px-4 rounded-xl text-sm font-medium transition-all"
-                  style={{ backgroundColor: 'var(--primary-light)', color: 'var(--primary)' }}
-                >
-                  Doctor Demo
-                </motion.button>
-              </div>
-            </div>
 
             <div className="mt-6 text-center space-y-2">
               <p style={{ color: 'var(--text-muted)' }}>

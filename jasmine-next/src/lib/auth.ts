@@ -36,24 +36,6 @@ export interface User {
   specialty?: string;
 }
 
-// Demo accounts fallback - works even if Firebase is unavailable
-const demoUsers: Record<string, User> = {
-  "parent@demo.com": {
-    id: "demo-parent",
-    name: "John Parent",
-    email: "parent@demo.com",
-    role: "parent",
-    child: { name: "Emma", age: 6, specialist: "Dr. Jasmine" },
-  },
-  "doctor@demo.com": {
-    id: "demo-doctor",
-    name: "Dr. Jasmine",
-    email: "doctor@demo.com",
-    role: "professional",
-    specialty: "Pediatric Specialist",
-  },
-};
-
 // Local user registry - stores ALL created accounts locally as backup
 function getLocalUsers(): Record<string, { user: User; password: string }> {
   if (typeof window === "undefined") return {};
@@ -89,7 +71,7 @@ export async function registerUser(
     email: cleanEmail,
     role,
     ...(role === "parent"
-      ? { child: { name: name.split(" ")[0] + "'s Child", age: 0, specialist: "Dr. Jasmine" } }
+      ? { child: { name: name.split(" ")[0] + "'s Child", age: 0 } }
       : { specialty: specialty?.trim() || "Autism Specialist" }),
   };
   saveLocalUser(cleanEmail, cleanPassword, localUser);
@@ -178,15 +160,6 @@ export async function authenticateUser(
       return localEntry.user;
     }
 
-    // Fallback 2: Check demo accounts
-    const demoUser = demoUsers[cleanEmail];
-    if (demoUser) {
-      if (typeof window !== "undefined") {
-        localStorage.setItem("currentUser", JSON.stringify(demoUser));
-      }
-      return demoUser;
-    }
-    
     // Rethrow the original error
     throw err;
   }

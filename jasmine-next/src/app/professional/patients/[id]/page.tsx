@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Mail, Phone, Calendar, User, Heart, Edit2, Save, X, CheckCircle, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Mail, Phone, Calendar, User, Heart, Edit2, Save, X, CheckCircle, AlertTriangle, Activity, FileText, TrendingUp, Eye, Share2 } from 'lucide-react';
 import { getPatient, updatePatient, Patient } from '@/lib/patients';
 import { getCurrentUser } from '@/lib/auth';
+import { getAssessmentsByPatient, AssessmentResult } from '@/lib/assessments';
 import { showToast } from '@/components/ui/toast';
 
 function calculateAge(dob: string): number {
@@ -48,22 +49,32 @@ export default function PatientProfilePage() {
   const [saved, setSaved] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [error, setError] = useState('');
+  const [assessments, setAssessments] = useState<AssessmentResult[]>([]);
+  const [assessmentsLoading, setAssessmentsLoading] = useState(true);
 
   useEffect(() => {
     setMounted(true);
     const user = getCurrentUser();
     if (user && patientId) {
-      getPatient(user.id, patientId)
-        .then((p) => {
+      Promise.all([
+        getPatient(user.id, patientId),
+        getAssessmentsByPatient(user.id, patientId),
+      ])
+        .then(([p, a]) => {
           if (p) {
             setPatient(p);
             setEditData(p);
           }
+          setAssessments(a);
         })
         .catch(console.error)
-        .finally(() => setLoading(false));
+        .finally(() => {
+          setLoading(false);
+          setAssessmentsLoading(false);
+        });
     } else {
       setLoading(false);
+      setAssessmentsLoading(false);
     }
   }, [patientId]);
 
@@ -312,6 +323,66 @@ export default function PatientProfilePage() {
           </div>
         </motion.div>
       </div>
+
+      {/* Assessment History */}
+      <motion.div variants={fadeUp}>
+        <div className="premium-card p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Activity className="w-5 h-5" style={{ color: 'var(--primary)' }} />
+            <h2 className="text-lg font-semibold" style={{ color: 'var(--foreground)' }}>Assessment History</h2>
+            <span className="text-xs ml-auto" style={{ color: 'var(--text-muted)' }}>{assessments.length} total</span>
+          </div>
+          {assessmentsLoading ? (
+            <div className="h-24 flex items-center justify-center">
+              <div className="w-6 h-6 border-2 rounded-full animate-spin" style={{ borderColor: 'var(--primary-light)', borderTopColor: 'var(--primary)' }} />
+            </div>
+          ) : assessments.length === 0 ? (
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No assessments yet. Run an assessment to see results here.</p>
+          ) : (
+            <div className="space-y-3">
+              {assessments.slice(0, 5).map((a, idx) => (
+                <motion.div
+                  key={a.id}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                  className="flex items-center justify-between p-4 rounded-xl" style={{ backgroundColor: 'var(--background-alt)' }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--primary-light)' }}>
+                      <FileText className="w-5 h-5" style={{ color: 'var(--primary)' }} />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-sm" style={{ color: 'var(--foreground)' }}>{a.date}</p>
+                        {a.reviewed && <Eye className="w-3 h-3" style={{ color: '#2563eb' }} />}
+                        {a.shared && <Share2 className="w-3 h-3" style={{ color: '#16a34a' }} />}
+                      </div>
+                      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{a.source || 'upload'} · {a.num_frames_processed || 'N/A'} frames</p>
+                    </div>
+                  </div>
+                  <div className="text-right flex items-center gap-2">
+                    {a.confidence !== undefined && (
+                      <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{(a.confidence * 100).toFixed(0)}% conf</span>
+                    )}
+                    <div>
+                      <p className="text-lg font-bold" style={{ color: a.risk_level === 'High Risk' ? '#dc2626' : a.risk_level === 'Moderate Risk' ? '#d97706' : '#16a34a' }}>
+                        {(a.ensemble_probability * 100).toFixed(1)}%
+                      </p>
+                      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{a.risk_level}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+              {assessments.length > 5 && (
+                <p className="text-center text-xs pt-2" style={{ color: 'var(--text-muted)' }}>
+                  +{assessments.length - 5} more assessments
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      </motion.div>
 
       {/* Edit Controls */}
       {isEditing && (

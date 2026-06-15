@@ -7,7 +7,6 @@ import { useState, useEffect } from 'react';
 import { getCurrentUser } from '@/lib/auth';
 import { getPatientLinksByParent, PatientAccessLink } from '@/lib/patient-access';
 import { getAssessmentsByPatient, AssessmentResult } from '@/lib/assessments';
-import { isDemoUser, getDemoLinksByParent, getDemoAssessmentsByPatient } from '@/lib/demo-data';
 
 const container = {
   hidden: { opacity: 0 },
@@ -37,28 +36,21 @@ export default function ParentDashboard() {
     if (!user) { setLoading(false); return; }
 
     const loadData = async () => {
-      let linksData: PatientAccessLink[];
-      if (isDemoUser(user.id)) {
-        linksData = getDemoLinksByParent() as any;
-        setLinks(linksData);
-        setAssessments(getDemoAssessmentsByPatient());
-      } else {
-        linksData = await getPatientLinksByParent(user.id);
-        setLinks(linksData);
-        const all: AssessmentResult[] = [];
-        for (const link of linksData) {
-          try {
-            const childAssessments = await getAssessmentsByPatient(link.professionalId, link.patientId);
-            all.push(...childAssessments.filter(a => a.shared));
-          } catch { /* skip */ }
-        }
-        all.sort((a, b) => {
-          const tA = (a.createdAt as any)?.toMillis?.() || 0;
-          const tB = (b.createdAt as any)?.toMillis?.() || 0;
-          return tB - tA;
-        });
-        setAssessments(all);
+      const linksData = await getPatientLinksByParent(user.id);
+      setLinks(linksData);
+      const all: AssessmentResult[] = [];
+      for (const link of linksData) {
+        try {
+          const childAssessments = await getAssessmentsByPatient(link.professionalId, link.patientId);
+          all.push(...childAssessments.filter(a => a.shared));
+        } catch { /* skip */ }
       }
+      all.sort((a, b) => {
+        const tA = (a.createdAt as any)?.toMillis?.() || 0;
+        const tB = (b.createdAt as any)?.toMillis?.() || 0;
+        return tB - tA;
+      });
+      setAssessments(all);
     };
     loadData().catch(console.error).finally(() => setLoading(false));
   }, []);

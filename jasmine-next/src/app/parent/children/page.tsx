@@ -7,7 +7,6 @@ import { motion } from 'framer-motion';
 import { getCurrentUser } from '@/lib/auth';
 import { getPatientLinksByParent } from '@/lib/patient-access';
 import { PatientAccessLink } from '@/lib/patient-access';
-import { isDemoUser, getDemoLinksByParent } from '@/lib/demo-data';
 
 function calculateAge(dob: string): number {
   const birth = new Date(dob);
@@ -39,12 +38,8 @@ export default function ParentChildrenPage() {
     }
 
     try {
-      if (isDemoUser(user.id)) {
-        setLinks(getDemoLinksByParent() as any);
-      } else {
-        const linksData = await getPatientLinksByParent(user.id);
-        setLinks(linksData);
-      }
+      const linksData = await getPatientLinksByParent(user.id);
+      setLinks(linksData);
     } catch (err) {
       console.error(err);
     } finally {
