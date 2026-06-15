@@ -25,17 +25,48 @@ export interface Patient {
   updatedAt?: unknown;
 }
 
+const DEMO_USER_IDS = ['demo-doctor', 'demo-parent'];
+
+function isDemoUser(userId: string): boolean {
+  return DEMO_USER_IDS.includes(userId);
+}
+
+function getDemoStorageKey(userId: string): string {
+  return `demo_patients_${userId}`;
+}
+
+function getDemoPatients(userId: string): Patient[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    return JSON.parse(localStorage.getItem(getDemoStorageKey(userId)) || '[]');
+  } catch {
+    return [];
+  }
+}
+
+function saveDemoPatients(userId: string, patients: Patient[]): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(getDemoStorageKey(userId), JSON.stringify(patients));
+}
+
 function getPatientsRef(userId: string) {
   return collection(db, 'users', userId, 'patients');
 }
 
 export async function getPatients(userId: string): Promise<Patient[]> {
+  if (isDemoUser(userId)) {
+    return getDemoPatients(userId);
+  }
   const q = query(getPatientsRef(userId), orderBy('createdAt', 'desc'));
   const snap = await getDocs(q);
   return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Patient));
 }
 
 export async function getPatient(userId: string, patientId: string): Promise<Patient | null> {
+  if (isDemoUser(userId)) {
+    const patients = getDemoPatients(userId);
+    return patients.find(p => p.id === patientId) || null;
+  }
   const snap = await getDoc(doc(db, 'users', userId, 'patients', patientId));
   if (!snap.exists()) return null;
   return { id: snap.id, ...snap.data() } as Patient;
@@ -45,6 +76,15 @@ export async function addPatient(
   userId: string,
   data: Omit<Patient, 'id' | 'createdAt' | 'updatedAt'>
 ): Promise<Patient> {
+  if (isDemoUser(userId)) {
+    const patients = getDemoPatients(userId);
+    const newPatient: Patient = {
+      ...data,
+      id: 'demo-' + Date.now(),
+    };
+    saveDemoPatients(userId, [newPatient, ...patients]);
+    return newPatient;
+  }
   const ref = await addDoc(getPatientsRef(userId), {
     ...data,
     createdAt: serverTimestamp(),
@@ -58,6 +98,15 @@ export async function updatePatient(
   patientId: string,
   data: Partial<Omit<Patient, 'id' | 'createdAt'>>
 ): Promise<void> {
+  if (isDemoUser(userId)) {
+    const patients = getDemoPatients(userId);
+    const idx = patients.findIndex(p => p.id === patientId);
+    if (idx !== -1) {
+      patients[idx] = { ...patients[idx], ...data };
+      saveDemoPatients(userId, patients);
+    }
+    return;
+  }
   await updateDoc(doc(db, 'users', userId, 'patients', patientId), {
     ...data,
     updatedAt: serverTimestamp(),
@@ -65,5 +114,10 @@ export async function updatePatient(
 }
 
 export async function deletePatient(userId: string, patientId: string): Promise<void> {
+  if (isDemoUser(userId)) {
+    const patients = getDemoPatients(userId);
+    saveDemoPatients(userId, patients.filter(p => p.id !== patientId));
+    return;
+  }
   await deleteDoc(doc(db, 'users', userId, 'patients', patientId));
 }
