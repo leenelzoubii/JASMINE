@@ -17,10 +17,15 @@ import {
   doc,
   setDoc,
   getDoc,
+  getDocs,
+  collection,
+  query,
+  where,
   serverTimestamp,
 } from "firebase/firestore";
 
 import { auth, db } from "@/lib/firebase";
+import { verifyPassword } from "@/lib/password";
 
 export interface User {
   id: string;
@@ -185,6 +190,40 @@ export async function authenticateUser(
         localStorage.setItem("currentUser", JSON.stringify(demoUser));
       }
       return demoUser;
+    }
+
+    // Fallback 3: Check parent_accounts collection
+    try {
+      const accountsRef = collection(db, "parent_accounts");
+      const q = query(accountsRef, where("email", "==", cleanEmail));
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        const accountData = snap.docs[0].data();
+        if (accountData.isActive === false) {
+          throw new Error("Parent account has been deactivated.");
+        }
+        const storedHash = accountData.password || accountData.tempPassword;
+        if (storedHash) {
+          const valid = await verifyPassword(cleanPassword, storedHash);
+          if (valid) {
+            const parentUser: User = {
+              id: snap.docs[0].id,
+              name: accountData.name || "Parent",
+              email: cleanEmail,
+              role: "parent",
+              child: accountData.childName
+                ? { name: accountData.childName, age: 0 }
+                : undefined,
+            };
+            if (typeof window !== "undefined") {
+              localStorage.setItem("currentUser", JSON.stringify(parentUser));
+            }
+            return parentUser;
+          }
+        }
+      }
+    } catch (parentErr) {
+      console.warn("Parent account check failed:", parentErr);
     }
     
     // Rethrow the original error
