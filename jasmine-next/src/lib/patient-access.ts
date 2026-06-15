@@ -175,16 +175,52 @@ export async function getPatientLinksByProfessional(
 }
 
 export async function getPatientLinksByParent(
-  parentId: string
+  parentId: string,
+  parentEmail?: string // إضافة الإيميل كمتغير اختياري
 ): Promise<PatientAccessLink[]> {
   try {
+    // 1. التعامل مع حسابات الديمو (كما هي)
     if (isDemoUser(parentId)) {
       return getDemoLinks().filter(l => l.parentId === parentId && l.accessGranted);
     }
+    
     const linksRef = collection(db, 'patient_access_links');
-    const q = query(linksRef, where('parentId', '==', parentId), where('accessGranted', '==', true));
-    const docSnap = await getDocs(q);
-    return docSnap.docs.map(d => ({ id: d.id, ...d.data() } as PatientAccessLink));
+
+    // 2. محاولة جلب الإيميل إذا لم يتم تمريره
+    let searchEmail = parentEmail;
+    if (!searchEmail) {
+      try {
+        const userDoc = await getDoc(doc(db, 'users', parentId));
+        if (userDoc.exists()) {
+          searchEmail = userDoc.data().email;
+        }
+      } catch (e) {
+        console.warn('Could not fetch user email for parent links fallback', e);
+      }
+    }
+
+    // 3. البحث بناءً على الإيميل (إذا توفر) وهو الأضمن
+    if (searchEmail) {
+      const q = query(
+        linksRef, 
+        where('parentEmail', '==', searchEmail.toLowerCase()), 
+        where('accessGranted', '==', true)
+      );
+      const docSnap = await getDocs(q);
+      const results = docSnap.docs.map(d => ({ id: d.id, ...d.data() } as PatientAccessLink));
+      
+      if (results.length > 0) return results;
+    }
+
+    // 4. خطة بديلة: البحث بناءً على الـ parentId (كما كان الكود القديم) في حال فشل الإيميل
+    const fallbackQ = query(
+      linksRef, 
+      where('parentId', '==', parentId), 
+      where('accessGranted', '==', true)
+    );
+    const fallbackSnap = await getDocs(fallbackQ);
+    return fallbackSnap.docs.map(d => ({ id: d.id, ...d.data() } as PatientAccessLink));
+
   } catch (err) {
     console.error('[PatientAccess] Error:', err);
     return [];

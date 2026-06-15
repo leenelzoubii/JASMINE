@@ -12,6 +12,7 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { updateSharedAssessments, getPatientLinksByPatientId } from './patient-access';
 
 export interface AssessmentResult {
   id: string;
@@ -98,7 +99,7 @@ export async function reviewAssessment(userId: string, assessmentId: string): Pr
   await updateDoc(doc(db, 'users', userId, 'assessments', assessmentId), { reviewed: true });
 }
 
-export async function shareAssessment(userId: string, assessmentId: string, notes?: string): Promise<void> {
+export async function shareAssessment(userId: string, assessmentId: string, notes?: string, patientId?: string): Promise<void> {
   if (isDemoUser(userId)) {
     const assessments = getDemoAssessments(userId);
     const idx = assessments.findIndex(a => a.id === assessmentId);
@@ -109,7 +110,21 @@ export async function shareAssessment(userId: string, assessmentId: string, note
     }
     return;
   }
+  
+  // 1. تحديث التقييم نفسه
   await updateDoc(doc(db, 'users', userId, 'assessments', assessmentId), { shared: true, sharedNotes: notes || '' });
+
+  // 2. الجزء الجديد: ربط التقييم بحساب الأهل
+  if (patientId) {
+    const links = await getPatientLinksByPatientId(patientId);
+    
+    for (const link of links) {
+      const currentShared = link.sharedAssessments || [];
+      if (!currentShared.includes(assessmentId)) {
+        await updateSharedAssessments(link.id, [...currentShared, assessmentId]);
+      }
+    }
+  }
 }
 
 export async function getAssessmentById(userId: string, assessmentId: string): Promise<AssessmentResult | null> {
