@@ -18,6 +18,7 @@ export function useUnreadMessages(userId: string | null): number {
 
   useEffect(() => {
     if (!userId) return;
+    if (userId === 'demo-doctor' || userId === 'demo-parent') return;
 
     const q = query(
       collection(db, "conversations"),
