@@ -55,6 +55,8 @@ export async function createOrGetParentAccount(
   childName: string
 ): Promise<CreateParentResult> {
   try {
+    console.log('[ParentAccounts] Called with professionalId:', professionalId, 'email:', data.email);
+    console.log('[ParentAccounts] isDemoUser check:', isDemoUser(professionalId));
     // DEMO MODE: Skip Firestore, return fake account
     if (isDemoUser(professionalId)) {
       return {

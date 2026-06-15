@@ -71,6 +71,8 @@ export async function createPatientAccess(
   data: PatientAccessInput
 ): Promise<CreateAccessResult> {
   try {
+    console.log('[PatientAccess] createPatientAccess called with professionalId:', data.professionalId);
+    console.log('[PatientAccess] isDemoUser check:', isDemoUser(data.professionalId));
     const parentResult = await createOrGetParentAccount(
       data.professionalId,
       { email: data.parentEmail, name: data.parentName, createdBy: data.professionalId },

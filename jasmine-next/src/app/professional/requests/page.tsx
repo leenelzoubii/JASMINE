@@ -39,6 +39,7 @@ export default function ProfessionalRequestsPage() {
     setSending(true);
     setFormError('');
     try {
+      console.log('[SendRequest] Step 1: addPatient');
       const newPatient = await addPatient(user.id, {
         name: formData.childName,
         dob: '',
@@ -48,7 +49,9 @@ export default function ProfessionalRequestsPage() {
         lastVisit: '',
         risk: 'Unknown',
       });
+      console.log('[SendRequest] Step 1 OK, patient:', newPatient?.id);
 
+      console.log('[SendRequest] Step 2: sendParentRequest');
       await sendParentRequest({
         professionalId: user.id,
         professionalName: user.name,
@@ -57,7 +60,9 @@ export default function ProfessionalRequestsPage() {
         parentEmail: formData.parentEmail,
         parentName: formData.parentName,
       });
+      console.log('[SendRequest] Step 2 OK');
 
+      console.log('[SendRequest] Step 3: createPatientAccess');
       await createPatientAccess({
         patientId: newPatient.id,
         patientName: newPatient.name,
@@ -66,6 +71,7 @@ export default function ProfessionalRequestsPage() {
         parentName: formData.parentName,
         parentEmail: formData.parentEmail,
       });
+      console.log('[SendRequest] Step 3 OK');
 
       showToast('success', 'Request Sent', `Connection request sent to ${formData.parentName}.`);
       setShowSendModal(false);

@@ -73,6 +73,7 @@ export async function sendParentRequest(data: {
   parentEmail: string;
   parentName: string;
 }): Promise<ParentRequest> {
+  console.log('[sendParentRequest] professionalId:', data.professionalId, 'isDemoUser:', isDemoUser(data.professionalId));
   if (isDemoUser(data.professionalId)) {
     const all = getDemoAllRequests();
     const newReq: ParentRequest = {
