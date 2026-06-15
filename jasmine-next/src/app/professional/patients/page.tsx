@@ -75,12 +75,14 @@ export default function ProfessionalPatientsPage() {
       setPatients(prev => [newPatient, ...prev]);
       try { await sendParentRequest({ professionalId: user.id, professionalName: user.name, patientId: newPatient.id, patientName: newPatient.name, parentEmail: formData.email, parentName: formData.parentName }); } catch {}
       try { await addNotification({ userId: user.id, type: 'patient_added', title: 'Patient Added', message: `${newPatient.name} has been added successfully.`, link: '/professional/patients' }); } catch {}
-      if (sendCredentials) {
-        const accessResult = await createPatientAccess({ patientId: newPatient.id, patientName: newPatient.name, professionalId: user.id, professionalName: user.name, parentName: formData.parentName, parentEmail: formData.email });
-        if (accessResult.success && accessResult.parentTempPassword) setSavedMessage('Patient added! Account credentials sent to parent.');
-        else if (accessResult.success) setSavedMessage('Patient added! Parent already has access.');
-        else setSavedMessage('Patient added, but failed to send credentials.');
-      } else { setSavedMessage('Patient added successfully.'); }
+      try {
+        if (sendCredentials) {
+          const accessResult = await createPatientAccess({ patientId: newPatient.id, patientName: newPatient.name, professionalId: user.id, professionalName: user.name, parentName: formData.parentName, parentEmail: formData.email });
+          if (accessResult.success && accessResult.parentTempPassword) setSavedMessage('Patient added! Account credentials sent to parent.');
+          else if (accessResult.success) setSavedMessage('Patient added! Parent already has access.');
+          else setSavedMessage('Patient added, but failed to send credentials.');
+        } else { setSavedMessage('Patient added successfully.'); }
+      } catch { setSavedMessage('Patient added, but failed to create access.'); }
       setSaved(true);
       showToast('success', 'Patient Added', `${newPatient.name} has been added successfully.`);
       setFormData({ name: '', dob: '', parentName: '', email: '', phone: '' });
@@ -287,18 +289,22 @@ export default function ProfessionalPatientsPage() {
             </div>
             <div className="p-6 space-y-4 overflow-y-auto">
               {formError && <div className="p-3 rounded-xl text-sm" style={{ backgroundColor: 'var(--risk-high-bg)', color: 'var(--risk-high)' }}>{formError}</div>}
-              {[{ label: "Child's Name", placeholder: 'e.g. Emma Thompson', key: 'name', type: 'text' },
-                { label: 'Date of Birth', placeholder: '', key: 'dob', type: 'date' },
-                { label: 'Parent / Guardian Name', placeholder: 'e.g. John Thompson', key: 'parentName', type: 'text' },
-                { label: 'Email', placeholder: 'e.g. john@email.com', key: 'email', type: 'email' },
-                { label: 'Phone (optional)', placeholder: 'e.g. +1 555-0123', key: 'phone', type: 'tel' },
+              {[{ label: "Child's Name", placeholder: 'e.g. Emma Thompson', key: 'name', type: 'text', required: true },
+                { label: 'Date of Birth', placeholder: '', key: 'dob', type: 'date', required: true },
+                { label: 'Parent / Guardian Name', placeholder: 'e.g. John Thompson', key: 'parentName', type: 'text', required: true },
+                { label: 'Email', placeholder: 'e.g. john@email.com', key: 'email', type: 'email', required: true },
+                { label: 'Phone (optional)', placeholder: 'e.g. +1 555-0123', key: 'phone', type: 'tel', required: false },
               ].map(f => (
                 <div key={f.key}>
-                  <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--foreground)' }}>{f.label}</label>
+                  <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--foreground)' }}>
+                    {f.label}
+                    {f.required && <span className="ml-1 text-red-500">*</span>}
+                  </label>
                   <input type={f.type} placeholder={f.placeholder} value={(formData as any)[f.key]}
                     onChange={(e) => setFormData(prev => ({ ...prev, [f.key]: e.target.value }))} className="premium-input" />
                 </div>
               ))}
+              <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}><span className="text-red-500">*</span> Required fields</p>
               <div className="pt-2 border-t" style={{ borderColor: 'var(--border-light)' }}>
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input type="checkbox" checked={sendCredentials} onChange={(e) => setSendCredentials(e.target.checked)}
@@ -313,8 +319,8 @@ export default function ProfessionalPatientsPage() {
             <div className="flex gap-3 p-6 border-t shrink-0" style={{ borderColor: 'var(--border-light)' }}>
               <button onClick={handleCancelClick} className="premium-btn premium-btn-ghost flex-1">Cancel</button>
               <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                onClick={handleAddPatient} disabled={saving || saved}
-                className="premium-btn premium-btn-primary flex-1">
+                onClick={handleAddPatient} disabled={saving || saved || !formData.name || !formData.dob || !formData.parentName || !formData.email}
+                className="premium-btn premium-btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed">
                 {saving ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Saving...</>
                   : saved ? <><CheckCircle className="w-4 h-4" /> Saved!</>
                   : <><Send className="w-4 h-4" /> {sendCredentials ? 'Save & Send' : 'Save Patient'}</>}
