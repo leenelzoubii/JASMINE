@@ -18,17 +18,30 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
-export interface ParentRequest {
-  id: string;
-  professionalId: string;
-  professionalName: string;
-  patientId: string;
-  patientName: string;
-  parentEmail: string;
-  parentId?: string;
-  parentName: string;
-  status: "pending" | "accepted" | "declined";
-  createdAt: Timestamp;
+const DEMO_USER_IDS = ['demo-doctor', 'demo-parent'];
+
+function isDemoUser(userId: string): boolean {
+  return DEMO_USER_IDS.includes(userId);
+}
+
+/**
+ * Demo requests are stored under a single shared localStorage key
+ * so both doctor and parent can read/write the same pool.
+ */
+function getDemoAllRequestsKey(): string {
+  return 'demo_allRequests';
+}
+
+function getDemoAllRequests(): ParentRequest[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    return JSON.parse(localStorage.getItem(getDemoAllRequestsKey()) || '[]');
+  } catch { return []; }
+}
+
+function saveDemoAllRequests(requests: ParentRequest[]): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(getDemoAllRequestsKey(), JSON.stringify(requests));
 }
 
 const DEMO_USER_IDS = ['demo-doctor', 'demo-parent'];
@@ -37,20 +50,20 @@ function isDemoUser(userId: string): boolean {
   return DEMO_USER_IDS.includes(userId);
 }
 
-function getDemoRequestsKey(professionalId: string): string {
-  return `demo_requests_${professionalId}`;
+function getDemoAllRequestsKey(): string {
+  return 'demo_allRequests';
 }
 
-function getDemoRequests(professionalId: string): ParentRequest[] {
+function getDemoAllRequests(): ParentRequest[] {
   if (typeof window === 'undefined') return [];
   try {
-    return JSON.parse(localStorage.getItem(getDemoRequestsKey(professionalId)) || '[]');
+    return JSON.parse(localStorage.getItem(getDemoAllRequestsKey()) || '[]');
   } catch { return []; }
 }
 
-function saveDemoRequests(professionalId: string, requests: ParentRequest[]): void {
+function saveDemoAllRequests(requests: ParentRequest[]): void {
   if (typeof window === 'undefined') return;
-  localStorage.setItem(getDemoRequestsKey(professionalId), JSON.stringify(requests));
+  localStorage.setItem(getDemoAllRequestsKey(), JSON.stringify(requests));
 }
 
 function sortByCreatedAtDesc(items: ParentRequest[]): ParentRequest[] {
@@ -70,7 +83,7 @@ export async function sendParentRequest(data: {
   parentName: string;
 }): Promise<ParentRequest> {
   if (isDemoUser(data.professionalId)) {
-    const requests = getDemoRequests(data.professionalId);
+    const all = getDemoAllRequests();
     const newReq: ParentRequest = {
       id: 'demo-req-' + Date.now(),
       professionalId: data.professionalId,
@@ -82,7 +95,7 @@ export async function sendParentRequest(data: {
       status: 'pending',
       createdAt: { toMillis: () => Date.now() } as any,
     };
-    saveDemoRequests(data.professionalId, [newReq, ...requests]);
+    saveDemoAllRequests([newReq, ...all]);
     return newReq;
   }
   const docRef = await addDoc(collection(db, "parentRequests"), {
@@ -101,8 +114,11 @@ export async function sendParentRequest(data: {
 }
 
 export async function getParentRequestsByEmail(email: string): Promise<ParentRequest[]> {
-  if (isDemoUser('demo-parent')) {
-    return [];
+  // For demo parent, read from shared localStorage
+  if (email === 'parent@demo.com') {
+    return sortByCreatedAtDesc(getDemoAllRequests().filter(r =>
+      r.parentEmail === email.toLowerCase().trim() && r.status === 'pending'
+    ));
   }
   const q = query(
     collection(db, "parentRequests"),
@@ -115,7 +131,7 @@ export async function getParentRequestsByEmail(email: string): Promise<ParentReq
 
 export async function getProfessionalRequests(professionalId: string): Promise<ParentRequest[]> {
   if (isDemoUser(professionalId)) {
-    return getDemoRequests(professionalId);
+    return sortByCreatedAtDesc(getDemoAllRequests().filter(r => r.professionalId === professionalId));
   }
   const q = query(
     collection(db, "parentRequests"),
@@ -126,6 +142,14 @@ export async function getProfessionalRequests(professionalId: string): Promise<P
 }
 
 export async function acceptParentRequest(requestId: string, parentId: string): Promise<void> {
+  const all = getDemoAllRequests();
+  const demoReq = all.find(r => r.id === requestId);
+  if (demoReq) {
+    demoReq.status = 'accepted';
+    demoReq.parentId = parentId;
+    saveDemoAllRequests(all);
+    return;
+  }
   const reqRef = doc(db, "parentRequests", requestId);
   const reqSnap = await getDoc(reqRef);
   if (!reqSnap.exists()) throw new Error("Request not found");
@@ -145,10 +169,31 @@ export async function acceptParentRequest(requestId: string, parentId: string): 
 }
 
 export async function declineParentRequest(requestId: string): Promise<void> {
+  const all = getDemoAllRequests();
+  const idx = all.findIndex(r => r.id === requestId);
+  if (idx !== -1) {
+    all.splice(idx, 1);
+    saveDemoAllRequests(all);
+    return;
+  }
   await deleteDoc(doc(db, "parentRequests", requestId));
 }
 
 export async function getUserConnections(userId: string): Promise<any[]> {
+  const all = getDemoAllRequests();
+  if (all.length > 0) {
+    return all
+      .filter(r => (r.professionalId === userId || r.parentId === userId) && r.status === 'accepted')
+      .map(r => ({
+        id: r.id,
+        professionalId: r.professionalId,
+        professionalName: r.professionalName,
+        parentId: r.parentId,
+        parentName: r.parentName,
+        patientId: r.patientId,
+        patientName: r.patientName,
+      }));
+  }
   const q1 = query(collection(db, "connections"), where("professionalId", "==", userId));
   const q2 = query(collection(db, "connections"), where("parentId", "==", userId));
   const [s1, s2] = await Promise.all([getDocs(q1), getDocs(q2)]);
