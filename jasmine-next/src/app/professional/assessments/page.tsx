@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Upload, Video, Youtube, Loader2, Link2, CheckCircle, Play, Layers, BarChart3, Brain, Activity, Calendar, Eye, Share2, Info, ZoomIn, MessageSquare, XCircle, Trash2, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getCurrentUser } from '@/lib/auth';
-import { saveAssessment, getAssessments, reviewAssessment, shareAssessment, deleteAllAssessments, AssessmentResult } from '@/lib/assessments';
+import { saveAssessment, getAssessments, reviewAssessment, shareAssessment, deleteAllAssessments, AssessmentResult, checkDuplicateVideo } from '@/lib/assessments';
 import { getPatients, Patient, updatePatient } from '@/lib/patients';
 import { addNotification } from '@/lib/notifications';
 import { showToast } from '@/components/ui/toast';
@@ -107,6 +107,8 @@ export default function ProfessionalAssessmentsPage() {
   const [showExplanationModal, setShowExplanationModal] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [clearing, setClearing] = useState(false);
+  const [showDuplicateWarning, setShowDuplicateWarning] = useState(false);
+  const [pendingRun, setPendingRun] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -148,7 +150,7 @@ export default function ProfessionalAssessmentsPage() {
     const user = getCurrentUser();
     if (!user) return;
     try {
-      const id = await saveAssessment(user.id, {
+      const assessmentData: Record<string, unknown> = {
         userId: user.id,
         patientId: selectedPatient,
         patientName: selectedPatientName,
@@ -158,23 +160,39 @@ export default function ProfessionalAssessmentsPage() {
         confidence: data.confidence,
         num_frames_processed: data.num_frames_processed,
         source: data.source || inputMode,
-        youtube_url: data.youtube_url,
         model_predictions: data.model_predictions,
-      });
+      };
+      if (data.youtube_url) {
+        assessmentData.youtube_url = data.youtube_url;
+      }
+      if (videoFile) {
+        assessmentData.video_name = videoFile.name;
+        assessmentData.file_hash = `${videoFile.name}_${videoFile.size}`;
+      }
+      const id = await saveAssessment(user.id, assessmentData as any);
       setLastAssessmentId(id);
       setLastResult(data);
-      const updated = await getAssessments(user.id);
-      setAssessments(updated);
 
-      const riskShort = data.risk_level.replace(' Risk', '');
+      const riskMap: Record<string, string> = {
+        'High Risk': 'High',
+        'Moderate Risk': 'Moderate',
+        'Low Risk': 'Low',
+      };
       await updatePatient(user.id, selectedPatient, {
+        risk: riskMap[data.risk_level] || 'Unknown',
         lastVisit: new Date().toISOString().split('T')[0],
-        risk: riskShort,
       });
 
+      const [updatedAssessments, updatedPatients] = await Promise.all([
+        getAssessments(user.id),
+        getPatients(user.id),
+      ]);
+      setAssessments(updatedAssessments);
+      setPatients(updatedPatients);
       showToast('success', 'Assessment Saved', 'Result has been saved to the patient record.');
     } catch (err) {
       console.error('Failed to save assessment:', err);
+      showToast('error', 'Save Failed', 'Could not save assessment results.');
     }
   };
 
@@ -241,20 +259,7 @@ export default function ProfessionalAssessmentsPage() {
     }
   };
 
-  const handleRunAssessment = async () => {
-    if (!selectedPatient) {
-      setError('Please select a patient.');
-      return;
-    }
-    if (inputMode === 'file' && !videoFile) {
-      setError('Please upload a video file.');
-      return;
-    }
-    if (inputMode === 'youtube' && !youtubeUrl.trim()) {
-      setError('Please enter a YouTube URL.');
-      return;
-    }
-
+  const executeAssessment = async () => {
     abortRef.current = new AbortController();
     setUploading(true);
     setError('');
@@ -325,6 +330,42 @@ export default function ProfessionalAssessmentsPage() {
       setUploading(false);
       abortRef.current = null;
     }
+  };
+
+  const handleRunAssessment = async () => {
+    if (!selectedPatient) {
+      setError('Please select a patient.');
+      return;
+    }
+    if (inputMode === 'file' && !videoFile) {
+      setError('Please upload a video file.');
+      return;
+    }
+    if (inputMode === 'youtube' && !youtubeUrl.trim()) {
+      setError('Please enter a YouTube URL.');
+      return;
+    }
+
+    const user = getCurrentUser();
+    if (user) {
+      const isDuplicate = await checkDuplicateVideo(
+        user.id,
+        selectedPatient,
+        inputMode === 'file' ? videoFile?.name : undefined,
+        inputMode === 'youtube' ? youtubeUrl.trim() : undefined
+      );
+      if (isDuplicate) {
+        setShowDuplicateWarning(true);
+        return;
+      }
+    }
+
+    await executeAssessment();
+  };
+
+  const handleDuplicateContinue = async () => {
+    setShowDuplicateWarning(false);
+    await executeAssessment();
   };
 
   const riskColor = (risk: string) => {
@@ -931,6 +972,55 @@ export default function ProfessionalAssessmentsPage() {
                 >
                   {clearing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                   {clearing ? 'Deleting...' : 'Delete All'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Duplicate Video Warning Modal */}
+      <AnimatePresence>
+        {showDuplicateWarning && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowDuplicateWarning(false)}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              onClick={(e) => e.stopPropagation()}
+              className="rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl"
+              style={{ backgroundColor: 'var(--background)', border: '1px solid var(--border)' }}
+            >
+              <div className="mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-4"
+                style={{ backgroundColor: 'rgba(217,119,6,0.15)' }}>
+                <AlertTriangle className="w-6 h-6" style={{ color: '#d97706' }} />
+              </div>
+              <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--foreground)' }}>Duplicate Video Detected</h3>
+              <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
+                This video appears to have been previously assessed for this patient. Running it again may produce similar results.
+              </p>
+              <div className="flex gap-3 justify-center">
+                <button
+                  onClick={() => setShowDuplicateWarning(false)}
+                  className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                  style={{ backgroundColor: 'var(--background-alt)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDuplicateContinue}
+                  className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-all duration-200"
+                  style={{ backgroundColor: '#d97706' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#b45309'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#d97706'; }}
+                >
+                  Continue Anyway
                 </button>
               </div>
             </motion.div>
