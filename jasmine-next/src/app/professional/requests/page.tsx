@@ -72,8 +72,9 @@ export default function ProfessionalRequestsPage() {
       setFormData({ parentName: '', parentEmail: '', childName: '' });
       loadRequests();
     } catch (err) {
-      console.error('[SendRequest] Error:', err);
-      setFormError('Failed to send request. Please try again.');
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error('[SendRequest] Error:', msg, err);
+      setFormError(`Failed to send request: ${msg}`);
     } finally {
       setSending(false);
     }
