@@ -31,6 +31,28 @@ export interface ParentRequest {
   createdAt: Timestamp;
 }
 
+const DEMO_USER_IDS = ['demo-doctor', 'demo-parent'];
+
+function isDemoUser(userId: string): boolean {
+  return DEMO_USER_IDS.includes(userId);
+}
+
+function getDemoRequestsKey(professionalId: string): string {
+  return `demo_requests_${professionalId}`;
+}
+
+function getDemoRequests(professionalId: string): ParentRequest[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    return JSON.parse(localStorage.getItem(getDemoRequestsKey(professionalId)) || '[]');
+  } catch { return []; }
+}
+
+function saveDemoRequests(professionalId: string, requests: ParentRequest[]): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(getDemoRequestsKey(professionalId), JSON.stringify(requests));
+}
+
 function sortByCreatedAtDesc(items: ParentRequest[]): ParentRequest[] {
   return items.sort((a, b) => {
     const tA = (a.createdAt as any)?.toMillis?.() || 0;
@@ -47,6 +69,22 @@ export async function sendParentRequest(data: {
   parentEmail: string;
   parentName: string;
 }): Promise<ParentRequest> {
+  if (isDemoUser(data.professionalId)) {
+    const requests = getDemoRequests(data.professionalId);
+    const newReq: ParentRequest = {
+      id: 'demo-req-' + Date.now(),
+      professionalId: data.professionalId,
+      professionalName: data.professionalName,
+      patientId: data.patientId,
+      patientName: data.patientName,
+      parentEmail: data.parentEmail.toLowerCase().trim(),
+      parentName: data.parentName,
+      status: 'pending',
+      createdAt: { toMillis: () => Date.now() } as any,
+    };
+    saveDemoRequests(data.professionalId, [newReq, ...requests]);
+    return newReq;
+  }
   const docRef = await addDoc(collection(db, "parentRequests"), {
     professionalId: data.professionalId,
     professionalName: data.professionalName,
@@ -63,6 +101,9 @@ export async function sendParentRequest(data: {
 }
 
 export async function getParentRequestsByEmail(email: string): Promise<ParentRequest[]> {
+  if (isDemoUser('demo-parent')) {
+    return [];
+  }
   const q = query(
     collection(db, "parentRequests"),
     where("parentEmail", "==", email.toLowerCase().trim()),
@@ -73,6 +114,9 @@ export async function getParentRequestsByEmail(email: string): Promise<ParentReq
 }
 
 export async function getProfessionalRequests(professionalId: string): Promise<ParentRequest[]> {
+  if (isDemoUser(professionalId)) {
+    return getDemoRequests(professionalId);
+  }
   const q = query(
     collection(db, "parentRequests"),
     where("professionalId", "==", professionalId)

@@ -13,6 +13,28 @@ import {
 import { db } from '@/lib/firebase';
 import { createOrGetParentAccount } from './parent-accounts';
 
+const DEMO_USER_IDS = ['demo-doctor', 'demo-parent'];
+
+function isDemoUser(userId: string): boolean {
+  return DEMO_USER_IDS.includes(userId);
+}
+
+function getDemoLinksKey(): string {
+  return 'demo_accessLinks';
+}
+
+function getDemoLinks(): PatientAccessLink[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    return JSON.parse(localStorage.getItem(getDemoLinksKey()) || '[]');
+  } catch { return []; }
+}
+
+function saveDemoLinks(links: PatientAccessLink[]): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(getDemoLinksKey(), JSON.stringify(links));
+}
+
 export interface PatientAccessLink {
   id: string;
   patientId: string;
@@ -57,6 +79,30 @@ export async function createPatientAccess(
 
     if (!parentResult.success || !parentResult.parent) {
       return { success: false, error: parentResult.error || 'Failed to create parent account' };
+    }
+
+    if (isDemoUser(data.professionalId)) {
+      const links = getDemoLinks();
+      const existing = links.find(l => l.patientId === data.patientId && l.parentId === parentResult.parent!.id);
+      if (existing) return { success: true, link: existing, parentTempPassword: parentResult.tempPassword };
+
+      const newLink: PatientAccessLink = {
+        id: 'demo-link-' + Date.now(),
+        patientId: data.patientId,
+        patientName: data.patientName,
+        professionalId: data.professionalId,
+        professionalName: data.professionalName || 'Specialist',
+        parentId: parentResult.parent.id,
+        parentEmail: data.parentEmail.toLowerCase(),
+        parentName: data.parentName,
+        accessGranted: true,
+        accessGrantedAt: Date.now(),
+        accessRevokedAt: null,
+        sharedAssessments: [],
+        createdAt: Date.now(),
+      };
+      saveDemoLinks([newLink, ...links]);
+      return { success: true, link: newLink, parentTempPassword: parentResult.tempPassword };
     }
 
     const linksRef = collection(db, 'patient_access_links');
@@ -113,6 +159,9 @@ export async function getPatientLinksByProfessional(
   professionalId: string
 ): Promise<PatientAccessLink[]> {
   try {
+    if (isDemoUser(professionalId)) {
+      return getDemoLinks().filter(l => l.professionalId === professionalId);
+    }
     const linksRef = collection(db, 'patient_access_links');
     const q = query(linksRef, where('professionalId', '==', professionalId));
     const docSnap = await getDocs(q);
@@ -127,6 +176,9 @@ export async function getPatientLinksByParent(
   parentId: string
 ): Promise<PatientAccessLink[]> {
   try {
+    if (isDemoUser(parentId)) {
+      return getDemoLinks().filter(l => l.parentId === parentId && l.accessGranted);
+    }
     const linksRef = collection(db, 'patient_access_links');
     const q = query(linksRef, where('parentId', '==', parentId), where('accessGranted', '==', true));
     const docSnap = await getDocs(q);
@@ -141,6 +193,8 @@ export async function getPatientLinksByPatientId(
   patientId: string
 ): Promise<PatientAccessLink[]> {
   try {
+    const links = getDemoLinks().filter(l => l.patientId === patientId && l.accessGranted);
+    if (links.length > 0) return links;
     const linksRef = collection(db, 'patient_access_links');
     const q = query(linksRef, where('patientId', '==', patientId), where('accessGranted', '==', true));
     const docSnap = await getDocs(q);

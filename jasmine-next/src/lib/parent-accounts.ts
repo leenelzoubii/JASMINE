@@ -41,6 +41,12 @@ export interface CreateParentResult {
   error?: string;
 }
 
+const DEMO_USER_IDS = ['demo-doctor', 'demo-parent'];
+
+function isDemoUser(userId: string): boolean {
+  return DEMO_USER_IDS.includes(userId);
+}
+
 const testMode = process.env.EMAIL_TEST_MODE === 'true';
 
 export async function createOrGetParentAccount(
@@ -49,6 +55,24 @@ export async function createOrGetParentAccount(
   childName: string
 ): Promise<CreateParentResult> {
   try {
+    // DEMO MODE: Skip Firestore, return fake account
+    if (isDemoUser(professionalId)) {
+      return {
+        success: true,
+        parent: {
+          id: 'demo-parent-' + Date.now(),
+          email: data.email.toLowerCase(),
+          name: data.name,
+          mustChangePassword: false,
+          isActive: true,
+          createdAt: null,
+          createdBy: professionalId,
+        },
+        tempPassword: 'demo123',
+        isNew: true,
+      };
+    }
+
     // TEST MODE: Skip Firestore, always send email
     if (testMode) {
       console.log('[ParentAccounts] TEST MODE: Skipping Firestore, sending test email');
