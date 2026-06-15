@@ -31,6 +31,7 @@ export default function ProfessionalRequestsPage() {
 
   const handleSendRequest = async () => {
     const user = getCurrentUser();
+    console.log('[SendRequest] Current user:', user?.id, user?.email, user?.name);
     if (!user) return;
     if (!formData.parentName || !formData.parentEmail || !formData.childName) {
       setFormError('All fields are required.');
@@ -38,39 +39,96 @@ export default function ProfessionalRequestsPage() {
     }
     setSending(true);
     setFormError('');
+    const isDemo = user.id === 'demo-doctor' || user.id === 'demo-parent';
     try {
-      console.log('[SendRequest] Step 1: addPatient');
-      const newPatient = await addPatient(user.id, {
-        name: formData.childName,
-        dob: '',
-        parentName: formData.parentName,
-        email: formData.parentEmail,
-        phone: '',
-        lastVisit: '',
-        risk: 'Unknown',
-      });
+      console.log('[SendRequest] Step 1: addPatient (isDemo=' + isDemo + ')');
+      let newPatient;
+      if (isDemo) {
+        // Manual localStorage patient creation for demo users
+        const key = 'demo_patients_' + user.id;
+        const existing = JSON.parse(localStorage.getItem(key) || '[]');
+        newPatient = {
+          id: 'demo-' + Date.now(),
+          name: formData.childName,
+          dob: '',
+          parentName: formData.parentName,
+          email: formData.parentEmail,
+          phone: '',
+          lastVisit: '',
+          risk: 'Unknown',
+        };
+        localStorage.setItem(key, JSON.stringify([newPatient, ...existing]));
+      } else {
+        newPatient = await addPatient(user.id, {
+          name: formData.childName,
+          dob: '',
+          parentName: formData.parentName,
+          email: formData.parentEmail,
+          phone: '',
+          lastVisit: '',
+          risk: 'Unknown',
+        });
+      }
       console.log('[SendRequest] Step 1 OK, patient:', newPatient?.id);
 
       console.log('[SendRequest] Step 2: sendParentRequest');
-      await sendParentRequest({
-        professionalId: user.id,
-        professionalName: user.name,
-        patientId: newPatient.id,
-        patientName: newPatient.name,
-        parentEmail: formData.parentEmail,
-        parentName: formData.parentName,
-      });
+      if (isDemo) {
+        const allKey = 'demo_allRequests';
+        const all = JSON.parse(localStorage.getItem(allKey) || '[]');
+        const newReq = {
+          id: 'demo-req-' + Date.now(),
+          professionalId: user.id,
+          professionalName: user.name,
+          patientId: newPatient.id,
+          patientName: newPatient.name,
+          parentEmail: formData.parentEmail.toLowerCase().trim(),
+          parentName: formData.parentName,
+          status: 'pending',
+          createdAt: { toMillis: () => Date.now() },
+        };
+        localStorage.setItem(allKey, JSON.stringify([newReq, ...all]));
+      } else {
+        await sendParentRequest({
+          professionalId: user.id,
+          professionalName: user.name,
+          patientId: newPatient.id,
+          patientName: newPatient.name,
+          parentEmail: formData.parentEmail,
+          parentName: formData.parentName,
+        });
+      }
       console.log('[SendRequest] Step 2 OK');
 
       console.log('[SendRequest] Step 3: createPatientAccess');
-      await createPatientAccess({
-        patientId: newPatient.id,
-        patientName: newPatient.name,
-        professionalId: user.id,
-        professionalName: user.name,
-        parentName: formData.parentName,
-        parentEmail: formData.parentEmail,
-      });
+      if (isDemo) {
+        const linkKey = 'demo_accessLinks';
+        const links = JSON.parse(localStorage.getItem(linkKey) || '[]');
+        const newLink = {
+          id: 'demo-link-' + Date.now(),
+          patientId: newPatient.id,
+          patientName: newPatient.name,
+          professionalId: user.id,
+          professionalName: user.name,
+          parentId: 'demo-parent-' + Date.now(),
+          parentEmail: formData.parentEmail.toLowerCase(),
+          parentName: formData.parentName,
+          accessGranted: true,
+          accessGrantedAt: Date.now(),
+          accessRevokedAt: null,
+          sharedAssessments: [],
+          createdAt: Date.now(),
+        };
+        localStorage.setItem(linkKey, JSON.stringify([newLink, ...links]));
+      } else {
+        await createPatientAccess({
+          patientId: newPatient.id,
+          patientName: newPatient.name,
+          professionalId: user.id,
+          professionalName: user.name,
+          parentName: formData.parentName,
+          parentEmail: formData.parentEmail,
+        });
+      }
       console.log('[SendRequest] Step 3 OK');
 
       showToast('success', 'Request Sent', `Connection request sent to ${formData.parentName}.`);
