@@ -11,6 +11,7 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import { hashPassword, generateTempPassword, setTempPassword, clearTempPassword } from '@/lib/password';
 import { sendParentCredentials } from '@/lib/emails/service';
 
@@ -131,6 +132,18 @@ export async function createOrGetParentAccount(
     };
 
     const docRef = await addDoc(accountsRef, newAccount);
+
+    // Register parent in Firebase Auth so normal signInWithEmailAndPassword works
+    try {
+      await createUserWithEmailAndPassword(getAuth(), data.email, tempPassword);
+    } catch (authErr) {
+      const authError = authErr as { code?: string };
+      if (authError.code === 'auth/email-already-in-use') {
+        console.warn('[ParentAccounts] Email already registered in Firebase Auth:', data.email);
+      } else {
+        console.warn('[ParentAccounts] Firebase Auth user creation failed:', authErr);
+      }
+    }
 
     await sendParentCredentials(data.email, data.name, childName, tempPassword);
 
