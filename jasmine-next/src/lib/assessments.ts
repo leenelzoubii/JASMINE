@@ -32,10 +32,47 @@ export interface AssessmentResult {
   createdAt: Timestamp;
 }
 
+const DEMO_USER_IDS = ['demo-doctor', 'demo-parent'];
+
+function isDemoUser(userId: string): boolean {
+  return DEMO_USER_IDS.includes(userId);
+}
+
+function getDemoStorageKey(userId: string): string {
+  return `demo_assessments_${userId}`;
+}
+
+function getDemoAssessments(userId: string): AssessmentResult[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    return JSON.parse(localStorage.getItem(getDemoStorageKey(userId)) || '[]');
+  } catch {
+    return [];
+  }
+}
+
+function saveDemoAssessments(userId: string, assessments: AssessmentResult[]): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(getDemoStorageKey(userId), JSON.stringify(assessments));
+}
+
 export async function saveAssessment(
   userId: string,
   data: Omit<AssessmentResult, 'id' | 'createdAt' | 'reviewed' | 'shared'>
 ): Promise<string> {
+  if (isDemoUser(userId)) {
+    const assessments = getDemoAssessments(userId);
+    const id = 'demo-' + Date.now();
+    const newAssessment: AssessmentResult = {
+      ...data,
+      id,
+      reviewed: false,
+      shared: false,
+      createdAt: { toMillis: () => Date.now() } as any,
+    };
+    saveDemoAssessments(userId, [newAssessment, ...assessments]);
+    return id;
+  }
   const ref = await addDoc(collection(db, 'users', userId, 'assessments'), {
     ...data,
     reviewed: false,
@@ -46,20 +83,46 @@ export async function saveAssessment(
 }
 
 export async function reviewAssessment(userId: string, assessmentId: string): Promise<void> {
+  if (isDemoUser(userId)) {
+    const assessments = getDemoAssessments(userId);
+    const idx = assessments.findIndex(a => a.id === assessmentId);
+    if (idx !== -1) {
+      assessments[idx].reviewed = true;
+      saveDemoAssessments(userId, assessments);
+    }
+    return;
+  }
   await updateDoc(doc(db, 'users', userId, 'assessments', assessmentId), { reviewed: true });
 }
 
 export async function shareAssessment(userId: string, assessmentId: string, notes?: string): Promise<void> {
+  if (isDemoUser(userId)) {
+    const assessments = getDemoAssessments(userId);
+    const idx = assessments.findIndex(a => a.id === assessmentId);
+    if (idx !== -1) {
+      assessments[idx].shared = true;
+      assessments[idx].sharedNotes = notes || '';
+      saveDemoAssessments(userId, assessments);
+    }
+    return;
+  }
   await updateDoc(doc(db, 'users', userId, 'assessments', assessmentId), { shared: true, sharedNotes: notes || '' });
 }
 
 export async function getAssessmentById(userId: string, assessmentId: string): Promise<AssessmentResult | null> {
+  if (isDemoUser(userId)) {
+    const assessments = getDemoAssessments(userId);
+    return assessments.find(a => a.id === assessmentId) || null;
+  }
   const snap = await getDoc(doc(db, 'users', userId, 'assessments', assessmentId));
   if (!snap.exists()) return null;
   return { id: snap.id, ...snap.data() } as AssessmentResult;
 }
 
 export async function getAssessments(userId: string): Promise<AssessmentResult[]> {
+  if (isDemoUser(userId)) {
+    return getDemoAssessments(userId);
+  }
   const q = query(collection(db, 'users', userId, 'assessments'));
   const snap = await getDocs(q);
   const results = snap.docs.map((d) => {
@@ -75,6 +138,10 @@ export async function getAssessments(userId: string): Promise<AssessmentResult[]
 }
 
 export async function deleteAllAssessments(userId: string): Promise<void> {
+  if (isDemoUser(userId)) {
+    saveDemoAssessments(userId, []);
+    return;
+  }
   const q = query(collection(db, 'users', userId, 'assessments'));
   const snap = await getDocs(q);
   const promises = snap.docs.map((d) => deleteDoc(doc(db, 'users', userId, 'assessments', d.id)));
@@ -82,6 +149,16 @@ export async function deleteAllAssessments(userId: string): Promise<void> {
 }
 
 export async function getAssessmentsByPatient(userId: string, patientId: string): Promise<AssessmentResult[]> {
+  if (isDemoUser(userId)) {
+    const assessments = getDemoAssessments(userId);
+    const filtered = assessments.filter(a => a.patientId === patientId);
+    filtered.sort((a, b) => {
+      const tA = (a.createdAt as any)?.toMillis?.() || 0;
+      const tB = (b.createdAt as any)?.toMillis?.() || 0;
+      return tB - tA;
+    });
+    return filtered;
+  }
   const q = query(
     collection(db, 'users', userId, 'assessments'),
     where('patientId', '==', patientId)

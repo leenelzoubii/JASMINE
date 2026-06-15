@@ -10,7 +10,6 @@ import { getPatients, Patient, updatePatient } from '@/lib/patients';
 import { addNotification } from '@/lib/notifications';
 import { showToast } from '@/components/ui/toast';
 import { PoseViewer } from '@/components/ui/pose-viewer';
-import { isDemoUser, getDemoLinksByProfessional } from '@/lib/demo-data';
 
 const ML_BACKEND_URL = process.env.NEXT_PUBLIC_ML_BACKEND_URL || 'http://localhost:8000';
 
@@ -121,42 +120,11 @@ export default function ProfessionalAssessmentsPage() {
       getAssessments(user.id),
     ])
       .then(([patientsData, assessmentsData]) => {
-        if (patientsData.length > 0) {
-          setPatients(patientsData);
-          setAssessments(assessmentsData);
-        } else if (isDemoUser(user.id)) {
-          const links = getDemoLinksByProfessional() as any[];
-          setPatients(links.map((l: any) => ({
-            id: l.patientId,
-            name: l.patientName,
-            dob: '',
-            parentName: l.parentName,
-            email: '',
-            phone: '',
-            lastVisit: '',
-            risk: '',
-          })));
-          setAssessments([]);
-        } else {
-          setPatients([]);
-          setAssessments(assessmentsData);
-        }
+        setPatients(patientsData);
+        setAssessments(assessmentsData);
       })
       .catch((err) => {
-        if (isDemoUser(user.id)) {
-          const links = getDemoLinksByProfessional() as any[];
-          setPatients(links.map((l: any) => ({
-            id: l.patientId,
-            name: l.patientName,
-            dob: '',
-            parentName: l.parentName,
-            email: '',
-            phone: '',
-            lastVisit: '',
-            risk: '',
-          })));
-          setAssessments([]);
-        }
+        console.error('Failed to load data:', err);
       })
       .finally(() => setPatientsLoading(false));
   }, []);
