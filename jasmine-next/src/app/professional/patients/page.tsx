@@ -10,6 +10,7 @@ import { createPatientAccess } from '@/lib/patient-access';
 import { sendParentRequest } from '@/lib/parent-requests';
 import { addNotification } from '@/lib/notifications';
 import { showToast } from '@/components/ui/toast';
+import { isDemoUser } from '@/lib/demo-data';
 
 function calculateAge(dob: string): number {
   const birth = new Date(dob);
@@ -65,6 +66,10 @@ export default function ProfessionalPatientsPage() {
 
     const user = getCurrentUser();
     if (!user) return;
+    if (isDemoUser(user.id)) {
+      setFormError('Adding patients is not available in demo mode. Please create an account to add patients.');
+      return;
+    }
     setSaving(true);
     try {
       const newPatient = await addPatient(user.id, {
@@ -88,7 +93,11 @@ export default function ProfessionalPatientsPage() {
       setFormData({ name: '', dob: '', parentName: '', email: '', phone: '' });
       setFormError('');
       setTimeout(() => { setShowAddModal(false); setSaved(false); setSavedMessage(''); }, 2000);
-    } catch { setFormError('Failed to add patient. Please try again.'); }
+    } catch (err) {
+      console.error('[AddPatient] Error:', err);
+      const msg = err instanceof Error ? err.message : 'Failed to add patient. Please try again.';
+      setFormError(msg);
+    }
     finally { setSaving(false); }
   };
 
