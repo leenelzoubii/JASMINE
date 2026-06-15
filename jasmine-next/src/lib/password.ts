@@ -14,12 +14,22 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
 }
 
 export function generateTempPassword(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  const uppercase = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  const lowercase = 'abcdefghjkmnpqrstuvwxyz';
+  const digits = '23456789';
+  const all = uppercase + lowercase + digits;
+  const length = 16;
+
   let password = '';
-  for (let i = 0; i < 10; i++) {
-    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  password += uppercase.charAt(Math.floor(Math.random() * uppercase.length));
+  password += lowercase.charAt(Math.floor(Math.random() * lowercase.length));
+  password += digits.charAt(Math.floor(Math.random() * digits.length));
+
+  for (let i = password.length; i < length; i++) {
+    password += all.charAt(Math.floor(Math.random() * all.length));
   }
-  return password;
+
+  return password.split('').sort(() => Math.random() - 0.5).join('');
 }
 
 export function generateResetToken(): { token: string; expiresAt: Date } {
