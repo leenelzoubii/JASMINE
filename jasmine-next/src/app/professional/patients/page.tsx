@@ -8,7 +8,6 @@ import { getPatients, addPatient, deletePatient, Patient } from '@/lib/patients'
 import { getCurrentUser } from '@/lib/auth';
 import { createPatientAccess } from '@/lib/patient-access';
 import { sendParentRequest } from '@/lib/parent-requests';
-import { addNotification } from '@/lib/notifications';
 import { showToast } from '@/components/ui/toast';
 
 function calculateAge(dob: string): number {
@@ -89,7 +88,6 @@ export default function ProfessionalPatientsPage() {
       setPatients(prev => [newPatient, ...prev]);
       if (!isDemo) {
         try { await sendParentRequest({ professionalId: user.id, professionalName: user.name, patientId: newPatient.id, patientName: newPatient.name, parentEmail: formData.email, parentName: formData.parentName }); } catch {}
-        try { await addNotification({ userId: user.id, type: 'patient_added', title: 'Patient Added', message: `${newPatient.name} has been added successfully.`, link: '/professional/patients' }); } catch {}
       }
       try {
         if (sendCredentials) {
@@ -377,7 +375,6 @@ export default function ProfessionalPatientsPage() {
                     await deletePatient(user.id, patientToDelete.id);
                     setPatients(prev => prev.filter(p => p.id !== patientToDelete.id));
                     showToast('success', 'Patient Removed', `${patientToDelete.name} has been removed.`);
-                    await addNotification({ userId: user.id, type: 'patient_removed', title: 'Patient Removed', message: `${patientToDelete.name} has been removed.`, link: '/professional/patients' });
                   } catch (err) { console.error(err); }
                 }
                 setShowDeleteConfirm(false); setPatientToDelete(null);

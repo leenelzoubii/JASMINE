@@ -203,13 +203,17 @@ export default function ProfessionalAssessmentsPage() {
       await reviewAssessment(user.id, lastAssessmentId);
       showToast('success', 'Assessment Reviewed', 'You have reviewed this assessment.');
       try {
-        await addNotification({
-          userId: user.id,
-          type: 'assessment_complete',
-          title: 'Assessment Reviewed',
-          message: `Assessment for ${selectedPatientName} has been reviewed.`,
-          link: '/professional/assessments',
-        });
+        const { getPatientLinksByPatientId } = await import('@/lib/patient-access');
+        const links = await getPatientLinksByPatientId(selectedPatient);
+        for (const link of links) {
+          await addNotification({
+            userId: link.parentId,
+            type: 'assessment_complete',
+            title: 'Assessment Reviewed',
+            message: `${user.name} reviewed the assessment for ${selectedPatientName}.`,
+            link: '/parent/results',
+          });
+        }
       } catch { /* skip notification err */ }
     } catch (err) {
       console.error('Failed to review:', err);
