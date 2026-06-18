@@ -18,6 +18,7 @@ import {
   setDoc,
   getDoc,
   getDocs,
+  updateDoc,
   collection,
   query,
   where,
@@ -25,7 +26,7 @@ import {
 } from "firebase/firestore";
 
 import { auth, db } from "@/lib/firebase";
-import { verifyPassword } from "@/lib/password";
+import { hashPassword, verifyPassword } from "@/lib/password";
 
 export interface User {
   id: string;
@@ -272,6 +273,42 @@ export async function changeCurrentUserPassword(
   );
   await reauthenticateWithCredential(user, credential);
   await updatePassword(user, newPassword);
+
+  // Sync new password hash to Firestore so the parent_accounts fallback
+  // and users doc verification work after password change.
+  try {
+    const hashedPassword = await hashPassword(newPassword);
+
+    const userRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+      await updateDoc(userRef, { password: hashedPassword, updatedAt: serverTimestamp() });
+    } else {
+      const accountsRef = collection(db, "parent_accounts");
+      const q = query(accountsRef, where("email", "==", user.email));
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        const accountRef = doc(db, "parent_accounts", snap.docs[0].id);
+        await updateDoc(accountRef, { password: hashedPassword, updatedAt: serverTimestamp() });
+      }
+    }
+  } catch (syncErr) {
+    console.warn("Failed to sync password to Firestore:", syncErr);
+  }
+
+  // Update local storage fallback
+  try {
+    if (typeof window !== "undefined") {
+      const localUsers = getLocalUsers();
+      const cleanEmail = user.email.toLowerCase().trim();
+      if (localUsers[cleanEmail]) {
+        localUsers[cleanEmail].password = newPassword;
+        localStorage.setItem("localUsers", JSON.stringify(localUsers));
+      }
+    }
+  } catch (localErr) {
+    console.warn("Failed to update local password fallback:", localErr);
+  }
 }
 
 export async function sendFirebaseResetPasswordEmail(email: string): Promise<void> {
