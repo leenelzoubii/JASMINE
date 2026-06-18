@@ -18,7 +18,6 @@ import {
   setDoc,
   getDoc,
   getDocs,
-  updateDoc,
   collection,
   query,
   where,
@@ -26,7 +25,7 @@ import {
 } from "firebase/firestore";
 
 import { auth, db } from "@/lib/firebase";
-import { hashPassword, verifyPassword } from "@/lib/password";
+import { verifyPassword } from "@/lib/password";
 
 export interface User {
   id: string;
@@ -273,24 +272,6 @@ export async function changeCurrentUserPassword(
   );
   await reauthenticateWithCredential(user, credential);
   await updatePassword(user, newPassword);
-
-  // Also update the password hash in Firestore so the bcrypt fallback
-  // (used by parent_accounts login path) works with the new password.
-  const hashedPassword = await hashPassword(newPassword);
-
-  const userRef = doc(db, "users", user.uid);
-  const userSnap = await getDoc(userRef);
-  if (userSnap.exists()) {
-    await updateDoc(userRef, { password: hashedPassword, updatedAt: serverTimestamp() });
-  }
-
-  const accountsRef = collection(db, "parent_accounts");
-  const accountsQ = query(accountsRef, where("email", "==", user.email));
-  const accountsSnap = await getDocs(accountsQ);
-  if (!accountsSnap.empty) {
-    const accountRef = doc(db, "parent_accounts", accountsSnap.docs[0].id);
-    await updateDoc(accountRef, { password: hashedPassword, updatedAt: serverTimestamp() });
-  }
 }
 
 export async function sendFirebaseResetPasswordEmail(email: string): Promise<void> {
