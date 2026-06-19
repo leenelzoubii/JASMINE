@@ -201,6 +201,8 @@ export default function ProfessionalAssessmentsPage() {
     if (!user || !lastAssessmentId) return;
     try {
       await reviewAssessment(user.id, lastAssessmentId);
+      const updatedAssessments = await getAssessments(user.id);
+      setAssessments(updatedAssessments);
       showToast('success', 'Assessment Reviewed', 'You have reviewed this assessment.');
       try {
         const { getPatientLinksByPatientId } = await import('@/lib/patient-access');
@@ -225,6 +227,8 @@ export default function ProfessionalAssessmentsPage() {
     if (!user || !lastAssessmentId) return;
     try {
       await shareAssessment(user.id, lastAssessmentId, notes, selectedPatient);
+      const updatedAssessments = await getAssessments(user.id);
+      setAssessments(updatedAssessments);
       showToast('success', 'Assessment Shared', `Results for ${selectedPatientName} are now visible to the parent.`);
 
       const { getPatientLinksByPatientId } = await import('@/lib/patient-access');

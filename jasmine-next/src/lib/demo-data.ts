@@ -1,5 +1,8 @@
 export const DEMO_DOCTOR_ID = 'demo-doctor';
 export const DEMO_PARENT_ID = 'demo-parent';
+export const DEMO_PARENT_NADIA = 'demo-parent-nadia';
+export const DEMO_PARENT_MONA = 'demo-parent-mona';
+export const DEMO_PARENT_LAYLA = 'demo-parent-layla';
 
 // --- Patient IDs ---
 export const CHILD_EMMA = 'demo-child-emma';
@@ -270,6 +273,51 @@ const SEED_ACCESS_LINKS = [
     sharedAssessments: ['demo-asm-emma-1', 'demo-asm-emma-2', 'demo-asm-emma-3'],
     createdAt: Date.now() - 180 * 86400000,
   },
+  {
+    id: 'demo-link-yara',
+    patientId: CHILD_YARA,
+    patientName: 'Yara Khalil',
+    professionalId: DEMO_DOCTOR_ID,
+    professionalName: 'Dr. Jasmine',
+    parentId: DEMO_PARENT_NADIA,
+    parentEmail: 'nadia.khalil@example.com',
+    parentName: 'Nadia Khalil',
+    accessGranted: true,
+    accessGrantedAt: Date.now() - 30 * 86400000,
+    accessRevokedAt: null,
+    sharedAssessments: ['demo-asm-yara-1'],
+    createdAt: Date.now() - 30 * 86400000,
+  },
+  {
+    id: 'demo-link-karim',
+    patientId: CHILD_KARIM,
+    patientName: 'Karim Hassan',
+    professionalId: DEMO_DOCTOR_ID,
+    professionalName: 'Dr. Jasmine',
+    parentId: DEMO_PARENT_MONA,
+    parentEmail: 'mona.hassan@example.com',
+    parentName: 'Mona Hassan',
+    accessGranted: true,
+    accessGrantedAt: Date.now() - 60 * 86400000,
+    accessRevokedAt: null,
+    sharedAssessments: ['demo-asm-karim-1'],
+    createdAt: Date.now() - 60 * 86400000,
+  },
+  {
+    id: 'demo-link-sami',
+    patientId: CHILD_SAMI,
+    patientName: 'Sami Dawood',
+    professionalId: DEMO_DOCTOR_ID,
+    professionalName: 'Dr. Jasmine',
+    parentId: DEMO_PARENT_LAYLA,
+    parentEmail: 'layla.dawood@example.com',
+    parentName: 'Layla Dawood',
+    accessGranted: true,
+    accessGrantedAt: Date.now() - 30 * 86400000,
+    accessRevokedAt: null,
+    sharedAssessments: ['demo-asm-sami-1'],
+    createdAt: Date.now() - 30 * 86400000,
+  },
 ];
 
 // --- Seed parent requests ---
@@ -285,6 +333,42 @@ const SEED_REQUESTS = [
     parentName: 'Sara Alawneh',
     status: 'accepted',
     createdAt: { toMillis: () => Date.now() - 180 * 86400000 },
+  },
+  {
+    id: 'demo-req-yara',
+    professionalId: DEMO_DOCTOR_ID,
+    professionalName: 'Dr. Jasmine',
+    patientId: CHILD_YARA,
+    patientName: 'Yara Khalil',
+    parentEmail: 'nadia.khalil@example.com',
+    parentId: DEMO_PARENT_NADIA,
+    parentName: 'Nadia Khalil',
+    status: 'accepted',
+    createdAt: { toMillis: () => Date.now() - 30 * 86400000 },
+  },
+  {
+    id: 'demo-req-karim',
+    professionalId: DEMO_DOCTOR_ID,
+    professionalName: 'Dr. Jasmine',
+    patientId: CHILD_KARIM,
+    patientName: 'Karim Hassan',
+    parentEmail: 'mona.hassan@example.com',
+    parentId: DEMO_PARENT_MONA,
+    parentName: 'Mona Hassan',
+    status: 'accepted',
+    createdAt: { toMillis: () => Date.now() - 60 * 86400000 },
+  },
+  {
+    id: 'demo-req-sami',
+    professionalId: DEMO_DOCTOR_ID,
+    professionalName: 'Dr. Jasmine',
+    patientId: CHILD_SAMI,
+    patientName: 'Sami Dawood',
+    parentEmail: 'layla.dawood@example.com',
+    parentId: DEMO_PARENT_LAYLA,
+    parentName: 'Layla Dawood',
+    status: 'accepted',
+    createdAt: { toMillis: () => Date.now() - 30 * 86400000 },
   },
 ];
 
@@ -375,6 +459,112 @@ const SEED_MESSAGES: Record<string, SeedMessage[]> = {
       status: 'read',
     },
   ],
+  ['demo-doctor_demo-parent-nadia']: [
+    {
+      id: 'demo-msg-nadia-1',
+      conversationId: 'demo-doctor_demo-parent-nadia',
+      senderId: DEMO_DOCTOR_ID,
+      receiverId: DEMO_PARENT_NADIA,
+      text: 'Hello Nadia, I\'ve reviewed Yara\'s assessment and the results are very encouraging — low risk. She\'s developing well. Let me know if you have any questions.',
+      createdAt: { toMillis: () => Date.now() - 30 * 86400000 } as any,
+      read: true,
+      status: 'read',
+    },
+    {
+      id: 'demo-msg-nadia-2',
+      conversationId: 'demo-doctor_demo-parent-nadia',
+      senderId: DEMO_PARENT_NADIA,
+      receiverId: DEMO_DOCTOR_ID,
+      text: 'That\'s such a relief, doctor! Thank you. Is there anything specific we should watch for as she grows?',
+      createdAt: { toMillis: () => Date.now() - 30 * 86400000 + 3600000 } as any,
+      read: true,
+      status: 'read',
+    },
+    {
+      id: 'demo-msg-nadia-3',
+      conversationId: 'demo-doctor_demo-parent-nadia',
+      senderId: DEMO_DOCTOR_ID,
+      receiverId: DEMO_PARENT_NADIA,
+      text: 'Just keep doing what you\'re doing! Monitor her social milestones and bring her back for a check-up in 6 months. I\'ll send a full report with some developmental milestones to track at home.',
+      createdAt: { toMillis: () => Date.now() - 29 * 86400000 } as any,
+      read: true,
+      status: 'read',
+    },
+  ],
+  ['demo-doctor_demo-parent-mona']: [
+    {
+      id: 'demo-msg-mona-1',
+      conversationId: 'demo-doctor_demo-parent-mona',
+      senderId: DEMO_DOCTOR_ID,
+      receiverId: DEMO_PARENT_MONA,
+      text: 'Mona, I need to discuss Karim\'s assessment results with you. The indicators show a high risk level, and I believe we should proceed with a specialist referral as soon as possible.',
+      createdAt: { toMillis: () => Date.now() - 60 * 86400000 } as any,
+      read: true,
+      status: 'read',
+    },
+    {
+      id: 'demo-msg-mona-2',
+      conversationId: 'demo-doctor_demo-parent-mona',
+      senderId: DEMO_PARENT_MONA,
+      receiverId: DEMO_DOCTOR_ID,
+      text: 'Oh no. I was worried something might be different. What does this mean for Karim\'s future?',
+      createdAt: { toMillis: () => Date.now() - 60 * 86400000 + 7200000 } as any,
+      read: true,
+      status: 'read',
+    },
+    {
+      id: 'demo-msg-mona-3',
+      conversationId: 'demo-doctor_demo-parent-mona',
+      senderId: DEMO_DOCTOR_ID,
+      receiverId: DEMO_PARENT_MONA,
+      text: 'I understand this is concerning, but early detection is key. With the right interventions, many children show significant improvement. I\'ve already prepared a referral to a pediatric neurologist. Let\'s schedule a meeting this week to go over everything in detail.',
+      createdAt: { toMillis: () => Date.now() - 59 * 86400000 } as any,
+      read: true,
+      status: 'read',
+    },
+    {
+      id: 'demo-msg-mona-4',
+      conversationId: 'demo-doctor_demo-parent-mona',
+      senderId: DEMO_PARENT_MONA,
+      receiverId: DEMO_DOCTOR_ID,
+      text: 'Thank you doctor. I\'ll do whatever it takes to help Karim. Please let me know when you\'re available.',
+      createdAt: { toMillis: () => Date.now() - 59 * 86400000 + 14400000 } as any,
+      read: true,
+      status: 'read',
+    },
+  ],
+  ['demo-doctor_demo-parent-layla']: [
+    {
+      id: 'demo-msg-layla-1',
+      conversationId: 'demo-doctor_demo-parent-layla',
+      senderId: DEMO_DOCTOR_ID,
+      receiverId: DEMO_PARENT_LAYLA,
+      text: 'Hi Layla, Sami\'s assessment results are in. He\'s showing moderate risk indicators, similar to what we discussed. I recommend we start early intervention exercises and schedule a follow-up in 2 months.',
+      createdAt: { toMillis: () => Date.now() - 30 * 86400000 } as any,
+      read: true,
+      status: 'read',
+    },
+    {
+      id: 'demo-msg-layla-2',
+      conversationId: 'demo-doctor_demo-parent-layla',
+      senderId: DEMO_PARENT_LAYLA,
+      receiverId: DEMO_DOCTOR_ID,
+      text: 'I was hoping for better news, but I\'m glad we caught it early. What kind of exercises should we focus on at home?',
+      createdAt: { toMillis: () => Date.now() - 30 * 86400000 + 3600000 } as any,
+      read: true,
+      status: 'read',
+    },
+    {
+      id: 'demo-msg-layla-3',
+      conversationId: 'demo-doctor_demo-parent-layla',
+      senderId: DEMO_DOCTOR_ID,
+      receiverId: DEMO_PARENT_LAYLA,
+      text: 'Focus on structured play and social interaction activities. I\'ll email you a detailed guide with daily exercises. Consistency is key — even short sessions make a big difference over time.',
+      createdAt: { toMillis: () => Date.now() - 29 * 86400000 } as any,
+      read: true,
+      status: 'read',
+    },
+  ],
 };
 
 // --- Seed parent accounts ---
@@ -387,10 +577,34 @@ const SEED_PARENT_ACCOUNTS = {
     isActive: true,
     createdBy: DEMO_DOCTOR_ID,
   },
+  'nadia.khalil@example.com': {
+    id: DEMO_PARENT_NADIA,
+    email: 'nadia.khalil@example.com',
+    name: 'Nadia Khalil',
+    mustChangePassword: false,
+    isActive: true,
+    createdBy: DEMO_DOCTOR_ID,
+  },
+  'mona.hassan@example.com': {
+    id: DEMO_PARENT_MONA,
+    email: 'mona.hassan@example.com',
+    name: 'Mona Hassan',
+    mustChangePassword: false,
+    isActive: true,
+    createdBy: DEMO_DOCTOR_ID,
+  },
+  'layla.dawood@example.com': {
+    id: DEMO_PARENT_LAYLA,
+    email: 'layla.dawood@example.com',
+    name: 'Layla Dawood',
+    mustChangePassword: false,
+    isActive: true,
+    createdBy: DEMO_DOCTOR_ID,
+  },
 };
 
 // --- Seed versioning: bump this when seed data changes ---
-const SEED_VERSION = 'v3';
+const SEED_VERSION = 'v4';
 
 // --- Seed function: populates all localStorage keys ---
 export function seedDemoData(): void {
@@ -400,13 +614,14 @@ export function seedDemoData(): void {
   if (localStorage.getItem(versionKey) === SEED_VERSION) return;
 
   // Version mismatch or first visit — clear old demo data and re-seed
+  const allConvIds = Object.keys(SEED_MESSAGES);
   const demoKeys = [
     'demo_patients_' + DEMO_DOCTOR_ID,
     'demo_assessments_' + DEMO_DOCTOR_ID,
     'demo_accessLinks',
     'demo_allRequests',
     'demo_parentAccounts_' + DEMO_DOCTOR_ID,
-    'demo_messages_' + CONVERSATION_ID,
+    ...allConvIds.map(id => 'demo_messages_' + id),
   ];
   for (const key of demoKeys) localStorage.removeItem(key);
 
@@ -415,7 +630,9 @@ export function seedDemoData(): void {
   localStorage.setItem('demo_accessLinks', JSON.stringify(SEED_ACCESS_LINKS));
   localStorage.setItem('demo_allRequests', JSON.stringify(SEED_REQUESTS));
   localStorage.setItem('demo_parentAccounts_' + DEMO_DOCTOR_ID, JSON.stringify(SEED_PARENT_ACCOUNTS));
-  localStorage.setItem('demo_messages_' + CONVERSATION_ID, JSON.stringify(SEED_MESSAGES[CONVERSATION_ID]));
+  for (const convId of allConvIds) {
+    localStorage.setItem('demo_messages_' + convId, JSON.stringify(SEED_MESSAGES[convId]));
+  }
 
   localStorage.setItem(versionKey, SEED_VERSION);
 }
@@ -451,6 +668,10 @@ export function getDemoConnections(userId: string): any[] {
   }
   if (userId === DEMO_DOCTOR_ID) {
     return SEED_REQUESTS.filter(r => r.status === 'accepted')
+      .map(r => ({ id: r.id, professionalId: r.professionalId, professionalName: r.professionalName, parentId: r.parentId || '', parentName: r.parentName, patientId: r.patientId, patientName: r.patientName }));
+  }
+  if (userId === DEMO_PARENT_NADIA || userId === DEMO_PARENT_MONA || userId === DEMO_PARENT_LAYLA) {
+    return SEED_REQUESTS.filter(r => r.status === 'accepted' && r.parentId === userId)
       .map(r => ({ id: r.id, professionalId: r.professionalId, professionalName: r.professionalName, parentId: r.parentId || '', parentName: r.parentName, patientId: r.patientId, patientName: r.patientName }));
   }
   return [];
