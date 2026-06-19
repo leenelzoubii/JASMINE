@@ -300,43 +300,33 @@ const SEED_PARENT_ACCOUNTS = {
   },
 };
 
-// --- Seed function: populates all localStorage keys on first call ---
-let seeded = false;
+// --- Seed versioning: bump this when seed data changes ---
+const SEED_VERSION = 'v2';
 
+// --- Seed function: populates all localStorage keys ---
 export function seedDemoData(): void {
   if (typeof window === 'undefined') return;
-  if (seeded) return;
-  seeded = true;
 
-  // Seed patients for demo-doctor
-  const patientKey = 'demo_patients_' + DEMO_DOCTOR_ID;
-  if (!localStorage.getItem(patientKey)) {
-    localStorage.setItem(patientKey, JSON.stringify(SEED_PATIENTS));
-  }
+  const versionKey = 'demo_seed_version';
+  if (localStorage.getItem(versionKey) === SEED_VERSION) return;
 
-  // Seed assessments for demo-doctor
-  const asmKey = 'demo_assessments_' + DEMO_DOCTOR_ID;
-  if (!localStorage.getItem(asmKey)) {
-    localStorage.setItem(asmKey, JSON.stringify(SEED_ASSESSMENTS));
-  }
+  // Version mismatch or first visit — clear old demo data and re-seed
+  const demoKeys = [
+    'demo_patients_' + DEMO_DOCTOR_ID,
+    'demo_assessments_' + DEMO_DOCTOR_ID,
+    'demo_accessLinks',
+    'demo_allRequests',
+    'demo_parentAccounts_' + DEMO_DOCTOR_ID,
+  ];
+  for (const key of demoKeys) localStorage.removeItem(key);
 
-  // Seed access links
-  const linkKey = 'demo_accessLinks';
-  if (!localStorage.getItem(linkKey)) {
-    localStorage.setItem(linkKey, JSON.stringify(SEED_ACCESS_LINKS));
-  }
+  localStorage.setItem('demo_patients_' + DEMO_DOCTOR_ID, JSON.stringify(SEED_PATIENTS));
+  localStorage.setItem('demo_assessments_' + DEMO_DOCTOR_ID, JSON.stringify(SEED_ASSESSMENTS));
+  localStorage.setItem('demo_accessLinks', JSON.stringify(SEED_ACCESS_LINKS));
+  localStorage.setItem('demo_allRequests', JSON.stringify(SEED_REQUESTS));
+  localStorage.setItem('demo_parentAccounts_' + DEMO_DOCTOR_ID, JSON.stringify(SEED_PARENT_ACCOUNTS));
 
-  // Seed parent requests
-  const reqKey = 'demo_allRequests';
-  if (!localStorage.getItem(reqKey)) {
-    localStorage.setItem(reqKey, JSON.stringify(SEED_REQUESTS));
-  }
-
-  // Seed parent accounts
-  const acctKey = 'demo_parentAccounts_' + DEMO_DOCTOR_ID;
-  if (!localStorage.getItem(acctKey)) {
-    localStorage.setItem(acctKey, JSON.stringify(SEED_PARENT_ACCOUNTS));
-  }
+  localStorage.setItem(versionKey, SEED_VERSION);
 }
 
 export function ensureDemoSeeded(): void {
