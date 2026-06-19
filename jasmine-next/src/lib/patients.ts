@@ -11,6 +11,7 @@ import {
   orderBy,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { ensureDemoSeeded } from './demo-data';
 
 export interface Patient {
   id: string;
@@ -37,6 +38,7 @@ function getDemoStorageKey(userId: string): string {
 
 function getDemoPatients(userId: string): Patient[] {
   if (typeof window === 'undefined') return [];
+  ensureDemoSeeded();
   try {
     return JSON.parse(localStorage.getItem(getDemoStorageKey(userId)) || '[]');
   } catch {

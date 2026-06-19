@@ -13,6 +13,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { updateSharedAssessments, getPatientLinksByPatientId } from './patient-access';
+import { ensureDemoSeeded } from './demo-data';
 
 export interface AssessmentResult {
   id: string;
@@ -48,6 +49,7 @@ function getDemoStorageKey(userId: string): string {
 
 function getDemoAssessments(userId: string): AssessmentResult[] {
   if (typeof window === 'undefined') return [];
+  ensureDemoSeeded();
   try {
     return JSON.parse(localStorage.getItem(getDemoStorageKey(userId)) || '[]');
   } catch {

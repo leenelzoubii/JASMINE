@@ -17,6 +17,7 @@ import {
   Timestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { ensureDemoSeeded } from './demo-data';
 
 export interface ParentRequest {
   id: string;
@@ -47,6 +48,7 @@ function getDemoAllRequestsKey(): string {
 
 function getDemoAllRequests(): ParentRequest[] {
   if (typeof window === 'undefined') return [];
+  ensureDemoSeeded();
   try {
     return JSON.parse(localStorage.getItem(getDemoAllRequestsKey()) || '[]');
   } catch { return []; }

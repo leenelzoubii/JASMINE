@@ -12,6 +12,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { createOrGetParentAccount } from './parent-accounts';
+import { ensureDemoSeeded } from './demo-data';
 
 const DEMO_USER_IDS = ['demo-doctor', 'demo-parent'];
 
@@ -25,6 +26,7 @@ function getDemoLinksKey(): string {
 
 function getDemoLinks(): PatientAccessLink[] {
   if (typeof window === 'undefined') return [];
+  ensureDemoSeeded();
   try {
     return JSON.parse(localStorage.getItem(getDemoLinksKey()) || '[]');
   } catch { return []; }
