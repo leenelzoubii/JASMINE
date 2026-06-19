@@ -8,6 +8,7 @@ import { getPatients, addPatient, deletePatient, Patient } from '@/lib/patients'
 import { getCurrentUser } from '@/lib/auth';
 import { createPatientAccess } from '@/lib/patient-access';
 import { sendParentRequest } from '@/lib/parent-requests';
+import { addNotification } from '@/lib/notifications';
 import { showToast } from '@/components/ui/toast';
 
 function calculateAge(dob: string): number {
@@ -64,6 +65,7 @@ export default function ProfessionalPatientsPage() {
 
     const user = getCurrentUser();
     if (!user) return;
+    const isDemo = user.id === 'demo-doctor' || user.id === 'demo-parent';
     setSaving(true);
     try {
       const newPatient = await addPatient(user.id, {
