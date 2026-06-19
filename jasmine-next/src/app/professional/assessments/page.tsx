@@ -224,7 +224,7 @@ export default function ProfessionalAssessmentsPage() {
     const user = getCurrentUser();
     if (!user || !lastAssessmentId) return;
     try {
-      await shareAssessment(user.id, lastAssessmentId, notes);
+      await shareAssessment(user.id, lastAssessmentId, notes, selectedPatient);
       showToast('success', 'Assessment Shared', `Results for ${selectedPatientName} are now visible to the parent.`);
 
       const { getPatientLinksByPatientId } = await import('@/lib/patient-access');

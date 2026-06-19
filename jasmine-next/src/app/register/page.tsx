@@ -203,6 +203,14 @@ export default function RegisterPage() {
                       </div>
                     </motion.button>
                   ))}
+                  <motion.button
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                    onClick={handleSubmit}
+                    className="premium-btn premium-btn-primary w-full mt-6"
+                  >
+                    Continue
+                  </motion.button>
                 </motion.div>
               ) : (
                 <motion.div
@@ -211,115 +219,116 @@ export default function RegisterPage() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                 >
-                  <form onSubmit={handleSubmit} className="space-y-5">
-                    <div>
-                      <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--foreground)' }}>
-                        Full Name
-                      </label>
-                      <div className="relative">
-                        <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-dim)' }} />
-                        <input
-                          type="text"
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
-                          placeholder="Your name"
-                          className="premium-input pl-11"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--foreground)' }}>
-                        Email
-                      </label>
-                      <div className="relative">
-                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-dim)' }} />
-                        <input
-                          type="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          placeholder="you@example.com"
-                          className="premium-input pl-11"
-                        />
-                      </div>
-                    </div>
-
-                    {selectedRole === 'professional' && (
+                  <form onSubmit={handleSubmit}>
+                    <div className="space-y-5">
                       <div>
                         <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--foreground)' }}>
-                          Specialty (Optional)
+                          Full Name
                         </label>
                         <div className="relative">
-                          <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-dim)' }} />
+                          <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-dim)' }} />
                           <input
                             type="text"
-                            value={specialty}
-                            onChange={(e) => setSpecialty(e.target.value)}
-                            placeholder="e.g., Pediatric Neurology"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            placeholder="Your name"
                             className="premium-input pl-11"
                           />
                         </div>
                       </div>
-                    )}
 
-                    <div>
-                      <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--foreground)' }}>
-                        Password
-                      </label>
-                      <div className="relative">
-                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-dim)' }} />
-                        <input
-                          type={showPassword ? 'text' : 'password'}
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          placeholder="Create a strong password"
-                          className="premium-input pl-11 pr-12"
-                          minLength={13}
-                          pattern="(?=.*[A-Z]).{13,}"
-                          title="Password must be more than 12 characters and contain at least one uppercase letter."
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 transition-colors"
-                          style={{ color: 'var(--text-dim)' }}
-                        >
-                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
+                      <div>
+                        <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--foreground)' }}>
+                          Email
+                        </label>
+                        <div className="relative">
+                          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-dim)' }} />
+                          <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="you@example.com"
+                            className="premium-input pl-11"
+                          />
+                        </div>
                       </div>
+
+                      {selectedRole === 'professional' && (
+                        <div>
+                          <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--foreground)' }}>
+                            Specialty (Optional)
+                          </label>
+                          <div className="relative">
+                            <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-dim)' }} />
+                            <input
+                              type="text"
+                              value={specialty}
+                              onChange={(e) => setSpecialty(e.target.value)}
+                              placeholder="e.g., Pediatric Neurology"
+                              className="premium-input pl-11"
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      <div>
+                        <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--foreground)' }}>
+                          Password
+                        </label>
+                        <div className="relative">
+                          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-dim)' }} />
+                          <input
+                            type={showPassword ? 'text' : 'password'}
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="Create a strong password"
+                            className="premium-input pl-11 pr-12"
+                            minLength={13}
+                            pattern="(?=.*[A-Z]).{13,}"
+                            title="Password must be more than 12 characters and contain at least one uppercase letter."
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 transition-colors"
+                            style={{ color: 'var(--text-dim)' }}
+                          >
+                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3 mt-6">
+                      <motion.button
+                        type="button"
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.99 }}
+                        onClick={() => { setStep(1); setError(''); }}
+                        className="premium-btn premium-btn-ghost flex-1"
+                      >
+                        <ArrowLeft className="w-4 h-4" />
+                        Back
+                      </motion.button>
+                      <motion.button
+                        type="submit"
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.99 }}
+                        disabled={loading}
+                        className="premium-btn premium-btn-primary flex-1"
+                      >
+                        {loading ? (
+                          <span className="flex items-center gap-2">
+                            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            Creating...
+                          </span>
+                        ) : 'Create Account'}
+                      </motion.button>
                     </div>
                   </form>
                 </motion.div>
               )}
             </AnimatePresence>
-
-            <div className="flex gap-3 mt-6">
-              {step === 2 && (
-                <motion.button
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
-                  onClick={() => { setStep(1); setError(''); }}
-                  className="premium-btn premium-btn-ghost flex-1"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  Back
-                </motion.button>
-              )}
-              <motion.button
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
-                onClick={handleSubmit}
-                disabled={loading}
-                className="premium-btn premium-btn-primary flex-1"
-              >
-                {loading ? (
-                  <span className="flex items-center gap-2">
-                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    {step === 1 ? 'Continuing...' : 'Creating...'}
-                  </span>
-                ) : step === 1 ? 'Continue' : 'Create Account'}
-              </motion.button>
-            </div>
 
             <p className="mt-6 text-center" style={{ color: 'var(--text-muted)' }}>
               Already have an account?{' '}
