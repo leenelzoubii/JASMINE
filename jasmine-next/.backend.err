@@ -1,0 +1,19 @@
+INFO:     Will watch for changes in these directories: ['C:\\Users\\HP\\autism-screening-pose\\jasmine-next']
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [32412] using StatReload
+INFO:     Started server process [28636]
+INFO:     Waiting for application startup.
+2026-06-06 11:20:41 [INFO] jasmine-backend: Starting JASMINE ML backend...
+2026-06-06 11:20:42 [INFO] jasmine-backend: Pose landmarker model at: C:\Users\HP\autism-screening-pose\jasmine-next\backend\pose_landmarker.task
+2026-06-06 11:20:53 [INFO] jasmine-backend: Loaded rf model from C:\Users\HP\autism-screening-pose\models\rf_model.pkl
+2026-06-06 11:20:53 [INFO] jasmine-backend: Loaded svm model from C:\Users\HP\autism-screening-pose\models\svm_model.pkl
+2026-06-06 11:20:53 [ERROR] jasmine-backend: Failed to load transformer: Error(s) in loading state_dict for TransformerClassifier:
+	Missing key(s) in state_dict: "cls_token". 
+	size mismatch for pos_encoder.pe: copying a param with shape torch.Size([1, 500, 64]) from checkpoint, the shape in current model is torch.Size([1, 501, 64]).
+	size mismatch for transformer_encoder.layers.0.linear1.weight: copying a param with shape torch.Size([256, 64]) from checkpoint, the shape in current model is torch.Size([512, 64]).
+	size mismatch for transformer_encoder.layers.0.linear1.bias: copying a param with shape torch.Size([256]) from checkpoint, the shape in current model is torch.Size([512]).
+	size mismatch for transformer_encoder.layers.0.linear2.weight: copying a param with shape torch.Size([64, 256]) from checkpoint, the shape in current model is torch.Size([64, 512]).
+	size mismatch for transformer_encoder.layers.1.linear1.weight: copying a param with shape torch.Size([256, 64]) from checkpoint, the shape in current model is torch.Size([512, 64]).
+	size mismatch for transformer_encoder.layers.1.linear1.bias: copying a param with shape torch.Size([256]) from checkpoint, the shape in current model is torch.Size([512]).
+	size mismatch for transformer_encoder.layers.1.linear2.weight: copying a param with shape torch.Size([64, 256]) from checkpoint, the shape in current model is torch.Size([64, 512]).
+INFO:     Application startup complete.

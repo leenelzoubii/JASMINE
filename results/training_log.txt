@@ -1,0 +1,207 @@
+============================================================
+AUTISM SCREENING - OPTIMIZED MODEL TRAINING
+============================================================
+Loading dataset from data\csv...
+Loaded 1374 subjects
+Class distribution: TD=839, ASD=535
+Feature matrix shape: (1374, 983)
+Number of features: 983
+============================================================
+AUTISM SCREENING - OPTIMIZED MODEL COMPARISON
+============================================================
+
+Training RF...
+  RFECV: 983 -> 20 features selected
+  RF best params: {'n_estimators': 300, 'min_samples_split': 2, 'min_samples_leaf': 2, 'max_features': 'log2', 'max_depth': 20, 'class_weight': 'balanced'}
+  RF CV F1: 0.5750
+  Fold 1/5 - RF - Acc: 0.9309 | F1: 0.9064 | ROC-AUC: 0.9880
+  RFECV: 983 -> 983 features selected
+  RF best params: {'n_estimators': 100, 'min_samples_split': 2, 'min_samples_leaf': 2, 'max_features': 'sqrt', 'max_depth': None, 'class_weight': 'balanced'}
+  RF CV F1: 0.4183
+  Fold 2/5 - RF - Acc: 0.9600 | F1: 0.9469 | ROC-AUC: 0.9966
+  RFECV: 983 -> 689 features selected
+  RF best params: {'n_estimators': 100, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'sqrt', 'max_depth': 20, 'class_weight': 'balanced'}
+  RF CV F1: 0.4363
+  Fold 3/5 - RF - Acc: 0.9527 | F1: 0.9366 | ROC-AUC: 0.9966
+  RFECV: 983 -> 101 features selected
+  RF best params: {'n_estimators': 100, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'sqrt', 'max_depth': 20, 'class_weight': 'balanced'}
+  RF CV F1: 0.4974
+  Fold 4/5 - RF - Acc: 0.9527 | F1: 0.9378 | ROC-AUC: 0.9924
+  RFECV: 983 -> 836 features selected
+  RF best params: {'n_estimators': 100, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'log2', 'max_depth': 20, 'class_weight': 'balanced'}
+  RF CV F1: 0.4089
+  Fold 5/5 - RF - Acc: 0.9708 | F1: 0.9619 | ROC-AUC: 0.9983
+  RFECV: 983 -> 101 features selected
+  RF best params: {'n_estimators': 100, 'min_samples_split': 5, 'min_samples_leaf': 2, 'max_features': 'sqrt', 'max_depth': 20, 'class_weight': 'balanced'}
+  RF CV F1: 0.5329
+
+Training SVM...
+  RFECV: 983 -> 101 features selected
+  SVM best params: {'kernel': 'linear', 'gamma': 'scale', 'class_weight': 'balanced', 'C': 1}
+  SVM CV F1: 0.6021
+  Fold 1/5 - SVM - Acc: 0.7164 | F1: 0.5761 | ROC-AUC: 0.7825
+  RFECV: 983 -> 689 features selected
+  SVM best params: {'kernel': 'rbf', 'gamma': 'auto', 'class_weight': 'balanced', 'C': 0.1}
+  SVM CV F1: 0.5361
+  Fold 2/5 - SVM - Acc: 0.6582 | F1: 0.4891 | ROC-AUC: 0.7286
+  RFECV: 983 -> 395 features selected
+  SVM best params: {'kernel': 'linear', 'gamma': 'scale', 'class_weight': 'balanced', 'C': 0.1}
+  SVM CV F1: 0.5759
+  Fold 3/5 - SVM - Acc: 0.7564 | F1: 0.5732 | ROC-AUC: 0.8821
+  RFECV: 983 -> 689 features selected
+  SVM best params: {'kernel': 'rbf', 'gamma': 'auto', 'class_weight': 'balanced', 'C': 0.1}
+  SVM CV F1: 0.5808
+  Fold 4/5 - SVM - Acc: 0.6945 | F1: 0.5227 | ROC-AUC: 0.7143
+  RFECV: 983 -> 836 features selected
+  SVM best params: {'kernel': 'rbf', 'gamma': 'scale', 'class_weight': 'balanced', 'C': 0.1}
+  SVM CV F1: 0.5434
+  Fold 5/5 - SVM - Acc: 0.6752 | F1: 0.4606 | ROC-AUC: 0.7133
+  RFECV: 983 -> 101 features selected
+  SVM best params: {'kernel': 'linear', 'gamma': 'scale', 'class_weight': 'balanced', 'C': 0.1}
+  SVM CV F1: 0.5963
+
+Training TCN...
+  Using device: cpu
+  Epoch [1/100] Train Loss: 0.7249 Acc: 0.5314 | Val Loss: 0.6788 Acc: 0.5018 | LR: 1.00e-04
+  Epoch [10/100] Train Loss: 0.6585 Acc: 0.6106 | Val Loss: 0.6696 Acc: 0.5418 | LR: 1.00e-03
+  Epoch [20/100] Train Loss: 0.6436 Acc: 0.6360 | Val Loss: 0.6568 Acc: 0.5455 | LR: 9.76e-04
+  Epoch [30/100] Train Loss: 0.5995 Acc: 0.6652 | Val Loss: 0.6493 Acc: 0.6364 | LR: 8.94e-04
+  Epoch [40/100] Train Loss: 0.5548 Acc: 0.7070 | Val Loss: 0.6459 Acc: 0.6255 | LR: 7.65e-04
+  Epoch [44/100] Train Loss: 0.5129 Acc: 0.7043 | Val Loss: 0.6499 Acc: 0.6873 | LR: 7.03e-04
+  Epoch [50/100] Train Loss: 0.4489 Acc: 0.7725 | Val Loss: 0.7515 Acc: 0.6255 | LR: 6.04e-04
+  Early stopping at epoch 52
+  Restored best model (val_loss: 0.6258, val_acc: 0.6291)
+  History saved to results\history_tcn_fold1.csv
+  Fold 1/5 - TCN - Acc: 0.6291 | F1: 0.6331 | ROC-AUC: 0.7196
+  Using device: cpu
+  Epoch [1/100] Train Loss: 0.7277 Acc: 0.5096 | Val Loss: 0.6883 Acc: 0.6291 | LR: 1.00e-04
+  Epoch [10/100] Train Loss: 0.6935 Acc: 0.5905 | Val Loss: 0.6739 Acc: 0.5636 | LR: 1.00e-03
+  Epoch [20/100] Train Loss: 0.6434 Acc: 0.6278 | Val Loss: 0.6846 Acc: 0.4836 | LR: 9.76e-04
+  Epoch [21/100] Train Loss: 0.6477 Acc: 0.6124 | Val Loss: 0.6612 Acc: 0.6109 | LR: 9.70e-04
+  Epoch [30/100] Train Loss: 0.5895 Acc: 0.6843 | Val Loss: 0.6454 Acc: 0.6400 | LR: 8.94e-04
+  Epoch [36/100] Train Loss: 0.5636 Acc: 0.6915 | Val Loss: 0.6886 Acc: 0.6945 | LR: 8.21e-04
+  Epoch [40/100] Train Loss: 0.5556 Acc: 0.7161 | Val Loss: 0.6729 Acc: 0.6800 | LR: 7.65e-04
+  Early stopping at epoch 44
+  Restored best model (val_loss: 0.6375, val_acc: 0.6691)
+  History saved to results\history_tcn_fold2.csv
+  Fold 2/5 - TCN - Acc: 0.6691 | F1: 0.5285 | ROC-AUC: 0.7028
+  Using device: cpu
+  Epoch [1/100] Train Loss: 0.7578 Acc: 0.5050 | Val Loss: 0.6785 Acc: 0.5382 | LR: 1.00e-04
+  Epoch [10/100] Train Loss: 0.6804 Acc: 0.5478 | Val Loss: 0.6486 Acc: 0.6218 | LR: 1.00e-03
+  Epoch [18/100] Train Loss: 0.6839 Acc: 0.6142 | Val Loss: 0.6666 Acc: 0.6291 | LR: 9.85e-04
+  Epoch [20/100] Train Loss: 0.6580 Acc: 0.6187 | Val Loss: 0.6307 Acc: 0.6255 | LR: 9.76e-04
+  Epoch [30/100] Train Loss: 0.6766 Acc: 0.5596 | Val Loss: 0.6081 Acc: 0.7091 | LR: 8.94e-04
+  Epoch [40/100] Train Loss: 0.5916 Acc: 0.6906 | Val Loss: 0.5631 Acc: 0.7309 | LR: 7.65e-04
+  Epoch [50/100] Train Loss: 0.5212 Acc: 0.7316 | Val Loss: 0.5656 Acc: 0.6909 | LR: 6.04e-04
+  Epoch [60/100] Train Loss: 0.4585 Acc: 0.7534 | Val Loss: 0.5503 Acc: 0.6800 | LR: 4.30e-04
+  Epoch [61/100] Train Loss: 0.4527 Acc: 0.7753 | Val Loss: 0.6441 Acc: 0.6727 | LR: 4.13e-04
+  Early stopping at epoch 69
+  Restored best model (val_loss: 0.5334, val_acc: 0.7455)
+  History saved to results\history_tcn_fold3.csv
+  Fold 3/5 - TCN - Acc: 0.7455 | F1: 0.6930 | ROC-AUC: 0.8119
+  Using device: cpu
+  Epoch [1/100] Train Loss: 0.7231 Acc: 0.5214 | Val Loss: 0.7038 Acc: 0.6109 | LR: 1.00e-04
+  Epoch [10/100] Train Loss: 0.6766 Acc: 0.5678 | Val Loss: 0.6884 Acc: 0.4582 | LR: 1.00e-03
+  Epoch [20/100] Train Loss: 0.6549 Acc: 0.6033 | Val Loss: 0.6976 Acc: 0.5964 | LR: 9.76e-04
+  Epoch [30/100] Train Loss: 0.6022 Acc: 0.6624 | Val Loss: 0.6360 Acc: 0.6073 | LR: 8.94e-04
+  Epoch [39/100] Train Loss: 0.5453 Acc: 0.7307 | Val Loss: 0.6123 Acc: 0.7091 | LR: 7.80e-04
+  Epoch [40/100] Train Loss: 0.5280 Acc: 0.7443 | Val Loss: 0.6036 Acc: 0.7018 | LR: 7.65e-04
+  Epoch [47/100] Train Loss: 0.5082 Acc: 0.7434 | Val Loss: 0.6555 Acc: 0.7091 | LR: 6.55e-04
+  Epoch [50/100] Train Loss: 0.5048 Acc: 0.7516 | Val Loss: 0.7447 Acc: 0.6800 | LR: 6.04e-04
+  Early stopping at epoch 55
+  Restored best model (val_loss: 0.6036, val_acc: 0.7018)
+  History saved to results\history_tcn_fold4.csv
+  Fold 4/5 - TCN - Acc: 0.7018 | F1: 0.6019 | ROC-AUC: 0.7479
+  Using device: cpu
+  Epoch [1/100] Train Loss: 0.7263 Acc: 0.5355 | Val Loss: 0.6780 Acc: 0.5000 | LR: 1.00e-04
+  Epoch [10/100] Train Loss: 0.6871 Acc: 0.5809 | Val Loss: 0.6650 Acc: 0.5438 | LR: 1.00e-03
+  Epoch [20/100] Train Loss: 0.6426 Acc: 0.6218 | Val Loss: 0.6317 Acc: 0.6715 | LR: 9.76e-04
+  Epoch [30/100] Train Loss: 0.5954 Acc: 0.7036 | Val Loss: 0.6137 Acc: 0.6861 | LR: 8.94e-04
+  Epoch [36/100] Train Loss: 0.5540 Acc: 0.7173 | Val Loss: 0.6426 Acc: 0.6460 | LR: 8.21e-04
+  Epoch [40/100] Train Loss: 0.5259 Acc: 0.7236 | Val Loss: 0.7594 Acc: 0.6861 | LR: 7.65e-04
+  Early stopping at epoch 44
+  Restored best model (val_loss: 0.6026, val_acc: 0.7007)
+  History saved to results\history_tcn_fold5.csv
+  Fold 5/5 - TCN - Acc: 0.7007 | F1: 0.6058 | ROC-AUC: 0.7363
+  Using device: cpu
+  History saved to results\history_tcn_final.csv
+
+Training TRANSFORMER...
+  Using device: cpu
+  Epoch [1/100] Train Loss: 0.7340 Acc: 0.5050 | Val Loss: 0.6878 Acc: 0.6436 | LR: 1.00e-04
+  Epoch [10/100] Train Loss: 0.6807 Acc: 0.5787 | Val Loss: 0.6601 Acc: 0.5345 | LR: 1.00e-03
+  Epoch [17/100] Train Loss: 0.6788 Acc: 0.5723 | Val Loss: 0.6734 Acc: 0.6436 | LR: 9.89e-04
+  Epoch [20/100] Train Loss: 0.6810 Acc: 0.5860 | Val Loss: 0.8201 Acc: 0.4145 | LR: 9.76e-04
+  Early stopping at epoch 25
+  Restored best model (val_loss: 0.6601, val_acc: 0.5345)
+  History saved to results\history_transformer_fold1.csv
+  Fold 1/5 - TRANSFORMER - Acc: 0.5345 | F1: 0.5461 | ROC-AUC: 0.6474
+  Using device: cpu
+  Epoch [1/100] Train Loss: 0.7320 Acc: 0.5177 | Val Loss: 0.6808 Acc: 0.6109 | LR: 1.00e-04
+  Epoch [10/100] Train Loss: 0.7161 Acc: 0.5460 | Val Loss: 0.7021 Acc: 0.4000 | LR: 1.00e-03
+  Epoch [20/100] Train Loss: 0.6884 Acc: 0.5560 | Val Loss: 0.7364 Acc: 0.3891 | LR: 9.76e-04
+  Epoch [21/100] Train Loss: 0.6730 Acc: 0.5942 | Val Loss: 0.6656 Acc: 0.6182 | LR: 9.70e-04
+  Early stopping at epoch 29
+  Restored best model (val_loss: 0.6567, val_acc: 0.6182)
+  History saved to results\history_transformer_fold2.csv
+  Fold 2/5 - TRANSFORMER - Acc: 0.6182 | F1: 0.4928 | ROC-AUC: 0.6526
+  Using device: cpu
+  Epoch [1/100] Train Loss: 0.7377 Acc: 0.5168 | Val Loss: 0.6872 Acc: 0.5855 | LR: 1.00e-04
+  Epoch [10/100] Train Loss: 0.7078 Acc: 0.5259 | Val Loss: 0.6646 Acc: 0.5782 | LR: 1.00e-03
+  Epoch [20/100] Train Loss: 0.6853 Acc: 0.5432 | Val Loss: 0.6515 Acc: 0.6255 | LR: 9.76e-04
+  Epoch [27/100] Train Loss: 0.6951 Acc: 0.5378 | Val Loss: 0.6939 Acc: 0.3891 | LR: 9.24e-04
+  Epoch [30/100] Train Loss: 0.6970 Acc: 0.5177 | Val Loss: 0.6937 Acc: 0.3891 | LR: 8.94e-04
+  Early stopping at epoch 35
+  Restored best model (val_loss: 0.6515, val_acc: 0.6255)
+  History saved to results\history_transformer_fold3.csv
+  Fold 3/5 - TRANSFORMER - Acc: 0.6255 | F1: 0.6308 | ROC-AUC: 0.6897
+  Using device: cpu
+  Epoch [1/100] Train Loss: 0.7390 Acc: 0.5214 | Val Loss: 0.6892 Acc: 0.5855 | LR: 1.00e-04
+  Epoch [10/100] Train Loss: 0.6879 Acc: 0.5587 | Val Loss: 0.6836 Acc: 0.6327 | LR: 1.00e-03
+  Epoch [13/100] Train Loss: 0.6870 Acc: 0.5532 | Val Loss: 0.6822 Acc: 0.4691 | LR: 9.99e-04
+  Epoch [20/100] Train Loss: 0.6751 Acc: 0.5996 | Val Loss: 0.6935 Acc: 0.6218 | LR: 9.76e-04
+  Epoch [30/100] Train Loss: 0.6894 Acc: 0.5823 | Val Loss: 0.7214 Acc: 0.4364 | LR: 8.94e-04
+  Epoch [34/100] Train Loss: 0.6911 Acc: 0.5869 | Val Loss: 0.6860 Acc: 0.6545 | LR: 8.47e-04
+  Epoch [40/100] Train Loss: 0.6578 Acc: 0.6115 | Val Loss: 0.6962 Acc: 0.5091 | LR: 7.65e-04
+  Early stopping at epoch 42
+  Restored best model (val_loss: 0.6562, val_acc: 0.6255)
+  History saved to results\history_transformer_fold4.csv
+  Fold 4/5 - TRANSFORMER - Acc: 0.6255 | F1: 0.5463 | ROC-AUC: 0.6633
+  Using device: cpu
+  Epoch [1/100] Train Loss: 0.7376 Acc: 0.5055 | Val Loss: 0.7024 Acc: 0.3942 | LR: 1.00e-04
+  Epoch [10/100] Train Loss: 0.6956 Acc: 0.5200 | Val Loss: 0.6542 Acc: 0.6350 | LR: 1.00e-03
+  Epoch [18/100] Train Loss: 0.6992 Acc: 0.5291 | Val Loss: 0.6802 Acc: 0.5036 | LR: 9.85e-04
+  Epoch [20/100] Train Loss: 0.6823 Acc: 0.5964 | Val Loss: 0.7220 Acc: 0.3942 | LR: 9.76e-04
+  Early stopping at epoch 26
+  Restored best model (val_loss: 0.6389, val_acc: 0.6277)
+  History saved to results\history_transformer_fold5.csv
+  Fold 5/5 - TRANSFORMER - Acc: 0.6277 | F1: 0.5887 | ROC-AUC: 0.6840
+  Using device: cpu
+  History saved to results\history_transformer_final.csv
+
+  Ensemble weights (by ROC-AUC):
+    RF: 0.4254
+    SVM: 0.2275
+    TCN: 0.2075
+    TRANSFORMER: 0.1395
+
+============================================================
+OPTIMIZED COMPARISON RESULTS
+============================================================
+Model                Accuracy     Precision    Recall       F1           ROC-AUC     
+--------------------------------------------------------------------------------
+RF                   0.9534       0.9719       0.9065       0.9381       0.9947      
+SVM                  0.7001       0.6858       0.4243       0.5242       0.7646      
+TCN                  0.6892       0.5934       0.6411       0.6164       0.7413      
+TRANSFORMER          0.6063       0.4958       0.6561       0.5648       0.6622      
+ENSEMBLE (stacked)   0.9709       0.9750       0.9495       0.9621       0.9972      
+
+Results saved to results\comparison_results.json
+Model saved to results\rf_model.pkl
+Model saved to results\svm_model.pkl
+Model saved to results\tcn_model.pth
+Model saved to results\transformer_model.pth
+
+============================================================
+TRAINING COMPLETE
+============================================================

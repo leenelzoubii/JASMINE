@@ -1,0 +1,48 @@
+INFO:     Will watch for changes in these directories: ['C:\\Users\\HP\\autism-screening-pose\\jasmine-next']
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [25328] using StatReload
+INFO:     Started server process [31140]
+INFO:     Waiting for application startup.
+2026-06-06 11:30:41 [INFO] jasmine-backend: Starting JASMINE ML backend...
+2026-06-06 11:30:44 [INFO] jasmine-backend: Pose landmarker model at: C:\Users\HP\autism-screening-pose\jasmine-next\backend\pose_landmarker.task
+2026-06-06 11:30:55 [INFO] jasmine-backend: Loaded rf model from C:\Users\HP\autism-screening-pose\models\rf_model.pkl
+2026-06-06 11:30:55 [INFO] jasmine-backend: Loaded svm model from C:\Users\HP\autism-screening-pose\models\svm_model.pkl
+C:\Users\HP\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\nn\utils\weight_norm.py:144: FutureWarning: `torch.nn.utils.weight_norm` is deprecated in favor of `torch.nn.utils.parametrizations.weight_norm`.
+  WeightNorm.apply(module, name, dim)
+2026-06-06 11:30:55 [INFO] jasmine-backend: Loaded tcn model from C:\Users\HP\autism-screening-pose\models\tcn_model.pth
+2026-06-06 11:30:55 [INFO] jasmine-backend: Loaded transformer model from C:\Users\HP\autism-screening-pose\models\transformer_model.pth
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'backend\main.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-06-06 12:38:28 [INFO] jasmine-backend: Shutting down JASMINE ML backend...
+INFO:     Application shutdown complete.
+INFO:     Finished server process [31140]
+INFO:     Started server process [4000]
+INFO:     Waiting for application startup.
+2026-06-06 12:38:32 [INFO] jasmine-backend: Starting JASMINE ML backend...
+2026-06-06 12:38:33 [INFO] jasmine-backend: Pose landmarker model at: C:\Users\HP\autism-screening-pose\jasmine-next\backend\pose_landmarker.task
+2026-06-06 12:38:41 [INFO] jasmine-backend: Loaded rf model from C:\Users\HP\autism-screening-pose\models\rf_model.pkl
+2026-06-06 12:38:41 [INFO] jasmine-backend: Loaded svm model from C:\Users\HP\autism-screening-pose\models\svm_model.pkl
+C:\Users\HP\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\nn\utils\weight_norm.py:144: FutureWarning: `torch.nn.utils.weight_norm` is deprecated in favor of `torch.nn.utils.parametrizations.weight_norm`.
+  WeightNorm.apply(module, name, dim)
+2026-06-06 12:38:41 [INFO] jasmine-backend: Loaded tcn model from C:\Users\HP\autism-screening-pose\models\tcn_model.pth
+2026-06-06 12:38:42 [INFO] jasmine-backend: Loaded transformer model from C:\Users\HP\autism-screening-pose\models\transformer_model.pth
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'backend\main.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-06-07 18:18:08 [INFO] jasmine-backend: Shutting down JASMINE ML backend...
+INFO:     Application shutdown complete.
+INFO:     Finished server process [4000]
+INFO:     Started server process [10468]
+INFO:     Waiting for application startup.
+2026-06-07 18:18:12 [INFO] jasmine-backend: Starting JASMINE ML backend...
+2026-06-07 18:18:13 [INFO] jasmine-backend: Pose landmarker model at: C:\Users\HP\autism-screening-pose\jasmine-next\backend\pose_landmarker.task
+2026-06-07 18:18:25 [INFO] jasmine-backend: Loaded rf model from C:\Users\HP\autism-screening-pose\models\rf_model.pkl
+2026-06-07 18:18:25 [INFO] jasmine-backend: Loaded svm model from C:\Users\HP\autism-screening-pose\models\svm_model.pkl
+C:\Users\HP\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\nn\utils\weight_norm.py:144: FutureWarning: `torch.nn.utils.weight_norm` is deprecated in favor of `torch.nn.utils.parametrizations.weight_norm`.
+  WeightNorm.apply(module, name, dim)
+2026-06-07 18:18:25 [INFO] jasmine-backend: Loaded tcn model from C:\Users\HP\autism-screening-pose\models\tcn_model.pth
+2026-06-07 18:18:25 [INFO] jasmine-backend: Loaded transformer model from C:\Users\HP\autism-screening-pose\models\transformer_model.pth
+INFO:     Application startup complete.
