@@ -1,6 +1,3 @@
-/**
- * Real messaging system using Firestore
- */
 import {
   collection,
   addDoc,
@@ -17,6 +14,7 @@ import {
   Timestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { ensureDemoSeeded } from "./demo-data";
 
 export interface Message {
   id: string;
@@ -24,9 +22,34 @@ export interface Message {
   senderId: string;
   receiverId: string;
   text: string;
-  createdAt: Timestamp;
+  createdAt: Timestamp | { toMillis: () => number };
   read: boolean;
   status: "sent" | "delivered" | "read";
+}
+
+const DEMO_USER_IDS = ['demo-doctor', 'demo-parent'];
+
+function isDemoUser(userId: string): boolean {
+  return DEMO_USER_IDS.includes(userId);
+}
+
+function getDemoMessagesKey(conversationId: string): string {
+  return `demo_messages_${conversationId}`;
+}
+
+function getDemoMessages(conversationId: string): Message[] {
+  if (typeof window === 'undefined') return [];
+  ensureDemoSeeded();
+  try {
+    return JSON.parse(localStorage.getItem(getDemoMessagesKey(conversationId)) || '[]');
+  } catch {
+    return [];
+  }
+}
+
+function saveDemoMessages(conversationId: string, messages: Message[]): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(getDemoMessagesKey(conversationId), JSON.stringify(messages));
 }
 
 export async function sendMessage(
@@ -35,6 +58,22 @@ export async function sendMessage(
   text: string
 ): Promise<void> {
   const conversationId = [senderId, receiverId].sort().join("_");
+
+  if (isDemoUser(senderId)) {
+    const messages = getDemoMessages(conversationId);
+    const newMsg: Message = {
+      id: 'demo-msg-' + Date.now(),
+      conversationId,
+      senderId,
+      receiverId,
+      text,
+      createdAt: { toMillis: () => Date.now() },
+      read: false,
+      status: "sent",
+    };
+    saveDemoMessages(conversationId, [...messages, newMsg]);
+    return;
+  }
 
   await addDoc(collection(db, "messages"), {
     conversationId,
@@ -46,7 +85,6 @@ export async function sendMessage(
     createdAt: serverTimestamp(),
   });
 
-  // Upsert conversation metadata
   const convRef = doc(db, "conversations", conversationId);
   const convSnap = await getDoc(convRef);
 
@@ -68,15 +106,11 @@ export async function sendMessage(
   }
 }
 
-/**
- * Mark all messages in a conversation as delivered for the current user.
- * Updates messages sent BY the other user (receiverId matches current user)
- * from "sent" to "delivered".
- */
 export async function markMessagesDelivered(
   currentUserId: string,
   otherUserId: string
 ): Promise<void> {
+  if (isDemoUser(currentUserId)) return;
   const conversationId = [currentUserId, otherUserId].sort().join("_");
   const q = query(
     collection(db, "messages"),
@@ -86,7 +120,6 @@ export async function markMessagesDelivered(
   );
   const snap = await getDocs(q);
   if (snap.empty) return;
-
   const batch = writeBatch(db);
   snap.docs.forEach((d) => {
     batch.update(doc(db, "messages", d.id), { status: "delivered" });
@@ -94,18 +127,13 @@ export async function markMessagesDelivered(
   await batch.commit();
 }
 
-/**
- * Mark all unread messages in a conversation as READ for the current user.
- * Also sets status to "read" on messages the user received.
- * Resets unreadCount for this user to 0.
- */
 export async function markConversationAsRead(
   currentUserId: string,
   otherUserId: string
 ): Promise<void> {
+  if (isDemoUser(currentUserId)) return;
   const conversationId = [currentUserId, otherUserId].sort().join("_");
 
-  // Mark all unread received messages as read
   const q = query(
     collection(db, "messages"),
     where("conversationId", "==", conversationId),
@@ -121,7 +149,6 @@ export async function markConversationAsRead(
     await batch.commit();
   }
 
-  // Reset unread count for current user
   const convRef = doc(db, "conversations", conversationId);
   const convSnap = await getDoc(convRef);
   if (convSnap.exists()) {
@@ -140,6 +167,22 @@ export function subscribeToMessages(
   callback: (messages: Message[]) => void
 ) {
   const conversationId = [userId1, userId2].sort().join("_");
+
+  if (isDemoUser(userId1)) {
+    const load = () => {
+      const msgs = getDemoMessages(conversationId);
+      msgs.sort((a, b) => {
+        const tA = (a.createdAt as any)?.toMillis?.() || 0;
+        const tB = (b.createdAt as any)?.toMillis?.() || 0;
+        return tA - tB;
+      });
+      callback(msgs);
+    };
+    load();
+    const interval = setInterval(load, 2000);
+    return () => clearInterval(interval);
+  }
+
   const q = query(
     collection(db, "messages"),
     where("conversationId", "==", conversationId)

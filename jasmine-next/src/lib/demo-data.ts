@@ -288,6 +288,95 @@ const SEED_REQUESTS = [
   },
 ];
 
+// --- Seed messages (demo-doctor ↔ demo-parent) ---
+const CONVERSATION_ID = 'demo-doctor_demo-parent';
+
+interface SeedMessage {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  receiverId: string;
+  text: string;
+  createdAt: { toMillis: () => number };
+  read: boolean;
+  status: string;
+}
+
+const SEED_MESSAGES: Record<string, SeedMessage[]> = {
+  [CONVERSATION_ID]: [
+    {
+      id: 'demo-msg-1',
+      conversationId: CONVERSATION_ID,
+      senderId: DEMO_DOCTOR_ID,
+      receiverId: DEMO_PARENT_ID,
+      text: 'Hello Sara, I\'ve completed the initial assessment for Tala. The results indicate a moderate risk level. I\'d like to discuss the findings with you when you have a moment.',
+      createdAt: { toMillis: () => Date.now() - 90 * 86400000 } as any,
+      read: true,
+      status: 'read',
+    },
+    {
+      id: 'demo-msg-2',
+      conversationId: CONVERSATION_ID,
+      senderId: DEMO_PARENT_ID,
+      receiverId: DEMO_DOCTOR_ID,
+      text: 'Thank you doctor. I\'m a bit worried. What does moderate risk mean exactly? Is there something we should be doing differently?',
+      createdAt: { toMillis: () => Date.now() - 90 * 86400000 + 3600000 } as any,
+      read: true,
+      status: 'read',
+    },
+    {
+      id: 'demo-msg-3',
+      conversationId: CONVERSATION_ID,
+      senderId: DEMO_DOCTOR_ID,
+      receiverId: DEMO_PARENT_ID,
+      text: 'It means there are some early indicators that warrant attention, but the good news is we caught them early. Moderate risk responds very well to early intervention. I recommend a follow-up assessment in 3 months along with some targeted exercises at home.',
+      createdAt: { toMillis: () => Date.now() - 89 * 86400000 } as any,
+      read: true,
+      status: 'read',
+    },
+    {
+      id: 'demo-msg-4',
+      conversationId: CONVERSATION_ID,
+      senderId: DEMO_PARENT_ID,
+      receiverId: DEMO_DOCTOR_ID,
+      text: 'That\'s reassuring to hear. What kind of exercises should we start with? I want to make sure we\'re doing everything we can to help Tala.',
+      createdAt: { toMillis: () => Date.now() - 89 * 86400000 + 7200000 } as any,
+      read: true,
+      status: 'read',
+    },
+    {
+      id: 'demo-msg-5',
+      conversationId: CONVERSATION_ID,
+      senderId: DEMO_DOCTOR_ID,
+      receiverId: DEMO_PARENT_ID,
+      text: 'Focus on social engagement activities like turn-based games and patterned play. I\'ll share a resource guide with detailed exercises in our next session. The key is consistency — even 15 minutes a day makes a difference. Feel free to reach out anytime!',
+      createdAt: { toMillis: () => Date.now() - 88 * 86400000 } as any,
+      read: true,
+      status: 'read',
+    },
+    {
+      id: 'demo-msg-6',
+      conversationId: CONVERSATION_ID,
+      senderId: DEMO_DOCTOR_ID,
+      receiverId: DEMO_PARENT_ID,
+      text: 'Good news, Sara! I\'ve just reviewed Tala\'s latest assessment results and the trend is very positive. The scores are stabilizing nicely. Let\'s schedule a follow-up to discuss the next steps.',
+      createdAt: { toMillis: () => Date.now() - 7 * 86400000 } as any,
+      read: true,
+      status: 'read',
+    },
+    {
+      id: 'demo-msg-7',
+      conversationId: CONVERSATION_ID,
+      senderId: DEMO_PARENT_ID,
+      receiverId: DEMO_DOCTOR_ID,
+      text: 'That\'s wonderful news, doctor! Thank you so much for keeping me updated. I\'ve noticed Tala has been more engaged lately. We\'d love to schedule that follow-up.',
+      createdAt: { toMillis: () => Date.now() - 7 * 86400000 + 14400000 } as any,
+      read: true,
+      status: 'read',
+    },
+  ],
+};
+
 // --- Seed parent accounts ---
 const SEED_PARENT_ACCOUNTS = {
   'parent@demo.com': {
@@ -301,7 +390,7 @@ const SEED_PARENT_ACCOUNTS = {
 };
 
 // --- Seed versioning: bump this when seed data changes ---
-const SEED_VERSION = 'v2';
+const SEED_VERSION = 'v3';
 
 // --- Seed function: populates all localStorage keys ---
 export function seedDemoData(): void {
@@ -317,6 +406,7 @@ export function seedDemoData(): void {
     'demo_accessLinks',
     'demo_allRequests',
     'demo_parentAccounts_' + DEMO_DOCTOR_ID,
+    'demo_messages_' + CONVERSATION_ID,
   ];
   for (const key of demoKeys) localStorage.removeItem(key);
 
@@ -325,6 +415,7 @@ export function seedDemoData(): void {
   localStorage.setItem('demo_accessLinks', JSON.stringify(SEED_ACCESS_LINKS));
   localStorage.setItem('demo_allRequests', JSON.stringify(SEED_REQUESTS));
   localStorage.setItem('demo_parentAccounts_' + DEMO_DOCTOR_ID, JSON.stringify(SEED_PARENT_ACCOUNTS));
+  localStorage.setItem('demo_messages_' + CONVERSATION_ID, JSON.stringify(SEED_MESSAGES[CONVERSATION_ID]));
 
   localStorage.setItem(versionKey, SEED_VERSION);
 }

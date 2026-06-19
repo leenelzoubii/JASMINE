@@ -26,6 +26,8 @@ export interface Notification {
   createdAt: Timestamp;
 }
 
+const DEMO_USER_IDS = ['demo-doctor', 'demo-parent'];
+
 export async function addNotification(data: {
   userId: string;
   type: Notification["type"];
@@ -33,6 +35,7 @@ export async function addNotification(data: {
   message: string;
   link?: string;
 }): Promise<void> {
+  if (DEMO_USER_IDS.includes(data.userId)) return;
   await addDoc(collection(db, "notifications"), {
     ...data,
     read: false,
