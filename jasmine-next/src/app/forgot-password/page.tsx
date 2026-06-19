@@ -4,37 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Mail, ArrowLeft, CheckCircle, Loader2, Brain } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
-
-const FIREBASE_PROJECT_ID = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "jasmine-4671c";
-
-async function checkUserExistsInFirestore(email: string): Promise<boolean> {
-  try {
-    const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents:runQuery`;
-    const queryBody = {
-      structuredQuery: {
-        from: [{ collectionId: "users" }],
-        where: {
-          fieldFilter: {
-            field: { fieldPath: "email" },
-            op: "EQUAL",
-            value: { stringValue: email.toLowerCase().trim() },
-          },
-        },
-        limit: 1,
-      },
-    };
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(queryBody),
-    });
-    const data = await res.json();
-    return Array.isArray(data) && data.length > 0 && data[0].document;
-  } catch {
-    return true;
-  }
-}
+import { sendPasswordResetEmail } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -48,21 +19,15 @@ export default function ForgotPasswordPage() {
     setLoading(true);
 
     try {
-      const exists = await checkUserExistsInFirestore(email);
-      if (!exists) {
-        setError('No account found with this email address.');
-        setLoading(false);
-        return;
-      }
-      const auth = getAuth();
       await sendPasswordResetEmail(auth, email.trim());
       setSent(true);
     } catch (err: unknown) {
-      const firebaseErr = err as { code?: string };
+      const firebaseErr = err as { code?: string, message?: string };
+      console.error('Forgot password error:', firebaseErr.code, firebaseErr.message);
       if (firebaseErr.code === 'auth/user-not-found') setError('No account found with this email address.');
       else if (firebaseErr.code === 'auth/invalid-email') setError('Please enter a valid email address.');
       else if (firebaseErr.code === 'auth/too-many-requests') setError('Too many requests. Please try again later.');
-      else setError('Something went wrong. Please try again.');
+      else setError(`Something went wrong. Please try again. (${firebaseErr.code || 'unknown'})`);
     } finally {
       setLoading(false);
     }

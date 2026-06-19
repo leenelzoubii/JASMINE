@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     }
 
     const expiresAt = userData.resetTokenExpires?.toDate();
-    if (!expiresAt || new Date() > expiresAt.toDate()) {
+    if (!expiresAt || new Date() > expiresAt) {
       return NextResponse.json({ success: false, error: 'Reset token has expired' }, { status: 400 });
     }
 
