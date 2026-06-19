@@ -296,7 +296,7 @@ export default function ProfessionalPatientsPage() {
             </div>
             <div className="p-6 space-y-4 overflow-y-auto">
               {formError && <div className="p-3 rounded-xl text-sm" style={{ backgroundColor: 'var(--risk-high-bg)', color: 'var(--risk-high)' }}>{formError}</div>}
-              {[{ label: "Child's Name", placeholder: 'e.g. Emma Thompson', key: 'name', type: 'text', required: true },
+              {[{ label: "Child's Name", placeholder: 'e.g. Tala Al Zoubi', key: 'name', type: 'text', required: true },
                 { label: 'Date of Birth', placeholder: '', key: 'dob', type: 'date', required: true },
                 { label: 'Parent / Guardian Name', placeholder: 'e.g. John Thompson', key: 'parentName', type: 'text', required: true },
                 { label: 'Email', placeholder: 'e.g. john@email.com', key: 'email', type: 'email', required: true },

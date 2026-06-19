@@ -46,10 +46,10 @@ export interface User {
 const demoUsers: Record<string, User> = {
   "parent@demo.com": {
     id: "demo-parent",
-    name: "John Parent",
+    name: "Sara Alawneh",
     email: "parent@demo.com",
     role: "parent",
-    child: { name: "Emma", age: 6, specialist: "Dr. Jasmine" },
+    child: { name: "Tala", age: 6, specialist: "Dr. Jasmine" },
   },
   "doctor@demo.com": {
     id: "demo-doctor",
@@ -115,7 +115,7 @@ export async function registerUser(
       email: cleanEmail,
       role,
       ...(role === "parent"
-        ? { child: { name: "Emma", age: 6, specialist: "Dr. Jasmine" } }
+        ? { child: { name: "Tala", age: 6, specialist: "Dr. Jasmine" } }
         : { specialty: specialty?.trim() || "Autism Specialist" }),
     };
 

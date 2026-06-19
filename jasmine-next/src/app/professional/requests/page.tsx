@@ -285,7 +285,7 @@ export default function ProfessionalRequestsPage() {
                 <label className="block text-sm font-medium mb-1" style={{ color: 'var(--foreground)' }}>
                   Child Name <span className="text-red-500">*</span>
                 </label>
-                <input type="text" placeholder="e.g. Alex Johnson"
+                <input type="text" placeholder="e.g. Tala Al Zoubi"
                   value={formData.childName}
                   onChange={(e) => setFormData(prev => ({ ...prev, childName: e.target.value }))}
                   className="premium-input w-full" />
@@ -294,7 +294,7 @@ export default function ProfessionalRequestsPage() {
                 <label className="block text-sm font-medium mb-1" style={{ color: 'var(--foreground)' }}>
                   Parent Name <span className="text-red-500">*</span>
                 </label>
-                <input type="text" placeholder="e.g. Sarah Johnson"
+                <input type="text" placeholder="e.g. Sara Alawneh"
                   value={formData.parentName}
                   onChange={(e) => setFormData(prev => ({ ...prev, parentName: e.target.value }))}
                   className="premium-input w-full" />
