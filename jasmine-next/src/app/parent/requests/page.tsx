@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { CheckCircle, XCircle, UserPlus, Stethoscope, RefreshCw } from 'lucide-react';
+import { CheckCircle, XCircle, UserPlus, Stethoscope } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getCurrentUser } from '@/lib/auth';
 import { getParentRequestsByEmail, acceptParentRequest, declineParentRequest, ParentRequest } from '@/lib/parent-requests';
@@ -12,7 +12,15 @@ export default function ParentRequestsPage() {
   const [requests, setRequests] = useState<ParentRequest[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => { loadRequests(); }, []);
+  useEffect(() => {
+    const user = getCurrentUser();
+    if (user) {
+      getParentRequestsByEmail(user.email)
+        .then(setRequests)
+        .catch(console.error)
+        .finally(() => setLoading(false));
+    }
+  }, []);
 
   const handleAccept = async (req: ParentRequest) => {
     const user = getCurrentUser();
@@ -57,29 +65,11 @@ export default function ParentRequestsPage() {
     );
   }
 
-  const loadRequests = () => {
-    const user = getCurrentUser();
-    if (user) {
-      setLoading(true);
-      getParentRequestsByEmail(user.email)
-        .then(setRequests)
-        .catch(console.error)
-        .finally(() => setLoading(false));
-    }
-  };
-
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>Connection Requests</h1>
-          <p style={{ color: 'var(--text-muted)' }}>Connect with healthcare professionals</p>
-        </div>
-        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-          onClick={loadRequests}
-          className="premium-btn premium-btn-ghost">
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /> Refresh
-        </motion.button>
+      <div>
+        <h1 className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>Connection Requests</h1>
+        <p style={{ color: 'var(--text-muted)' }}>Connect with healthcare professionals</p>
       </div>
 
       {requests.length === 0 ? (
