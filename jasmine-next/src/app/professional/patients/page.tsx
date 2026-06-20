@@ -75,7 +75,7 @@ export default function ProfessionalPatientsPage() {
       });
       setPatients(prev => [newPatient, ...prev]);
       if (!isDemo) {
-        try { await sendParentRequest({ professionalId: user.id, professionalName: user.name, patientId: newPatient.id, patientName: newPatient.name, parentEmail: formData.email, parentName: formData.parentName }); } catch {}
+        try { await sendParentRequest({ professionalId: user.id, professionalName: user.name, patientId: newPatient.id, patientName: newPatient.name, parentEmail: formData.email, parentName: formData.parentName }); } catch { showToast('error', 'Request Failed', 'Could not send connection request to parent.'); }
       }
       try { await addNotification({ userId: user.id, type: 'patient_added', title: 'Patient Added', message: `${newPatient.name} has been added successfully.`, link: '/professional/patients' }); } catch {}
       try {

@@ -119,10 +119,10 @@ export async function getParentRequestsByEmail(email: string): Promise<ParentReq
     const demoReqs = getDemoAllRequests().filter(r =>
       r.parentEmail === cleanEmail && r.status === 'pending'
     );
-    const q = query(collection(db, "parentRequests"), where("parentEmail", "==", cleanEmail), where("status", "==", "pending"));
+    const q = query(collection(db, "parentRequests"), where("parentEmail", "==", cleanEmail));
     try {
       const snap = await getDocs(q);
-      const firestoreReqs = snap.docs.map((d) => ({ id: d.id, ...d.data() } as ParentRequest));
+      const firestoreReqs = snap.docs.map((d) => ({ id: d.id, ...d.data() } as ParentRequest)).filter(r => r.status === 'pending');
       return sortByCreatedAtDesc([...demoReqs, ...firestoreReqs]);
     } catch {
       return sortByCreatedAtDesc(demoReqs);
@@ -131,11 +131,10 @@ export async function getParentRequestsByEmail(email: string): Promise<ParentReq
 
   const q = query(
     collection(db, "parentRequests"),
-    where("parentEmail", "==", cleanEmail),
-    where("status", "==", "pending")
+    where("parentEmail", "==", cleanEmail)
   );
   const snap = await getDocs(q);
-  return sortByCreatedAtDesc(snap.docs.map((d) => ({ id: d.id, ...d.data() } as ParentRequest)));
+  return sortByCreatedAtDesc(snap.docs.map((d) => ({ id: d.id, ...d.data() } as ParentRequest)).filter(r => r.status === 'pending'));
 }
 
 export async function getProfessionalRequests(professionalId: string): Promise<ParentRequest[]> {

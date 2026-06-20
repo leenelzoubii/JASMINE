@@ -189,11 +189,18 @@ export default function ProfessionalRequestsPage() {
           <h1 className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>Parent Requests</h1>
           <p style={{ color: 'var(--text-muted)' }}>Invite parents to connect and view their child&apos;s results</p>
         </div>
-        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-          onClick={() => { setShowSendModal(true); setFormError(''); }}
-          className="premium-btn premium-btn-primary">
-          <UserPlus className="w-4 h-4" /> Send Request
-        </motion.button>
+        <div className="flex items-center gap-2">
+          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+            onClick={() => { setLoading(true); loadRequests(); }}
+            className="premium-btn premium-btn-ghost">
+            <RefreshCw className="w-4 h-4" /> Refresh
+          </motion.button>
+          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+            onClick={() => { setShowSendModal(true); setFormError(''); }}
+            className="premium-btn premium-btn-primary">
+            <UserPlus className="w-4 h-4" /> Send Request
+          </motion.button>
+        </div>
       </div>
 
       {requests.length === 0 ? (
