@@ -28,6 +28,8 @@ export default function ParentLayout({
     const user = getCurrentUser();
     if (!user) {
       router.push(`/login?returnUrl=${encodeURIComponent(pathname)}`);
+    } else if (user.role !== 'parent') {
+      router.push('/professional');
     }
   }, [mounted, pathname, checked, router]);
 
