@@ -25,6 +25,13 @@ const riskColors: Record<string, string> = {
   Unknown: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400',
 };
 
+const assessmentRiskColors: Record<string, string> = {
+  'High Risk': 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  'Moderate Risk': 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+  'Low Risk': 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  Unknown: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400',
+};
+
 const container = {
   hidden: { opacity: 0 },
   show: { opacity: 1, transition: { staggerChildren: 0.08 } },
@@ -407,7 +414,7 @@ export default function PatientProfilePage() {
                     }}>
                       {(a.ensemble_probability * 100).toFixed(1)}%
                     </p>
-                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{a.risk_level}</p>
+                    <span className={`premium-badge ${assessmentRiskColors[a.risk_level] || assessmentRiskColors.Unknown}`}>{a.risk_level}</span>
                     {a.confidence !== undefined && (
                       <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
                         {(a.confidence * 100).toFixed(0)}% confidence

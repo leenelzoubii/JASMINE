@@ -388,6 +388,13 @@ export default function ProfessionalAssessmentsPage() {
     }
   };
 
+  const assessmentRiskColors: Record<string, string> = {
+    'High Risk': 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    'Moderate Risk': 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+    'Low Risk': 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+    Unknown: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400',
+  };
+
   const isValidUrl = (url: string) => {
     return url.match(/^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/i);
   };
@@ -668,7 +675,7 @@ export default function ProfessionalAssessmentsPage() {
                   className="p-3 rounded-lg" style={{ backgroundColor: 'var(--background-alt)' }}>
                   <p className="text-xs uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{model}</p>
                   <p className="text-lg font-semibold" style={{ color: 'var(--foreground)' }}>{(pred.probability * 100).toFixed(0)}%</p>
-                  <p className="text-xs" style={{ color: riskColor(pred.risk_level).text }}>{pred.risk_level}</p>
+                  <span className={`premium-badge ${assessmentRiskColors[pred.risk_level] || assessmentRiskColors.Unknown}`}>{pred.risk_level}</span>
                 </motion.div>
               ))}
             </div>
@@ -931,7 +938,7 @@ export default function ProfessionalAssessmentsPage() {
                   <p className="text-lg font-bold" style={{ color: a.risk_level === 'High Risk' ? '#dc2626' : a.risk_level === 'Moderate Risk' ? '#d97706' : '#16a34a' }}>
                     {(a.ensemble_probability * 100).toFixed(1)}%
                   </p>
-                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{a.risk_level}</p>
+                  <span className={`premium-badge ${assessmentRiskColors[a.risk_level] || assessmentRiskColors.Unknown}`}>{a.risk_level}</span>
                 </div>
               </motion.div>
             ))}

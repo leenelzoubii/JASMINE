@@ -149,7 +149,7 @@ export default function ParentResultsPage() {
                       <div key={model} className="p-3 bg-gray-50 dark:bg-dark-bg rounded-lg">
                         <p className="text-xs text-gray-500 dark:text-gray-400 uppercase">{model}</p>
                         <p className="text-lg font-semibold text-gray-900 dark:text-white">{(pred.probability * 100).toFixed(0)}%</p>
-                        <p className="text-xs" style={{ color: riskColorValue[pred.risk_level] || '#6b7280' }}>{pred.risk_level}</p>
+                        <span className={`premium-badge ${riskColors[pred.risk_level] || riskColors.Unknown}`}>{pred.risk_level}</span>
                       </div>
                     ))}
                   </div>

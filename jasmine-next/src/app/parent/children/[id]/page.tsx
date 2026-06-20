@@ -17,6 +17,13 @@ const riskColorValue: Record<string, string> = {
   Unknown: '#6b7280',
 };
 
+const riskBadgeColors: Record<string, string> = {
+  'High Risk': 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  'Moderate Risk': 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+  'Low Risk': 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  Unknown: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400',
+};
+
 export default function ChildDetailPage() {
   const params = useParams();
   const childId = params.id as string;
@@ -150,7 +157,7 @@ export default function ChildDetailPage() {
               <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Latest Score</p>
             </div>
             <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
-              <p>Risk: <strong style={{ color: riskColorValue[latestAssessment.risk_level] }}>{latestAssessment.risk_level}</strong></p>
+              <p>Risk: <span className={`premium-badge ${riskBadgeColors[latestAssessment.risk_level] || riskBadgeColors.Unknown}`}>{latestAssessment.risk_level}</span></p>
               <p>Date: {latestAssessment.date}</p>
             </div>
           </div>
@@ -192,7 +199,7 @@ export default function ChildDetailPage() {
                   <div className="flex items-center gap-3">
                     <FileText className="w-5 h-5" style={{ color: 'var(--primary)' }} />
                     <div>
-                      <p className="font-medium" style={{ color: 'var(--foreground)' }}>{(a.ensemble_probability * 100).toFixed(1)}% — {a.risk_level}
+                      <p className="font-medium" style={{ color: 'var(--foreground)' }}>{(a.ensemble_probability * 100).toFixed(1)}% — <span className={`premium-badge ${riskBadgeColors[a.risk_level] || riskBadgeColors.Unknown}`}>{a.risk_level}</span>
                         {a.confidence !== undefined && (
                           <span className="ml-2 text-xs font-normal" style={{ color: 'var(--text-muted)' }}>
                             ({(a.confidence * 100).toFixed(0)}% confidence)
