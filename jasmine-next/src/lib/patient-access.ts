@@ -230,11 +230,13 @@ export async function getPatientLinksByParent(
 }
 
 export async function getPatientLinksByPatientId(
-  patientId: string
+  patientId: string,
+  professionalId?: string
 ): Promise<PatientAccessLink[]> {
   try {
-    const links = getDemoLinks().filter(l => l.patientId === patientId && l.accessGranted);
-    if (links.length > 0) return links;
+    if (professionalId && isDemoUser(professionalId)) {
+      return getDemoLinks().filter(l => l.patientId === patientId && l.accessGranted);
+    }
     const linksRef = collection(db, 'patient_access_links');
     const q = query(linksRef, where('patientId', '==', patientId), where('accessGranted', '==', true));
     const docSnap = await getDocs(q);

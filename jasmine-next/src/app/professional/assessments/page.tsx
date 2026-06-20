@@ -45,7 +45,11 @@ const readSSEStream = async (
   onResult: (data: PredictionResult) => void,
   onError: (message: string) => void,
 ) => {
-  const reader = response.body!.getReader();
+  if (!response.body) {
+    onError('Response has no body stream.');
+    return;
+  }
+  const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = '';
 
@@ -206,7 +210,7 @@ export default function ProfessionalAssessmentsPage() {
       showToast('success', 'Assessment Reviewed', 'You have reviewed this assessment.');
       try {
         const { getPatientLinksByPatientId } = await import('@/lib/patient-access');
-        const links = await getPatientLinksByPatientId(selectedPatient);
+        const links = await getPatientLinksByPatientId(selectedPatient, user.id);
         for (const link of links) {
           await addNotification({
             userId: link.parentId,
@@ -232,7 +236,7 @@ export default function ProfessionalAssessmentsPage() {
       showToast('success', 'Assessment Shared', `Results for ${selectedPatientName} are now visible to the parent.`);
 
       const { getPatientLinksByPatientId } = await import('@/lib/patient-access');
-      const links = await getPatientLinksByPatientId(selectedPatient);
+      const links = await getPatientLinksByPatientId(selectedPatient, user.id);
       const notesSuffix = notes ? ` Notes: ${notes}` : '';
       for (const link of links) {
         await addNotification({
@@ -311,7 +315,7 @@ export default function ProfessionalAssessmentsPage() {
           (data) => {
             setResult(data);
             setCurrentStage(pipelineStages.length);
-            saveAssessmentResult(data);
+            saveAssessmentResult(data).catch(console.error);
           },
           (message) => setError(message),
         );
@@ -323,7 +327,7 @@ export default function ProfessionalAssessmentsPage() {
         }
         setResult(data);
         setCurrentStage(pipelineStages.length);
-        saveAssessmentResult(data);
+        saveAssessmentResult(data).catch(console.error);
       }
     } catch (err: any) {
       if (err?.name === 'AbortError') {

@@ -240,7 +240,11 @@ export function getCurrentUser(): User | null {
 }
 
 export async function logoutUser(): Promise<void> {
-  await signOut(auth);
+  try {
+    await signOut(auth);
+  } catch {
+    // Demo users and users without Firebase Auth session still log out locally
+  }
   localStorage.removeItem("currentUser");
 }
 
@@ -248,11 +252,22 @@ export async function updateUser(
   userId: string,
   data: { name?: string; phone?: string; specialty?: string }
 ): Promise<User> {
+  const currentUser = getCurrentUser();
+  if (!currentUser) throw new Error("No user found");
+
+  const updated: User = { ...currentUser, ...data };
+
+  // Demo users: update localStorage only
+  if (userId === 'demo-doctor' || userId === 'demo-parent') {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("currentUser", JSON.stringify(updated));
+    }
+    return updated;
+  }
+
   const { getFirestore, updateDoc } = await import("firebase/firestore");
   const userRef = doc(db, "users", userId);
   await updateDoc(userRef, { ...data, updatedAt: serverTimestamp() });
-  const snap = await getDoc(userRef);
-  const updated = snap.data() as User;
   if (typeof window !== "undefined") {
     localStorage.setItem("currentUser", JSON.stringify(updated));
   }
@@ -263,6 +278,21 @@ export async function changeCurrentUserPassword(
   currentPassword: string,
   newPassword: string
 ): Promise<void> {
+  const currentUser = getCurrentUser();
+
+  // Demo users: update localStorage localUsers entry only
+  if (currentUser?.id === 'demo-doctor' || currentUser?.id === 'demo-parent') {
+    if (typeof window !== "undefined") {
+      const localUsers = getLocalUsers();
+      const cleanEmail = currentUser.email.toLowerCase().trim();
+      if (localUsers[cleanEmail]) {
+        localUsers[cleanEmail].password = newPassword;
+        localStorage.setItem("localUsers", JSON.stringify(localUsers));
+      }
+    }
+    return;
+  }
+
   const user = auth.currentUser;
   if (!user || !user.email) {
     throw new Error("No authenticated user found");

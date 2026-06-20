@@ -118,7 +118,7 @@ export async function shareAssessment(userId: string, assessmentId: string, note
 
   // 2. الجزء الجديد: ربط التقييم بحساب الأهل
   if (patientId) {
-    const links = await getPatientLinksByPatientId(patientId);
+    const links = await getPatientLinksByPatientId(patientId, userId);
     
     for (const link of links) {
       const currentShared = link.sharedAssessments || [];

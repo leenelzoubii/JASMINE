@@ -174,8 +174,8 @@ export async function declineParentRequest(requestId: string): Promise<void> {
 }
 
 export async function getUserConnections(userId: string): Promise<any[]> {
-  const all = getDemoAllRequests();
-  if (all.length > 0) {
+  if (isDemoUser(userId)) {
+    const all = getDemoAllRequests();
     return all
       .filter(r => (r.professionalId === userId || r.parentId === userId) && r.status === 'accepted')
       .map(r => ({
