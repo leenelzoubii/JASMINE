@@ -75,8 +75,10 @@ export async function sendParentRequest(data: {
   parentEmail: string;
   parentName: string;
 }): Promise<ParentRequest> {
-  console.log('[sendParentRequest] professionalId:', data.professionalId, 'isDemoUser:', isDemoUser(data.professionalId));
-  if (isDemoUser(data.professionalId)) {
+  const cleanEmail = data.parentEmail.toLowerCase().trim();
+
+  // Demo-to-demo: save to localStorage only
+  if (isDemoUser(data.professionalId) && cleanEmail === 'parent@demo.com') {
     const all = getDemoAllRequests();
     const newReq: ParentRequest = {
       id: 'demo-req-' + Date.now(),
@@ -84,7 +86,7 @@ export async function sendParentRequest(data: {
       professionalName: data.professionalName,
       patientId: data.patientId,
       patientName: data.patientName,
-      parentEmail: data.parentEmail.toLowerCase().trim(),
+      parentEmail: cleanEmail,
       parentName: data.parentName,
       status: 'pending',
       createdAt: { toMillis: () => Date.now() } as any,
@@ -92,12 +94,14 @@ export async function sendParentRequest(data: {
     saveDemoAllRequests([newReq, ...all]);
     return newReq;
   }
+
+  // Demo doctor → real parent, or real doctor → any parent: save to Firestore
   const docRef = await addDoc(collection(db, "parentRequests"), {
     professionalId: data.professionalId,
     professionalName: data.professionalName,
     patientId: data.patientId,
     patientName: data.patientName,
-    parentEmail: data.parentEmail.toLowerCase().trim(),
+    parentEmail: cleanEmail,
     parentName: data.parentName,
     status: "pending",
     createdAt: serverTimestamp(),
@@ -108,15 +112,26 @@ export async function sendParentRequest(data: {
 }
 
 export async function getParentRequestsByEmail(email: string): Promise<ParentRequest[]> {
-  // For demo parent, read from shared localStorage
-  if (email === 'parent@demo.com') {
-    return sortByCreatedAtDesc(getDemoAllRequests().filter(r =>
-      r.parentEmail === email.toLowerCase().trim() && r.status === 'pending'
-    ));
+  const cleanEmail = email.toLowerCase().trim();
+
+  // Demo parent: read from both localStorage and Firestore
+  if (cleanEmail === 'parent@demo.com') {
+    const demoReqs = getDemoAllRequests().filter(r =>
+      r.parentEmail === cleanEmail && r.status === 'pending'
+    );
+    const q = query(collection(db, "parentRequests"), where("parentEmail", "==", cleanEmail), where("status", "==", "pending"));
+    try {
+      const snap = await getDocs(q);
+      const firestoreReqs = snap.docs.map((d) => ({ id: d.id, ...d.data() } as ParentRequest));
+      return sortByCreatedAtDesc([...demoReqs, ...firestoreReqs]);
+    } catch {
+      return sortByCreatedAtDesc(demoReqs);
+    }
   }
+
   const q = query(
     collection(db, "parentRequests"),
-    where("parentEmail", "==", email.toLowerCase().trim()),
+    where("parentEmail", "==", cleanEmail),
     where("status", "==", "pending")
   );
   const snap = await getDocs(q);
@@ -124,8 +139,17 @@ export async function getParentRequestsByEmail(email: string): Promise<ParentReq
 }
 
 export async function getProfessionalRequests(professionalId: string): Promise<ParentRequest[]> {
+  // Demo doctor: read from both localStorage (demo-to-demo) and Firestore (demo-to-real)
   if (isDemoUser(professionalId)) {
-    return sortByCreatedAtDesc(getDemoAllRequests().filter(r => r.professionalId === professionalId));
+    const demoReqs = getDemoAllRequests().filter(r => r.professionalId === professionalId);
+    const q = query(collection(db, "parentRequests"), where("professionalId", "==", professionalId));
+    try {
+      const snap = await getDocs(q);
+      const firestoreReqs = snap.docs.map((d) => ({ id: d.id, ...d.data() } as ParentRequest));
+      return sortByCreatedAtDesc([...demoReqs, ...firestoreReqs]);
+    } catch {
+      return sortByCreatedAtDesc(demoReqs);
+    }
   }
   const q = query(
     collection(db, "parentRequests"),
